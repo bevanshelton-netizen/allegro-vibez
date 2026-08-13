@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, Route, Routes, useNavigate } from 'react-router-dom'
 import { isSupabaseConfigured, supabase } from './lib/supabaseClient'
+import Rights from './pages/Rights.jsx'
 
 const nav = [['Home','/'],['Discover','/discover'],['Artists','/artists'],['Creator Hub','/creator-hub']]
 const releaseTypes = ['Single', 'EP', 'Album', 'DJ Mix']
@@ -53,7 +54,7 @@ function Artists() {
 }
 
 function CreatorHub({ session }) {
-  return session ? <Page title="Creator Hub"><div className="cards hub-cards"><article><h3>Upload music</h3><p>Create Singles, EPs, Albums and DJ Mixes.</p><Link to="/upload">Open upload</Link></article><article><h3>My Music</h3><p>Manage your private and published catalogue.</p><Link to="/my-music">View catalogue</Link></article><article><h3>Rights</h3><p>Ownership and contributor records remain attached to every release.</p></article></div></Page> : <RequireLogin/>
+  return session ? <Page title="Creator Hub"><div className="cards hub-cards"><article><h3>Upload music</h3><p>Create Singles, EPs, Albums and DJ Mixes.</p><Link to="/upload">Open upload</Link></article><article><h3>My Music</h3><p>Manage your private and published catalogue.</p><Link to="/my-music">View catalogue</Link></article><article><h3>Rights</h3><p>Ownership and contributor records remain attached to every release.</p><Link to="/my-music">Choose a release</Link></article></div></Page> : <RequireLogin/>
 }
 
 function Dashboard({ session }) {
@@ -82,7 +83,7 @@ function MyMusic({ session }) {
   const [releases,setReleases]=useState([])
   const [loading,setLoading]=useState(true)
   useEffect(()=>{let active=true;(async()=>{if(!supabase||!session){setLoading(false);return}const {data}=await supabase.from('releases').select('id,title,release_type,status,created_at').eq('owner_id',session.user.id).order('created_at',{ascending:false});if(active){setReleases(data||[]);setLoading(false)}})();return()=>{active=false}},[session])
-  return session ? <Page title="My Music"><p>Your private release catalogue and submission status.</p>{loading?<div className="empty">Loading your catalogue…</div>:releases.length?<div className="release-list">{releases.map(r=><article key={r.id}><div><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleString()}</small></div><span className={`status status-${r.status}`}>{r.status}</span></article>)}</div>:<div className="empty">No releases yet. <Link to="/upload">Create your first release.</Link></div>}</Page> : <RequireLogin/>
+  return session ? <Page title="My Music"><p>Your private release catalogue, submission status and rights records.</p>{loading?<div className="empty">Loading your catalogue…</div>:releases.length?<div className="release-list">{releases.map(r=><article key={r.id}><div><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleString()}</small><div className="release-links"><Link to={`/rights/${r.id}`}>Rights & contributors</Link></div></div><span className={`status status-${r.status}`}>{r.status}</span></article>)}</div>:<div className="empty">No releases yet. <Link to="/upload">Create your first release.</Link></div>}</Page> : <RequireLogin/>
 }
 
 function RequireLogin() { return <Page title="Creator access"><p>Please log in to continue.</p><Link className="primary inline" to="/login">Log in</Link></Page> }
@@ -105,5 +106,5 @@ function Auth({title,message,children}) { return <main className="auth"><section
 export default function App(){
   const [session,setSession]=useState(null)
   useEffect(()=>{if(!supabase)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const {data}=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return()=>data.subscription.unsubscribe()},[])
-  return <Shell session={session}><Routes><Route path="/" element={<Home/>}/><Route path="/discover" element={<Discover/>}/><Route path="/artists" element={<Artists/>}/><Route path="/login" element={<Login onSession={setSession}/>}/><Route path="/register" element={<Register/>}/><Route path="/dashboard" element={<Dashboard session={session}/>}/><Route path="/creator-hub" element={<CreatorHub session={session}/>}/><Route path="/upload" element={<Upload session={session}/>}/><Route path="/my-music" element={<MyMusic session={session}/>}/><Route path="*" element={<Page title="Page not found"><Link to="/">Return home</Link></Page>}/></Routes></Shell>
+  return <Shell session={session}><Routes><Route path="/" element={<Home/>}/><Route path="/discover" element={<Discover/>}/><Route path="/artists" element={<Artists/>}/><Route path="/login" element={<Login onSession={setSession}/>}/><Route path="/register" element={<Register/>}/><Route path="/dashboard" element={<Dashboard session={session}/>}/><Route path="/creator-hub" element={<CreatorHub session={session}/>}/><Route path="/upload" element={<Upload session={session}/>}/><Route path="/my-music" element={<MyMusic session={session}/>}/><Route path="/rights/:releaseId" element={<Rights session={session}/>}/><Route path="*" element={<Page title="Page not found"><Link to="/">Return home</Link></Page>}/></Routes></Shell>
 }
