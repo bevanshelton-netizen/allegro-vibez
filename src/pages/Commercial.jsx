@@ -7,14 +7,25 @@ function money(value, currency='ZAR') {
 }
 
 export function BillingPage({ session }) {
-  const [plans,setPlans]=useState([]); const [current,setCurrent]=useState(null); const [message,setMessage]=useState('')
+  const [plans,setPlans]=useState([]); const [current,setCurrent]=useState(null); const [message,setMessage]=useState(''); const [saving,setSaving]=useState('')
   useEffect(()=>{let active=true;(async()=>{if(!supabase||!session)return;const [{data:p},{data:s}]=await Promise.all([
     supabase.from('subscription_plans').select('code,name,monthly_price,currency,platform_fee_percent,features').eq('active',true).order('monthly_price'),
     supabase.from('creator_subscriptions').select('plan_code,status,current_period_end').eq('owner_id',session.user.id).maybeSingle()
   ]);if(active){setPlans(p||[]);setCurrent(s||null)}})();return()=>{active=false}},[session])
   if(!session)return <Gate/>
-  function choose(plan){if(plan.code===current?.plan_code)return;setMessage(`${plan.name} is payment-ready. Live checkout will activate when a payment provider is connected; no charge has been made.`)}
-  return <main className="page"><div className="eyebrow">COMMERCIAL ACCOUNT</div><h2>Plans & Billing</h2><p>Choose the operating level that matches your creator business. Pricing and platform-fee rules are stored centrally so they can be administered without changing the app.</p>{message&&<div className="notice">{message}</div>}<div className="plan-grid">{plans.map(plan=><article key={plan.code} className={plan.code===current?.plan_code?'plan-card plan-current':'plan-card'}><div className="eyebrow">{plan.code===current?.plan_code?'CURRENT PLAN':plan.code.toUpperCase()}</div><h3>{plan.name}</h3><div className="plan-price">{money(plan.monthly_price,plan.currency)}<small>/month</small></div><p>{plan.platform_fee_percent}% platform fee on tracked royalties.</p><ul>{(plan.features||[]).map(f=><li key={f}>{f}</li>)}</ul><button className="primary" disabled={plan.code===current?.plan_code} onClick={()=>choose(plan)}>{plan.code===current?.plan_code?'Current plan':`Choose ${plan.name}`}</button></article>)}</div></main>
+  async function choose(plan){
+    if(plan.code===current?.plan_code||saving)return
+    setSaving(plan.code);setMessage('')
+    try{
+      const {data,error}=await supabase.functions.invoke('payfast-checkout',{body:{planCode:plan.code}})
+      if(error)throw error
+      if(!data?.action||!data?.fields)throw new Error('Checkout is temporarily unavailable.')
+      const form=document.createElement('form');form.method='POST';form.action=data.action
+      Object.entries(data.fields).forEach(([name,value])=>{const input=document.createElement('input');input.type='hidden';input.name=name;input.value=String(value);form.appendChild(input)})
+      document.body.appendChild(form);form.submit()
+    }catch(error){setMessage(error.message||'Could not start secure checkout. Please try again.');setSaving('')}
+  }
+  return <main className="page"><div className="eyebrow">COMMERCIAL ACCOUNT</div><h2>Plans & Billing</h2><p>Choose the operating level that matches your creator business. Payments are completed on PayFast; ALLEGRO-VIBEZ never collects card details.</p>{message&&<div className="notice">{message}</div>}<div className="plan-grid">{plans.map(plan=><article key={plan.code} className={plan.code===current?.plan_code?'plan-card plan-current':'plan-card'}><div className="eyebrow">{plan.code===current?.plan_code?'CURRENT PLAN':plan.code.toUpperCase()}</div><h3>{plan.name}</h3><div className="plan-price">{money(plan.monthly_price,plan.currency)}<small>/month</small></div><p>{plan.platform_fee_percent}% platform fee on tracked royalties.</p><ul>{(plan.features||[]).map(f=><li key={f}>{f}</li>)}</ul><button className="primary" disabled={plan.code===current?.plan_code||Boolean(saving)} onClick={()=>choose(plan)}>{plan.code===current?.plan_code?'Current plan':saving===plan.code?'Opening PayFast…':`Choose ${plan.name}`}</button></article>)}</div></main>
 }
 
 export function WalletPage({ session }) {
