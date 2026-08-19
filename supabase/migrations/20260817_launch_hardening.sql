@@ -89,5 +89,5 @@ grant execute on function public.admin_update_payout(uuid,text,text,text) to aut
 
 drop policy if exists "creator requests payout" on public.payout_requests;
 
-alter table public.release_rights drop constraint if exists release_rights_share_percent_check;
-alter table public.release_rights add constraint release_rights_share_percent_check check (share_percent >= 0 and share_percent <= 100);
+alter table public.release_contributors drop constraint if exists release_contributors_share_percent_check;
+alter table public.release_contributors add constraint release_contributors_share_percent_check check (share_percent >= 0 and share_percent <= 100);
