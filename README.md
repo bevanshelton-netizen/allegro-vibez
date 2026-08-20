@@ -16,8 +16,8 @@ The main branch now includes:
 - Creator catalogue and release-status views
 - Public artist directory and published-release discovery views
 - Supabase SQL migration with profiles, releases, RLS policies and a private `release-assets` bucket
-- GitHub Actions build and GitHub Pages deployment workflows
-- Vercel production routing and security headers
+- GitHub Actions build verification and Netlify continuous deployment
+- Netlify production routing and security headers
 - PayFast hosted checkout through authenticated Supabase Edge Functions
 - Signed payment-notification handling and auditable transaction records
 - Subscription activation only after a verified completed payment

@@ -2,7 +2,7 @@
 
 ## Hosting
 
-Deploy the React/Vite application to Vercel. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Production environment variables. `vercel.json` provides SPA routing and baseline security headers.
+Netlify is the production host connected to the GitHub `main` branch. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Production environment variables. `netlify.toml` provides the build settings, SPA routing and baseline security headers.
 
 ## Supabase
 
