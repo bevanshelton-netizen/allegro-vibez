@@ -4,7 +4,7 @@
 
 ALLEGRO-VIBEZ is a creator-first music platform for registration, catalogue management, private media storage, rights-aware release workflows, discovery and creator prosperity tooling.
 
-## Current build
+## Production build
 
 The main branch now includes:
 
@@ -17,6 +17,11 @@ The main branch now includes:
 - Public artist directory and published-release discovery views
 - Supabase SQL migration with profiles, releases, RLS policies and a private `release-assets` bucket
 - GitHub Actions build and GitHub Pages deployment workflows
+- Vercel production routing and security headers
+- PayFast hosted checkout through authenticated Supabase Edge Functions
+- Signed payment-notification handling and auditable transaction records
+- Subscription activation only after a verified completed payment
+- Creator wallets, payout requests and administrator payout operations
 
 ## Local development
 
@@ -34,13 +39,9 @@ VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
 
 Never commit `.env.local`, service-role keys or other secrets.
 
-## Supabase activation
+## Production activation
 
-Apply the migration in:
-
-`supabase/migrations/20260813_creator_core.sql`
-
-The migration creates the creator profile model, release catalogue, row-level security policies, private release storage bucket and automatic profile creation for new authenticated users.
+Follow `PRODUCTION_SETUP.md`. It covers the consolidated database migration, PayFast commerce migration, Edge Functions, secrets and launch acceptance test.
 
 ## Verification
 
