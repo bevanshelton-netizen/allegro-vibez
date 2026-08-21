@@ -1,0 +1,15 @@
+/* ALLEGRO VIBEZ landing-page visual upgrade */
+body{overflow-x:hidden}
+.site-header{height:94px;padding-left:clamp(22px,5vw,72px);padding-right:clamp(22px,5vw,72px)}
+.brand{font-size:clamp(1.35rem,2.1vw,2rem);line-height:1;font-weight:950;letter-spacing:.14em;white-space:nowrap;text-shadow:0 0 28px rgba(255,49,84,.12)}
+.brand b{margin-left:10px}
+.hero{position:relative;isolation:isolate;min-height:82vh;max-width:none;width:100%;padding:10vh 7vw 9vh 55%;background-image:linear-gradient(90deg,rgba(8,9,13,.03) 0%,rgba(8,9,13,.08) 40%,rgba(8,9,13,.78) 62%,rgba(8,9,13,.96) 100%),linear-gradient(0deg,rgba(8,9,13,.82) 0%,rgba(8,9,13,0) 35%),url('/allegro-vibez-music-evolution.jpg');background-repeat:no-repeat;background-size:cover;background-position:center center;justify-content:center;overflow:hidden;border-bottom:1px solid rgba(255,255,255,.08)}
+.hero:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 74% 56%,rgba(255,49,84,.10),transparent 28%);pointer-events:none}
+.hero .eyebrow,.hero h1,.hero p,.hero .actions{position:relative;z-index:1}
+.hero h1{font-size:clamp(3.9rem,6.3vw,7rem);max-width:760px;text-shadow:0 4px 36px rgba(0,0,0,.48)}
+.hero p{max-width:660px;color:#c4c6cd;text-shadow:0 2px 18px rgba(0,0,0,.68)}
+.hero .actions{flex-wrap:wrap}
+.hero .primary,.hero .secondary{padding:15px 25px}
+@media(max-width:1000px){.hero{padding-left:48%;padding-right:5vw;background-position:44% center}.hero h1{font-size:clamp(3.3rem,7vw,5.5rem)}}
+@media(max-width:800px){.site-header{height:88px;padding:0 18px}.brand{font-size:1.28rem;letter-spacing:.105em}.brand b{margin-left:7px}.hero{display:flex;min-height:auto;padding:calc(56.25vw + 42px) 6vw 8vh;background-image:linear-gradient(180deg,rgba(8,9,13,0) 0%,rgba(8,9,13,.04) 48%,#08090d 61%,#08090d 100%),url('/allegro-vibez-music-evolution.jpg');background-size:100% auto;background-position:center top;justify-content:flex-start}.hero:before{background:radial-gradient(circle at 50% 48%,rgba(255,49,84,.10),transparent 32%)}.hero h1{font-size:clamp(3.55rem,16vw,5rem);line-height:.91}.hero p{font-size:1.13rem;line-height:1.55}.hero .actions{gap:12px}.hero .primary,.hero .secondary{padding:14px 22px}}
+@media(max-width:420px){.brand{font-size:1.12rem;letter-spacing:.09em}.site-header{padding:0 15px}.hero{padding-left:5.5vw;padding-right:5.5vw}.hero h1{font-size:clamp(3.35rem,15.6vw,4.25rem)}}
