@@ -1,6 +1,11 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+// ALLEGRO-VIBEZ production project. The public project URL is safe to keep as a
+// fallback so a missing hosting URL variable cannot disable authentication.
+// The browser-safe publishable/anon key must still be supplied by the host.
+const supabaseUrl =
+  import.meta.env.VITE_SUPABASE_URL ||
+  'https://zoolsumifdtanycjryje.supabase.co'
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
