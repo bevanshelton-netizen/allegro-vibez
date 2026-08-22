@@ -1,0 +1,22 @@
+/* ALLEGRO VIBEZ — artist signup / access experience */
+.av-auth-enhanced{width:min(1160px,92%);min-height:calc(100vh - 140px);margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:24px;align-items:stretch;padding:56px 0 72px;place-items:stretch}
+.av-auth-enhanced>section,.av-auth-side{border:1px solid rgba(255,255,255,.13);border-radius:30px;box-shadow:0 26px 90px rgba(0,0,0,.34)}
+.av-auth-enhanced>section{width:auto!important;padding:42px!important;background:linear-gradient(155deg,rgba(255,255,255,.065),rgba(255,255,255,.018))!important;display:flex;flex-direction:column;justify-content:center}
+.av-auth-enhanced>section h2{font-size:clamp(3rem,5.2vw,5.4rem);letter-spacing:-.035em;line-height:.9;margin:.15em 0 .35em}
+.av-auth-enhanced>section h2 em{font-weight:400;color:#ff6d86}
+.av-auth-enhanced form{gap:15px}.av-auth-enhanced form label{font-size:.84rem;color:#d5d7dd}.av-auth-enhanced input,.av-auth-enhanced select{background:#0c0e14;border-color:rgba(255,255,255,.15);padding:15px 16px}.av-auth-enhanced input:focus,.av-auth-enhanced select:focus{outline:none;border-color:rgba(255,49,91,.58);box-shadow:0 0 0 3px rgba(255,49,91,.08)}
+.av-auth-enhanced .primary{padding:15px 22px;font-size:.98rem;box-shadow:0 13px 34px rgba(255,33,79,.22)}
+.av-auth-enhanced .consent{font-size:.84rem!important}
+.av-auth-side{position:relative;isolation:isolate;overflow:hidden;padding:48px;display:flex;flex-direction:column;justify-content:center;background:
+linear-gradient(160deg,rgba(7,8,12,.50),rgba(7,8,12,.84)),
+url('/allegro-vibez-music-evolution.jpg') center/cover no-repeat}
+.av-auth-side:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(circle at 28% 30%,rgba(255,33,79,.25),transparent 28%),radial-gradient(circle at 75% 78%,rgba(111,81,255,.18),transparent 24%)}
+.av-auth-side h1{font-family:Georgia,serif;font-weight:500;font-size:clamp(3.3rem,5.6vw,6rem);line-height:.9;letter-spacing:-.04em;margin:.12em 0 .28em;max-width:720px;text-shadow:0 6px 36px rgba(0,0,0,.62)}
+.av-auth-side h1 em{font-weight:400;color:#ff6c85}.av-auth-side>p{font-size:1.08rem;line-height:1.75;color:#d0d3da;max-width:650px;text-shadow:0 2px 18px rgba(0,0,0,.72)}
+.av-auth-benefits{display:grid;gap:9px;margin:26px 0}.av-auth-benefits span{display:flex;align-items:center;gap:11px;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.11);background:rgba(7,8,12,.48);backdrop-filter:blur(9px);font-size:.82rem;font-weight:850;letter-spacing:.05em;color:#ececf0}.av-auth-benefits b{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:rgba(255,33,79,.13);border:1px solid rgba(255,33,79,.28);color:#ff748d;font-size:.65rem}
+.av-auth-roles{margin-top:12px;padding-top:20px;border-top:1px solid rgba(255,255,255,.13);font-size:.68rem;line-height:1.8;font-weight:900;letter-spacing:.13em;color:#d6d8df}
+.av-auth-returning{background:radial-gradient(circle at 22% 28%,rgba(255,33,79,.18),transparent 24%),radial-gradient(circle at 76% 70%,rgba(101,79,255,.18),transparent 26%),linear-gradient(145deg,#11131b,#08090e)}
+.av-auth-returning .av-auth-benefits{display:flex;flex-wrap:wrap}.av-auth-returning .av-auth-benefits span{padding:9px 12px;border-radius:999px;font-size:.68rem;letter-spacing:.12em}
+
+@media(max-width:900px){.av-auth-enhanced{grid-template-columns:1fr}.av-auth-side{min-height:500px;order:0}.av-auth-enhanced>section{order:1}}
+@media(max-width:650px){.av-auth-enhanced{width:91%;padding:26px 0 54px;gap:16px}.av-auth-side{min-height:430px;padding:30px 24px;border-radius:25px}.av-auth-side h1{font-size:clamp(3rem,14vw,4.6rem)}.av-auth-enhanced>section{padding:29px 22px!important;border-radius:25px}.av-auth-enhanced>section h2{font-size:clamp(2.9rem,13vw,4.4rem)}.av-auth-benefits span{font-size:.76rem}}
