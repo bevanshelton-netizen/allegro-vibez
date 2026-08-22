@@ -10,6 +10,9 @@ Run `supabase/ALLEGRO_VIBEZ_GO_LIVE.sql`, followed by:
 
 1. `supabase/migrations/20260819_payfast_commerce.sql`
 2. `supabase/migrations/20260822_payfast_hardening.sql`
+3. `supabase/migrations/20260822_payfast_zar_plans.sql`
+
+The ZAR plan migration aligns the paid plans with PayFast checkout for the South African launch. Current launch pricing is Free R0/month, Pro R179/month and Label R899/month, with platform-fee percentages unchanged at 10%, 8% and 6% respectively.
 
 Deploy both Edge Functions:
 
