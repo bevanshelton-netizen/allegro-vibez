@@ -1,3 +1,4 @@
+/* global console, process */
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 
@@ -37,7 +38,7 @@ for(const check of [
   ['notify verifies merchant',notify.includes("params.get('merchant_id')")],
   ['notify validates with PayFast',notify.includes('validatedByPayFast')],
   ['notify verifies amount',notify.includes('Amount mismatch')],
-  ['notify activates through RPC',notify.includes("activate_paid_subscription")],
+  ['notify activates through RPC',notify.includes('activate_paid_subscription')],
 ]) if(!check[1]) findings.push(`PayFast check failed: ${check[0]}`)
 
 if(findings.length){
