@@ -18,6 +18,7 @@ const required = [
   'supabase/migrations/20260819_payfast_commerce.sql',
   'supabase/migrations/20260822_payfast_hardening.sql',
   'supabase/migrations/20260822_payfast_zar_plans.sql',
+  'supabase/migrations/20260823_artist_workflow_hardening.sql',
   'supabase/functions/payfast-checkout/index.ts',
   'supabase/functions/payfast-notify/index.ts',
 ]
@@ -42,4 +43,18 @@ for (const token of ['ALLEGRO VIBEZ', 'og:title', 'twitter:card', 'canonical']) 
   }
 }
 
-console.log('ALLEGRO VIBEZ publishing structure verified.')
+const workflow = readFileSync('supabase/migrations/20260823_artist_workflow_hardening.sql', 'utf8')
+for (const token of [
+  'owners update editable releases',
+  "status in ('draft','rejected')",
+  'Upload an audio master before submission',
+  'Upload release artwork before submission',
+  'Rights ownership must total exactly 100%% before submission',
+]) {
+  if (!workflow.includes(token)) {
+    console.error(`Artist workflow hardening check failed: ${token}`)
+    process.exit(1)
+  }
+}
+
+console.log('ALLEGRO VIBEZ publishing structure and artist workflow guards verified.')
