@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  launch-gate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -15,8 +15,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: npm run lint
-      - run: npm run build
+      - name: Verify, lint and build
+        run: npm run verify:all
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
