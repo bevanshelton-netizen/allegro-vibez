@@ -1,7 +1,7 @@
 {
   "name": "allegro-vibez",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -10,10 +10,7 @@
     "lint": "eslint .",
     "verify": "node scripts/verify-project.mjs",
     "verify:security": "node scripts/verify-security.mjs",
-    "verify:all": "npm run verify && npm run verify:security && npm run verify:v5 && npm run verify:v6 && npm run verify:v7",
-    "verify:v5": "node scripts/verify-v5.mjs",
-    "verify:v6": "node scripts/verify-v6.mjs",
-    "verify:v7": "node scripts/verify-v7.mjs"
+    "verify:all": "npm run lint && npm run verify && npm run verify:security && npm run build"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
