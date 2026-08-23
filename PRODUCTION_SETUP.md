@@ -2,21 +2,24 @@
 
 ## Hosting
 
-Netlify is the production host connected to the GitHub `main` branch. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Production environment variables. `netlify.toml` provides the build settings, SPA routing and baseline security headers.
+Netlify is the production host connected to the GitHub `main` branch. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` for both Production and Deploy Preview contexts. `netlify.toml` provides the build settings, SPA routing and baseline security headers.
 
 The public production origin is:
 
 `https://allegro-vibez.netlify.app`
 
-Before promoting a build, confirm the GitHub launch gate and Netlify deploy both succeed.
+Before promoting a build, confirm the GitHub launch gate and Netlify deploy both succeed. Never publish a build that displays a hosting or Supabase configuration warning.
 
 ## Supabase database
 
-Run `supabase/ALLEGRO_VIBEZ_GO_LIVE.sql`, followed by:
+Run `supabase/ALLEGRO_VIBEZ_GO_LIVE.sql`, followed in order by:
 
 1. `supabase/migrations/20260819_payfast_commerce.sql`
 2. `supabase/migrations/20260822_payfast_hardening.sql`
 3. `supabase/migrations/20260822_payfast_zar_plans.sql`
+4. `supabase/migrations/20260823_artist_workflow_hardening.sql`
+
+The artist-workflow hardening migration is a production gate. It prevents creators from bypassing moderation, restricts contributor writes to their own editable releases, and rejects submissions without audio, artwork, contributors and exactly 100% rights allocation.
 
 The ZAR plan migration aligns the paid plans with PayFast checkout for the South African launch. Current launch pricing is Free R0/month, Pro R179/month and Label R899/month, with platform-fee percentages unchanged at 10%, 8% and 6% respectively.
 
@@ -55,15 +58,22 @@ Supabase supplies its own URL, anon key and service-role key to deployed functio
 ## Launch acceptance test
 
 1. Open Home, Discover, Artists and Join on desktop and mobile.
-2. Register and verify a creator account.
-3. Save profile information and upload private artwork/audio.
-4. Add rights totalling 100%, submit, moderate and publish the release.
-5. Confirm the published release appears in Discover and private drafts do not.
-6. Complete a PayFast sandbox plan purchase and confirm the subscription activates only after the validated notification.
-7. Replay/retry the same notification and confirm the subscription period is not extended a second time.
-8. Add a royalty entry, confirm wallet balances and request a payout.
-9. Confirm a non-admin cannot access moderation or payout operations.
-10. Confirm Privacy, Terms, reset-password and unknown-route pages work on direct navigation.
-11. Run `npm run verify:all` and require a green GitHub launch gate.
+2. Confirm no technical configuration warning is visible.
+3. Register and verify a creator account; test login, logout and password recovery.
+4. Save a public profile and confirm another visitor can view only intended public fields.
+5. Confirm a creator cannot submit a release without audio.
+6. Confirm a creator cannot submit a release without artwork.
+7. Confirm a creator cannot submit without contributors totalling exactly 100%.
+8. Confirm a creator cannot directly change a draft to approved or published.
+9. Submit, moderate and publish a complete release through the approved workflow.
+10. Confirm the published release appears in Discover and private drafts do not.
+11. Confirm one creator cannot read or change another creator's private release assets or contributors.
+12. Complete a PayFast sandbox plan purchase and confirm activation occurs only after a validated notification.
+13. Replay the same notification and confirm the subscription period is not extended again.
+14. Add a royalty entry, reconcile the creator wallet and request a payout.
+15. Confirm an excessive or duplicate payout request is rejected.
+16. Confirm a non-admin cannot access moderation, royalty administration or payout operations.
+17. Confirm Privacy, Terms, reset-password and unknown-route pages work on direct navigation.
+18. Run `npm run verify:all` and require a green GitHub launch gate.
 
-Do not enable live PayFast processing until the sandbox acceptance test passes.
+Do not enable live PayFast processing or publish production until every acceptance test passes.
