@@ -1,27 +1,29 @@
-# ALLEGRO-VIBEZ
+# ALLEGRO VIBEZ
 
-**More Than Music. A Movement. The Global Artist Prosperity Platform.**
+**More Than Music. A Movement. The African-born Global Artist Prosperity Platform.**
 
-ALLEGRO-VIBEZ is a creator-first music platform for registration, catalogue management, private media storage, rights-aware release workflows, discovery and creator prosperity tooling.
+ALLEGRO VIBEZ is a creator-first music ecosystem for artist identity, catalogue management, protected media, rights-aware release workflows, discovery, creator prosperity and auditable commercial operations.
 
-## Production build
+## Publishing build
 
-The main branch now includes:
+The current release candidate includes:
 
-- React + Vite application shell
-- Supabase authentication with session persistence
-- Creator registration with display name, stage name and account type metadata
-- Protected dashboard, Creator Hub, Upload and My Music routes
-- Draft release creation and private release-asset uploads
-- Creator catalogue and release-status views
-- Public artist directory and published-release discovery views
-- Supabase SQL migration with profiles, releases, RLS policies and a private `release-assets` bucket
-- GitHub Actions build verification and Netlify continuous deployment
-- Netlify production routing and security headers
-- PayFast hosted checkout through authenticated Supabase Edge Functions
-- Signed payment-notification handling and auditable transaction records
-- Subscription activation only after a verified completed payment
-- Creator wallets, payout requests and administrator payout operations
+- Cinematic artist-first Home, Discover and Artists experiences
+- Responsive mobile navigation and conversion-first creator signup journey
+- React + Vite application shell with Netlify SPA routing
+- Supabase authentication with session persistence and password recovery
+- Creator registration, profile and public creator identity
+- Creator Hub, Dashboard, Upload and My Music routes
+- Private release audio/artwork storage and controlled release workflow
+- Rights and contributor records attached to releases
+- Administrator moderation, approval and publishing workflow
+- Published-release discovery and public artist directory
+- Royalty ledger, creator prosperity dashboard and wallet visibility
+- Payout requests and administrator payout operations
+- Creator subscription plans and PayFast hosted checkout
+- PayFast notification validation, amount checks and idempotent subscription activation
+- Terms, Privacy, SEO/social metadata, robots and sitemap
+- GitHub publishing gate with lint, security verification and production build
 
 ## Local development
 
@@ -37,17 +39,16 @@ VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
 VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
 ```
 
-Never commit `.env.local`, service-role keys or other secrets.
+Never commit `.env.local`, service-role keys, PayFast secrets or other server-only credentials.
 
 ## Production activation
 
-Follow `PRODUCTION_SETUP.md`. It covers the consolidated database migration, PayFast commerce migration, Edge Functions, secrets and launch acceptance test.
+Follow `PRODUCTION_SETUP.md` for the database migration order, Auth redirect configuration, PayFast Edge Functions, secrets and end-to-end launch acceptance test.
 
-## Verification
+## Launch verification
 
 ```bash
-npm run build
-npm run lint
+npm run verify:all
 ```
 
-Production secrets are supplied through GitHub Actions or the selected hosting platform, never through committed source files.
+The launch gate checks project structure, secret boundaries, PayFast security guards, ESLint and the production Vite build. Production secrets are supplied through the hosting/service environment, never through committed browser source.
