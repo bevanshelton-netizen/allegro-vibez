@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 
 function money(value, currency='ZAR') {
@@ -30,11 +30,11 @@ export function BillingPage({ session }) {
 
 export function WalletPage({ session }) {
   const [wallet,setWallet]=useState(null); const [payouts,setPayouts]=useState([]); const [amount,setAmount]=useState(''); const [destination,setDestination]=useState(''); const [message,setMessage]=useState(''); const [saving,setSaving]=useState(false)
-  async function load(){if(!supabase||!session)return;const [{data:w},{data:p}]=await Promise.all([
+  const load=useCallback(async()=>{if(!supabase||!session)return;const [{data:w},{data:p}]=await Promise.all([
     supabase.from('creator_wallets').select('currency,available_balance,pending_balance,lifetime_paid').eq('owner_id',session.user.id).maybeSingle(),
     supabase.from('payout_requests').select('id,currency,amount,status,destination_label,requested_at,admin_note').eq('owner_id',session.user.id).order('requested_at',{ascending:false}).limit(30)
-  ]);setWallet(w||null);setPayouts(p||[])}
-  useEffect(()=>{load()},[session])
+  ]);setWallet(w||null);setPayouts(p||[])},[session])
+  useEffect(()=>{load()},[load])
   if(!session)return <Gate/>
   async function requestPayout(e){e.preventDefault();const n=Number(amount);if(!wallet||!n||n<=0){setMessage('Enter a valid payout amount.');return}setSaving(true);const {error}=await supabase.rpc('request_payout',{p_amount:n,p_destination_label:destination.trim()||null});setSaving(false);if(error){setMessage(error.message);return}setMessage('Payout request submitted for review.');setAmount('');setDestination('');load()}
   const c=wallet?.currency||'ZAR'
@@ -43,8 +43,8 @@ export function WalletPage({ session }) {
 
 export function AdminCommercialPage({ session }) {
   const [role,setRole]=useState(null); const [payouts,setPayouts]=useState([]); const [message,setMessage]=useState('')
-  async function load(){if(!supabase||!session)return;const {data:profile}=await supabase.from('profiles').select('role').eq('id',session.user.id).maybeSingle();setRole(profile?.role||'creator');if(profile?.role!=='admin')return;const {data}=await supabase.from('payout_requests').select('id,owner_id,currency,amount,status,destination_label,requested_at').order('requested_at',{ascending:false}).limit(100);setPayouts(data||[])}
-  useEffect(()=>{load()},[session])
+  const load=useCallback(async()=>{if(!supabase||!session)return;const {data:profile}=await supabase.from('profiles').select('role').eq('id',session.user.id).maybeSingle();setRole(profile?.role||'creator');if(profile?.role!=='admin')return;const {data}=await supabase.from('payout_requests').select('id,owner_id,currency,amount,status,destination_label,requested_at').order('requested_at',{ascending:false}).limit(100);setPayouts(data||[])},[session])
+  useEffect(()=>{load()},[load])
   if(!session)return <Gate/>;if(role&&role!=='admin')return <main className="page"><div className="eyebrow">ADMIN</div><h2>Access restricted</h2><p>This commercial control room is limited to administrators.</p></main>
   async function setStatus(id,status){const {error}=await supabase.rpc('admin_update_payout',{p_request_id:id,p_status:status,p_admin_note:null,p_external_reference:null});if(error){setMessage(error.message);return}setMessage(`Payout marked ${status}.`);load()}
   return <main className="page"><div className="eyebrow">ADMIN COMMERCIAL CONTROL</div><h2>Payout Operations</h2><p>Review and move payout requests through an auditable operating queue.</p>{message&&<div className="notice">{message}</div>}<div className="release-list">{payouts.map(p=><article key={p.id}><div><div className="eyebrow">{p.status}</div><h3>{money(p.amount,p.currency)}</h3><small>{p.owner_id} · {p.destination_label||'No destination label'}</small></div><div className="commercial-actions"><button className="secondary" onClick={()=>setStatus(p.id,'approved')}>Approve</button><button className="secondary" onClick={()=>setStatus(p.id,'processing')}>Processing</button><button className="primary" onClick={()=>setStatus(p.id,'paid')}>Paid</button><button className="text-button danger" onClick={()=>setStatus(p.id,'rejected')}>Reject</button></div></article>)}</div></main>
