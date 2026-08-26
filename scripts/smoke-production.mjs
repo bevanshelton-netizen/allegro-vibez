@@ -41,7 +41,10 @@ if(home.error){
       if(url.origin!==origin)continue
       const response=await fetch(url,{redirect:'follow',headers:{'user-agent':'ALLEGRO-VIBEZ-production-smoke/1.0'}})
       if(response.ok)javascript+=`\n${await response.text()}`
-    }catch{}
+      else record('production script asset reachable',false,`HTTP ${response.status}`)
+    }catch(error){
+      record('production script asset reachable',false,error.message)
+    }
   }
 
   const hasPublishable=/sb_publishable_[A-Za-z0-9._-]{12,}/.test(javascript)
@@ -50,7 +53,9 @@ if(home.error){
     try{
       const payload=JSON.parse(Buffer.from(match[0].split('.')[1],'base64url').toString('utf8'))
       if(payload?.role==='anon'){hasAnonJwt=true;break}
-    }catch{}
+    }catch{
+      continue
+    }
   }
   record('Supabase browser key embedded',hasPublishable||hasAnonJwt,'boolean detection only; key value is never printed')
 }
