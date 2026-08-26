@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 
@@ -17,7 +17,7 @@ export default function Rights({ session }) {
 
   const totalShare=useMemo(()=>contributors.reduce((sum,item)=>sum+Number(item.share_percent||0),0),[contributors])
 
-  async function load(){
+  const load=useCallback(async()=>{
     if(!supabase||!session)return
     const [{data:releaseData},{data:contributorData}]=await Promise.all([
       supabase.from('releases').select('id,title,release_type,status').eq('id',releaseId).eq('owner_id',session.user.id).maybeSingle(),
@@ -25,9 +25,9 @@ export default function Rights({ session }) {
     ])
     setRelease(releaseData||null)
     setContributors(contributorData||[])
-  }
+  },[releaseId,session])
 
-  useEffect(()=>{load()},[releaseId,session])
+  useEffect(()=>{load()},[load])
 
   async function addContributor(e){
     e.preventDefault();if(!supabase||!session)return
