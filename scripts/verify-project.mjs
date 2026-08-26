@@ -28,9 +28,20 @@ if (missing.length) {
 }
 
 const netlify = readFileSync('netlify.toml', 'utf8')
-if (!netlify.includes('to = "/index.html"') || !netlify.includes('status = 200')) {
-  console.error('Netlify SPA fallback is missing.')
-  process.exit(1)
+for (const token of [
+  'to = "/index.html"',
+  'status = 200',
+  'X-Content-Type-Options = "nosniff"',
+  'X-Frame-Options = "DENY"',
+  'Strict-Transport-Security',
+  'Content-Security-Policy',
+  "frame-ancestors 'none'",
+  'Cache-Control = "public, max-age=31536000, immutable"',
+]) {
+  if (!netlify.includes(token)) {
+    console.error(`Netlify production safeguard missing: ${token}`)
+    process.exit(1)
+  }
 }
 
 const index = readFileSync('index.html', 'utf8')
@@ -41,4 +52,10 @@ for (const token of ['ALLEGRO VIBEZ', 'og:title', 'twitter:card', 'canonical']) 
   }
 }
 
-console.log('ALLEGRO VIBEZ publishing structure verified.')
+const readiness = readFileSync('LAUNCH_READINESS.md', 'utf8')
+if (!readiness.includes('Netlify') || readiness.includes('GitHub Pages deployment')) {
+  console.error('Launch readiness documentation does not match the production host.')
+  process.exit(1)
+}
+
+console.log('ALLEGRO VIBEZ publishing structure and production host safeguards verified.')
