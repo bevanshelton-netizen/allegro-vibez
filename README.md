@@ -24,6 +24,8 @@ The current release candidate includes:
 - PayFast notification validation, amount checks and idempotent subscription activation
 - Terms, Privacy, SEO/social metadata, robots and sitemap
 - GitHub publishing gate with lint, security verification and production build
+- Netlify security headers, SPA fallback and immutable caching for hashed assets
+- Safe production smoke probing that reports configuration state without printing provider keys
 
 ## Local development
 
@@ -51,4 +53,12 @@ Follow `PRODUCTION_SETUP.md` for the database migration order, Auth redirect con
 npm run verify:all
 ```
 
-The launch gate checks project structure, secret boundaries, PayFast security guards, ESLint and the production Vite build. Production secrets are supplied through the hosting/service environment, never through committed browser source.
+The launch gate checks project structure, Netlify production safeguards, secret boundaries, PayFast security guards, ESLint and the production Vite build. Production secrets are supplied through the hosting/service environment, never through committed browser source.
+
+To probe the currently published Netlify site without revealing any key values:
+
+```bash
+npm run smoke:production
+```
+
+The smoke probe checks the production origin, important routes, security headers and whether a browser-safe Supabase key is actually embedded in the deployed frontend. It reports only pass/fail state; it never prints the key.
