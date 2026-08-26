@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { getRoyaltyLedger, getRoyaltySummary, reviewRelease, submitRelease, updateCreatorProfile } from '../lib/creatorWorkflow'
@@ -44,8 +44,8 @@ export function AdminReviewPage({ session }) {
   const [releases,setReleases]=useState([])
   const [loading,setLoading]=useState(true)
   const [message,setMessage]=useState('')
-  async function load(){if(!supabase||!session){setLoading(false);return}setLoading(true);const {data:me}=await supabase.from('profiles').select('role').eq('id',session.user.id).single();setProfile(me||null);if(me?.role==='admin'){const {data,error}=await supabase.from('releases').select('id,title,release_type,status,owner_id,submitted_at,review_note').in('status',['submitted','approved']).order('submitted_at',{ascending:true});if(error)setMessage(error.message);setReleases(data||[])}setLoading(false)}
-  useEffect(()=>{load()},[session])
+  const load=useCallback(async()=>{if(!supabase||!session){setLoading(false);return}setLoading(true);const {data:me}=await supabase.from('profiles').select('role').eq('id',session.user.id).single();setProfile(me||null);if(me?.role==='admin'){const {data,error}=await supabase.from('releases').select('id,title,release_type,status,owner_id,submitted_at,review_note').in('status',['submitted','approved']).order('submitted_at',{ascending:true});if(error)setMessage(error.message);setReleases(data||[])}setLoading(false)},[session])
+  useEffect(()=>{load()},[load])
   async function decide(id,decision){const note=decision==='rejected'?window.prompt('Reason for rejection / changes required:','')||'':window.prompt('Optional review note:','')||'';setMessage('');try{await reviewRelease(id,decision,note);setMessage(`Release ${decision}.`);await load()}catch(error){setMessage(error.message||'Review action failed.')}}
   if(!session)return <PageFrame title="Moderation"><p>Please log in.</p></PageFrame>
   if(loading)return <PageFrame title="Moderation"><div className="empty">Checking moderation access…</div></PageFrame>
