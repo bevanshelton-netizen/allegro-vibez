@@ -24,3 +24,4 @@ jobs:
         run: npm run smoke:production
         env:
           PRODUCTION_ORIGIN: https://allegro-vibez.netlify.app
+      # Launch rerun checkpoint: 2026-08-27
