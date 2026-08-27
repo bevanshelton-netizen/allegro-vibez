@@ -20,8 +20,7 @@ jobs:
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      - name: Probe current Netlify production
-        continue-on-error: true
+      - name: Enforce current Netlify production readiness
         run: npm run smoke:production
         env:
           PRODUCTION_ORIGIN: https://allegro-vibez.netlify.app
