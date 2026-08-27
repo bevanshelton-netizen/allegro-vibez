@@ -16,16 +16,31 @@ function enhanceArtistHome() {
   const actions = hero.querySelector('.actions')
   const actionLinks = actions ? actions.querySelectorAll('a') : []
 
-  if (eyebrow) eyebrow.textContent = 'THE ARTIST PROSPERITY PLATFORM'
-  if (title) title.innerHTML = 'Your music deserves<br><em>more than streams.</em>'
-  if (copy) copy.textContent = 'Create your artist identity. Protect your rights. Build your catalogue. Track your earnings. Grow from one home designed around the creator.'
-  if (actionLinks[0]) actionLinks[0].textContent = 'Join as an Artist'
-  if (actionLinks[1]) actionLinks[1].textContent = 'Discover the Movement'
+  if (eyebrow) eyebrow.textContent = 'ARTISTS · BUILD IT · PROTECT IT · GET PAID'
+  if (title) title.innerHTML = 'Your music is a business.<br><em>Build it like one.</em>'
+  if (copy) copy.textContent = 'ALLEGRO-VIBEZ is your artist headquarters: create your profile, upload music, protect ownership, manage rights, track royalties, build a wallet and get discovered — all from one home.'
+  if (actionLinks[0]) actionLinks[0].textContent = 'Claim Your Artist Profile'
+  if (actionLinks[1]) actionLinks[1].textContent = 'See How It Works'
 
   if (actions && !hero.querySelector('.av-hero-proof')) {
     actions.insertAdjacentHTML('afterend', `
       <div class="av-hero-proof" aria-label="Artist platform capabilities">
-        <span>Artist profile</span><i></i><span>Catalogue</span><i></i><span>Rights</span><i></i><span>Royalties</span><i></i><span>Wallet</span>
+        <span>Own your catalogue</span><i></i><span>Protect your rights</span><i></i><span>See your money</span><i></i><span>Grow your audience</span>
+      </div>
+      <div class="av-hero-promise">
+        <strong>ONE ARTIST HOME.</strong>
+        <span>Profile · Music · Rights · Royalties · Wallet · Discovery</span>
+      </div>
+    `)
+  }
+
+  if (!hero.querySelector('.av-hero-visuals')) {
+    hero.insertAdjacentHTML('beforeend', `
+      <div class="av-hero-visuals" aria-hidden="true">
+        <figure class="av-visual av-visual-main"><img src="/av-hero.webp" alt="" /></figure>
+        <figure class="av-visual av-visual-artists"><img src="/av-artists.webp" alt="" /></figure>
+        <figure class="av-visual av-visual-discover"><img src="/av-discover.webp" alt="" /></figure>
+        <div class="av-now-playing"><span class="av-wave"><i></i><i></i><i></i><i></i><i></i></span><b>YOUR CAREER. IN MOTION.</b></div>
       </div>
     `)
   }
@@ -34,17 +49,37 @@ function enhanceArtistHome() {
   if (!cards) return
 
   cards.insertAdjacentHTML('beforebegin', `
+    <section class="av-impact-band">
+      <div><strong>UPLOAD</strong><span>Build a professional release catalogue</span></div>
+      <div><strong>PROTECT</strong><span>Keep rights and contributors connected</span></div>
+      <div><strong>EARN</strong><span>Track royalties, fees and wallet activity</span></div>
+      <div><strong>GROW</strong><span>Give fans and industry a place to find you</span></div>
+    </section>
     <section class="av-artist-strip" aria-label="Who Allegro Vibez is for">
       <span>ARTISTS</span><span>DJs</span><span>PRODUCERS</span><span>SONGWRITERS</span><span>BANDS</span><span>CHOIRS</span><span>LABELS</span>
     </section>
     <section class="av-pillar-intro av-section-heading">
-      <div class="av-kicker">BUILT AROUND YOUR CAREER</div>
-      <h2>Create the music. <em>Own the journey.</em></h2>
-      <p>ALLEGRO VIBEZ brings the essential building blocks of an artist career into one creator-first ecosystem.</p>
+      <div class="av-kicker">THIS IS WHAT THE PAGE IS ABOUT</div>
+      <h2>Turn your talent into a <em>real artist business.</em></h2>
+      <p>Stop scattering your career across apps, messages, spreadsheets and social feeds. ALLEGRO-VIBEZ brings the essential building blocks of your music career into one creator-first ecosystem.</p>
     </section>
   `)
 
   cards.insertAdjacentHTML('afterend', `
+    <section class="av-visual-story av-section">
+      <div class="av-story-copy">
+        <div class="av-kicker">FROM SOUND TO ASSET</div>
+        <h2>Music moves fast.<br><em>Your career needs structure.</em></h2>
+        <p>Every song should strengthen your identity, catalogue, ownership record and earning potential. ALLEGRO-VIBEZ is built to help you keep those pieces connected.</p>
+        <a class="av-button av-button-primary" href="/register">Start building now</a>
+      </div>
+      <div class="av-story-mosaic" aria-label="Artist journey imagery">
+        <figure class="av-story-a"><img src="/av-artists.webp" alt="Artists building their careers" /></figure>
+        <figure class="av-story-b"><img src="/av-discover.webp" alt="Music discovery" /></figure>
+        <figure class="av-story-c"><img src="/allegro-vibez-music-evolution.jpg" alt="The evolution of music and artist opportunity" /></figure>
+      </div>
+    </section>
+
     <section class="av-artist-experience av-section">
       <div class="av-section-heading av-centered">
         <div class="av-kicker">WHY ARTISTS JOIN</div>
@@ -101,7 +136,7 @@ function enhanceArtistHome() {
       <div class="av-movement-copy">
         <div class="av-kicker">AFRICAN-BORN · GLOBAL BY DESIGN</div>
         <h2>More Than Music.<br><em>A Movement.</em></h2>
-        <p>From rhythm and heritage to studios, streaming and the global digital stage — ALLEGRO VIBEZ is built for creators who want their talent to become ownership, opportunity and legacy.</p>
+        <p>From rhythm and heritage to studios, streaming and the global digital stage — ALLEGRO-VIBEZ is built for creators who want their talent to become ownership, opportunity and legacy.</p>
         <div class="av-movement-actions"><a class="av-button av-button-primary" href="/register">Join the Movement</a><a class="av-button av-button-ghost" href="/discover">Discover Music</a></div>
       </div>
     </section>
@@ -112,7 +147,7 @@ function enhanceArtistHome() {
         <h2>Don't let your next release disappear into a feed.</h2>
         <p>Give it a home. Give your career structure. Build the legacy behind the music.</p>
       </div>
-      <a class="av-button av-button-primary av-button-large" href="/register">Join ALLEGRO VIBEZ</a>
+      <a class="av-button av-button-primary av-button-large" href="/register">Claim Your Artist Profile</a>
     </section>
   `)
 }
