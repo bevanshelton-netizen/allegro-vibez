@@ -10,8 +10,8 @@ jobs:
   launch-gate:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-      - uses: actions/setup-node@v7
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
@@ -24,4 +24,3 @@ jobs:
         run: npm run smoke:production
         env:
           PRODUCTION_ORIGIN: https://allegro-vibez.netlify.app
-      # Launch rerun checkpoint: 2026-08-27
