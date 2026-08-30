@@ -17,10 +17,10 @@ jobs:
       - run: npm install --no-audit --no-fund
       - name: Verify IZAKHONO preference, failover, lint and build
         run: npm run verify:all
-      - name: Prove current Netlify production is launch-ready
+      - name: Prove current production is launch-ready
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: npm run smoke:production
         env:
-          PRODUCTION_ORIGIN: https://allegro-vibez.netlify.app
-          PRODUCTION_SMOKE_ATTEMPTS: 30
+          PRODUCTION_ORIGIN: https://bevanshelton-netizen.github.io/allegro-vibez
+          PRODUCTION_SMOKE_ATTEMPTS: 40
           PRODUCTION_SMOKE_DELAY_MS: 10000
