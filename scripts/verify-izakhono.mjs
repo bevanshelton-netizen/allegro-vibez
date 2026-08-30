@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 
 const manifest = JSON.parse(readFileSync('izakhono/manifest.json', 'utf8'))
+const deployManifest = JSON.parse(readFileSync('.izakhono.json', 'utf8'))
 const schema = readFileSync('izakhono/schema.sql', 'utf8')
 const runtime = readFileSync('src/lib/supabaseClient.js', 'utf8')
 const dockerfile = readFileSync('Dockerfile', 'utf8')
@@ -102,4 +103,9 @@ if (!nginx.includes('*.izakhono.africa') || !nginx.includes('*.supabase.co')) {
   process.exit(1)
 }
 
-console.log('ALLEGRO VIBEZ IZAKHONO Core preference and zero-cost production failover verified.')
+if (deployManifest.dockerfile_path !== 'Dockerfile' || deployManifest.build_context !== '.' || deployManifest.container_port !== 8080 || deployManifest.health_path !== '/healthz') {
+  console.error('IZAKHONO deployment manifest must use the ALLEGRO Dockerfile, port 8080 and /healthz gate.')
+  process.exit(1)
+}
+
+console.log('ALLEGRO VIBEZ IZAKHONO Core preference, Zero Host deployment and production failover verified.')
