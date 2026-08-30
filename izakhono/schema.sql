@@ -1,4 +1,4 @@
--- ALLEGRO VIBEZ schema for IZAKHONO Core v0.3+
+-- ALLEGRO VIBEZ schema for IZAKHONO Core v0.3.1+
 -- The project schema is selected by the IZAKHONO provisioning service.
 
 alter table profiles
@@ -35,7 +35,7 @@ create index if not exists releases_owner_created_idx on releases(owner_id, crea
 create index if not exists releases_status_created_idx on releases(status, created_at desc);
 
 create or replace view published_releases as
-select id, owner_id, title, release_type, artwork_path, published_at, created_at
+select id, owner_id, title, release_type, status, artwork_path, published_at, created_at
 from releases
 where status = 'published';
 
