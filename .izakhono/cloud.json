@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "project": "allegro-vibez",
+  "runtime": "docker",
+  "dockerfile": "Dockerfile",
+  "containerPort": 8080,
+  "healthPath": "/healthz",
+  "branch": "main",
+  "deploymentPolicy": {
+    "strategy": "rolling",
+    "requireHealthcheck": true,
+    "preserveExistingHost": true
+  },
+  "notes": "Frontend can be hosted on IZAKHONO CLOUD now. Supabase replacement with IZAKHONO BASE is a separate migration and must not be combined with the first hosting cutover."
+}
