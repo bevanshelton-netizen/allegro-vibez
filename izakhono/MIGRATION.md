@@ -1,61 +1,85 @@
 # ALLEGRO VIBEZ → IZAKHONO Core
 
-ALLEGRO VIBEZ now carries its own IZAKHONO Core provisioning pack and a dual-backend browser adapter.
+ALLEGRO VIBEZ now uses the IZAKHONO Core client contract. No Supabase client is instantiated by the runtime adapter.
 
-## Operating rule
+## No paid VPS required to continue
 
-The live application remains on the current Supabase backend until the self-hosted IZAKHONO Core server passes production validation. No customer-facing downtime is required for the migration.
+A paid server is not a prerequisite for the next build stage. **IZAKHONO CLOUD Zero-Cost Host Mode v1.0** can run the Core API, PostgreSQL, storage, Cloud control plane, app runner, backups and Owner Console on an existing Docker-capable computer.
 
-When these browser-safe variables are present, the app automatically prefers IZAKHONO Core:
+The local Core address in Zero-Cost Host Mode is:
+
+```text
+http://127.0.0.1:8787
+```
+
+That address is correct for applications running on the same computer. A public Netlify frontend cannot use `127.0.0.1`, because that would point to each visitor's own device. Before public cutover, route a public HTTPS address to the same IZAKHONO host using an existing public network route or a free encrypted tunnel.
+
+## Runtime variables
+
+The browser build requires only browser-safe IZAKHONO values:
 
 - `VITE_IZAKHONO_CORE_URL`
 - `VITE_IZAKHONO_PROJECT=allegro_vibez`
-- `VITE_IZAKHONO_PUBLIC_KEY`
+- `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
 
-If they are absent, the existing Supabase production path remains active.
+Never put an `ik_sec_*` project key or the Core root-admin key in Vite/browser variables.
 
 ## Minimum Core release
 
-Use **IZAKHONO Core v0.3.1 or newer**. v0.3.1 hardens private storage so browser/public project keys may read or overwrite only objects owned by the authenticated user; server-side `ik_sec_*` credentials retain trusted protected-operation access.
+Use **IZAKHONO Core v0.3.1 or newer**. v0.3.1 enforces object ownership for private storage reads and overwrites made through browser/public project keys while preserving trusted server-side access for `ik_sec_*` operations.
 
-## One-command project provisioning
+## Zero Host fast path
 
-From an IZAKHONO Core v0.3.1+ release on the server:
+The Zero Host package includes an ALLEGRO helper:
+
+```powershell
+.\scripts\provision-allegro.ps1
+```
+
+It downloads this repository's version-controlled `manifest.json`, `schema.sql` and `seed.sql`, provisions the `allegro_vibez` Core project, creates the data exposures and private `release_assets` bucket, and writes the one-time project keys to `allegro-vibez-keys.json`.
+
+## Generic provisioning
+
+From an IZAKHONO Core v0.3.1+ source tree:
 
 ```bash
 python3 scripts/provision-project.py /path/to/allegro-vibez/izakhono/manifest.json \
-  --base-url https://YOUR_CORE_API \
+  --base-url http://127.0.0.1:8787 \
   --out /secure/allegro-vibez-keys.json
 ```
 
-The manifest applies `schema.sql`, `seed.sql`, table policies and the private `release_assets` bucket.
+For a public host, replace the base URL with its reachable HTTPS Core URL.
 
-## Security decisions already encoded
+## Security decisions encoded in the ALLEGRO manifest
 
-- Draft/private releases are owner-only.
-- Public discovery uses the `published_releases` view instead of exposing the releases table.
-- Public artist discovery uses `public_profiles`; internal profile fields such as the administrator role stay owner-only.
+- Internal creator profiles are owner-only; public artist discovery uses `public_profiles`.
+- Draft/private releases are owner-only; public discovery uses `published_releases`.
 - Rights/contributor records are owner-only.
 - Royalty, subscription, wallet and payout records are owner-only.
-- Release media is stored in a private bucket with object-owner enforcement in Core v0.3.1+.
-- Payout requests are validated server-side against available balance and already-reserved requests.
-- The browser receives only the `ik_pub_*` project key. `ik_sec_*` remains server-side.
+- Release media uses a private `release_assets` bucket.
+- Core v0.3.1+ denies cross-account private-object reads and overwrites.
+- Payout insertion is protected by server-side balance validation in the ALLEGRO schema.
+- Browser code receives only `ik_pub_*` credentials.
 
 ## Cutover gate
 
-Do not switch production variables until all of these pass on the real server:
+Do not point the public ALLEGRO frontend at the new host until all of these pass on the machine that will actually serve users:
 
 1. Core `/healthz` and `/readyz`.
-2. Project provisioning and one-time key capture.
+2. ALLEGRO manifest provisioning and one-time key capture.
 3. Creator signup/signin/session persistence.
 4. Owner isolation for profiles, releases, rights, wallet and payouts.
-5. Private release upload/download, including denial of cross-account object reads and overwrites.
-6. Public published-release and public-profile discovery without draft/admin-field leakage.
-7. Payout validation.
-8. Backup and isolated restore drill.
-9. Protected ALLEGRO admin operations and PayFast server functions.
-10. Production smoke test after DNS/environment cutover.
+5. Private release upload/download and denial of cross-account media access.
+6. Public artist/release discovery without private/admin-field leakage.
+7. Backup creation and restore proof.
+8. A stable public HTTPS route to the Core host.
+9. Protected moderation, payout-admin and PayFast server operations.
+10. End-to-end production smoke test from outside the host machine.
 
-## Protected operations
+## Protected operations still to activate
 
-The browser adapter deliberately does not expose administrative credentials. Release moderation, payout administration and PayFast checkout remain protected server operations. Until the IZAKHONO server-operations layer is activated, the current Supabase server functions remain the production implementation for those flows.
+The browser adapter deliberately refuses to expose administrator credentials. Release moderation, payout administration, password-recovery delivery and PayFast checkout/notification processing require protected server-side services on the IZAKHONO host. They must be activated and tested before those functions are marketed as live.
+
+## Cost rule
+
+Use the existing computer as the first host and keep optional monitoring off unless needed. Introduce paid compute only when measured uptime, traffic, storage, redundancy or revenue makes it worthwhile.
