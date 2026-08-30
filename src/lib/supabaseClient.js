@@ -1,9 +1,8 @@
-import { createClient } from '@supabase/supabase-js'
 import { createIzakhonoCoreClient } from './izakhonoCoreClient'
 
-const FALLBACK_SUPABASE_URL = 'https://zoolsumifdtanycjryje.supabase.co'
-const PUBLIC_CONFIG_URL = `${FALLBACK_SUPABASE_URL}/functions/v1/public-config`
-
+// Compatibility exports are intentionally retained so the existing UI can move
+// to IZAKHONO Core without a disruptive page-by-page rewrite. No Supabase
+// client is instantiated by this module anymore.
 export let supabase = null
 export let isSupabaseConfigured = false
 export let backendProvider = 'none'
@@ -15,52 +14,25 @@ export async function initSupabase() {
   const coreProject = import.meta.env.VITE_IZAKHONO_PROJECT || 'allegro_vibez'
   const corePublicKey = import.meta.env.VITE_IZAKHONO_PUBLIC_KEY || ''
 
-  if (coreUrl && coreProject && corePublicKey) {
-    const core = createIzakhonoCoreClient(coreUrl, coreProject, corePublicKey)
-    const coreFrom = core.from.bind(core)
-
-    core.from = table => {
-      if (!core.session && table === 'releases') return coreFrom('published_releases')
-      if (!core.session && table === 'profiles') return coreFrom('public_profiles')
-      return coreFrom(table)
-    }
-
-    supabase = core
-    isSupabaseConfigured = true
-    backendProvider = 'izakhono-core'
-    return supabase
+  if (!coreUrl || !coreProject || !corePublicKey) {
+    return null
   }
 
-  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
-  let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+  const core = createIzakhonoCoreClient(coreUrl, coreProject, corePublicKey)
+  const coreFrom = core.from.bind(core)
 
-  if (!supabaseAnonKey) {
-    try {
-      const response = await fetch(PUBLIC_CONFIG_URL, {
-        headers: { Accept: 'application/json' },
-      })
-      if (response.ok) {
-        const config = await response.json()
-        supabaseAnonKey = config.publishableKey || ''
-      }
-    } catch {
-      // Keep auth disabled if the public bootstrap endpoint is unavailable.
-    }
+  // Anonymous visitors are restricted to explicit public views. Authenticated
+  // creators continue to use the owner-protected tables through the same
+  // Supabase-shaped query interface used by the existing ALLEGRO UI.
+  core.from = table => {
+    if (!core.session && table === 'releases') return coreFrom('published_releases')
+    if (!core.session && table === 'profiles') return coreFrom('public_profiles')
+    return coreFrom(table)
   }
 
-  isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
-
-  if (isSupabaseConfigured) {
-    supabase = createClient(supabaseUrl, supabaseAnonKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
-    })
-    backendProvider = 'supabase'
-  }
-
+  supabase = core
+  isSupabaseConfigured = true
+  backendProvider = 'izakhono-core'
   return supabase
 }
 
