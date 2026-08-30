@@ -2,89 +2,78 @@
 
 ## Release status
 
-ALLEGRO-VIBEZ is a Vite/React single-page application prepared for production on Netlify from the GitHub `main` branch. Netlify provides the SPA fallback through `netlify.toml`, so browser routes such as `/login`, `/dashboard` and `/update-password` resolve through `index.html`.
+ALLEGRO-VIBEZ is a Vite/React single-page application prepared for the Netlify frontend and an IZAKHONO Core backend. The source now uses the IZAKHONO Core compatibility client; a Supabase browser client is no longer instantiated.
 
-The GitHub launch gate currently verifies linting, publishing structure, frontend secret boundaries, PayFast safeguards and the production Vite build.
+The GitHub launch gate verifies the IZAKHONO runtime contract, linting, publishing structure, frontend secret boundaries and the production Vite build. Public promotion remains gated on a real Core host and end-to-end acceptance.
 
-## Production capabilities in the codebase
+## Production capabilities already represented in source
 
-- Creator registration, login, verification, password recovery and session handling
-- Creator profiles and public artist discovery
+- Creator signup/signin and persisted Core sessions
+- Creator profiles and safe public artist discovery
 - Private release upload, artwork/audio storage and creator catalogues
-- Release submission, moderation, approval, rejection and publishing workflow
-- Rights and contributor records per release
-- Royalty ledger and creator prosperity dashboard
-- Subscription-plan catalogue and PayFast hosted checkout integration
-- Creator wallets and payout requests
-- Admin release moderation and payout operations
-- Atomic payout validation and finalisation RPCs
-- PayFast callback validation and idempotent subscription activation
-- Row-level security policies for creator/admin data separation
+- Release submission flow and rights/contributor records
+- Royalty ledger, creator wallet and payout-request UI
+- Subscription-plan catalogue
 - Public Terms of Use and Privacy Notice
 - SEO/social metadata, robots and sitemap
+- Netlify SPA routing/security configuration
+- IZAKHONO Core project manifest, schema, seed and exposure policies
+- Private storage owner enforcement when Core v0.3.1+ is used
 - GitHub Actions launch gate
-- Netlify production configuration and SPA routing
 
-## Required Supabase activation order
+## Capabilities that still require protected server activation
 
-For the production Supabase project, use the consolidated launch SQL first, then the PayFast migrations:
+These must not be represented as live merely because the UI exists:
 
-1. `supabase/ALLEGRO_VIBEZ_GO_LIVE.sql`
-2. `supabase/migrations/20260819_payfast_commerce.sql`
-3. `supabase/migrations/20260822_payfast_hardening.sql`
-4. `supabase/migrations/20260822_payfast_zar_plans.sql`
+- administrator release moderation / publishing
+- payout administration and finalisation
+- PayFast checkout creation and notification processing
+- password-reset email delivery and password-recovery completion
 
-Do not blindly rerun migrations against an already-populated production database. Confirm schema state before applying any migration that may already have been executed.
+The browser client deliberately refuses privileged server operations until their IZAKHONO-hosted implementations are active.
 
-## Required Netlify environment variables
+## Required IZAKHONO Core activation
 
-The frontend production build requires:
+Use IZAKHONO Core v0.3.1 or newer and provision `izakhono/manifest.json`. In Zero-Cost Host Mode, the package's ALLEGRO helper performs this provisioning automatically and records the one-time keys.
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+The browser build requires:
 
-Only a browser-safe Supabase publishable/anon key belongs in the frontend build. Never expose a Supabase service-role key, database password, PayFast merchant key/passphrase or webhook secret in Vite environment variables.
+- `VITE_IZAKHONO_CORE_URL`
+- `VITE_IZAKHONO_PROJECT=allegro_vibez`
+- `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
 
-## Required Supabase Auth configuration
+Only the `ik_pub_*` key belongs in the frontend. `ik_sec_*`, root-admin, database and payment credentials remain server-side.
 
-Set the production Site URL to:
+## Zero-Cost Host Mode
 
-`https://allegro-vibez.netlify.app`
+A paid VPS is not required for the first host. An existing Docker-capable computer can run IZAKHONO CLOUD Zero-Cost Host Mode v1.0.
 
-Allow the application redirect routes used for sign-in verification and password recovery, including:
+Local host URL:
 
-- `https://allegro-vibez.netlify.app/login`
-- `https://allegro-vibez.netlify.app/update-password`
+`http://127.0.0.1:8787`
 
-A deploy-preview origin may be temporarily allowlisted for acceptance testing and removed after launch.
-
-## Payment activation
-
-Deploy the `payfast-checkout` and `payfast-notify` Supabase Edge Functions and configure server-side PayFast secrets as described in `PRODUCTION_SETUP.md`.
-
-Keep `PAYFAST_SANDBOX=true` until a complete sandbox purchase, callback validation and replay/idempotency test passes. Live PayFast processing must not be enabled merely because the frontend checkout button renders.
+This is suitable for tests made on the host computer. It is **not** a valid backend URL for public Netlify visitors. Before public launch, create a stable HTTPS route to the host using an existing public connection or a free encrypted tunnel and repeat the launch acceptance tests through that public route.
 
 ## Publication gate
 
-Before marketing the platform as fully transactional, confirm:
+Before marketing ALLEGRO as publicly operational, confirm:
 
-- Production Supabase migrations have been applied successfully.
-- Netlify contains the two browser-safe Supabase environment variables.
-- Supabase Auth production/redirect URLs are configured.
-- A new account can register, verify and log in.
-- A creator can save a release draft and upload audio/artwork.
-- A creator can add rights/contributors and submit a release.
-- An admin account can approve and publish a release.
-- The published release appears in Discover while private drafts remain private.
-- Royalty entries are visible only to the correct creator/admin.
-- A payout request cannot exceed the withdrawable balance.
-- A finalised payout cannot be paid twice.
-- Privacy, Terms, reset-password and unknown routes work on direct navigation.
-- A PayFast sandbox purchase activates only after a validated notification.
-- Replaying the same PayFast notification does not extend the subscription twice.
+- Core `/healthz` and `/readyz` pass on the actual host.
+- The `allegro_vibez` manifest provisions successfully and one-time keys are captured securely.
+- A new creator can sign up, sign in and retain a session.
+- A creator can save a release and upload private audio/artwork.
+- Cross-account private-media reads and overwrites are denied.
+- Creator rights/contributor data stays isolated.
+- Public artist/release views contain only intended public fields/content.
+- Royalty/wallet/payout data stays isolated to the correct creator.
+- Payout balance validation is enforced server-side.
+- A backup can be created and restored successfully.
+- A stable public HTTPS Core route exists and is reachable from outside the host machine.
+- Netlify contains the public Core URL/project/public-key values.
 - `npm run verify:all` passes on the exact production commit.
-- The connected Netlify production deployment completes successfully.
+- The Netlify frontend deploy succeeds.
+- Protected moderation, payment, payout-admin and password-recovery services have their own green acceptance tests before being enabled.
 
 ## Current engineering state
 
-The codebase, security verifier and production build gate are green. Remaining go-live work that cannot be represented safely in source control is limited to authenticated provider configuration and end-to-end production acceptance using the Supabase and PayFast accounts.
+The application source is IZAKHONO-Core-ready and the no-paid-VPS host package exists. The remaining launch proof is runtime infrastructure: start the Zero Host stack on a Docker-capable computer, provision ALLEGRO, expose a stable public HTTPS route, then run the end-to-end acceptance suite. Paid infrastructure is optional until measured uptime or scale makes it necessary.
