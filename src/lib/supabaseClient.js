@@ -1,21 +1,42 @@
 import { createClient } from '@supabase/supabase-js'
 
-// ALLEGRO-VIBEZ production project. The public project URL is safe to keep as a
-// fallback so a missing hosting URL variable cannot disable authentication.
-// The browser-safe publishable/anon key must still be supplied by the host.
-const supabaseUrl =
-  import.meta.env.VITE_SUPABASE_URL ||
-  'https://zoolsumifdtanycjryje.supabase.co'
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+const FALLBACK_SUPABASE_URL = 'https://zoolsumifdtanycjryje.supabase.co'
+const PUBLIC_CONFIG_URL = `${FALLBACK_SUPABASE_URL}/functions/v1/public-config`
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+export let supabase = null
+export let isSupabaseConfigured = false
 
-export const supabase = isSupabaseConfigured
-  ? createClient(supabaseUrl, supabaseAnonKey, {
+export async function initSupabase() {
+  if (supabase) return supabase
+
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || FALLBACK_SUPABASE_URL
+  let supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+
+  if (!supabaseAnonKey) {
+    try {
+      const response = await fetch(PUBLIC_CONFIG_URL, {
+        headers: { Accept: 'application/json' },
+      })
+      if (response.ok) {
+        const config = await response.json()
+        supabaseAnonKey = config.publishableKey || ''
+      }
+    } catch {
+      // Keep auth disabled if the public bootstrap endpoint is unavailable.
+    }
+  }
+
+  isSupabaseConfigured = Boolean(supabaseUrl && supabaseAnonKey)
+
+  if (isSupabaseConfigured) {
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
       auth: {
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,
       },
     })
-  : null
+  }
+
+  return supabase
+}
