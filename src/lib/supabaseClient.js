@@ -16,7 +16,16 @@ export async function initSupabase() {
   const corePublicKey = import.meta.env.VITE_IZAKHONO_PUBLIC_KEY || ''
 
   if (coreUrl && coreProject && corePublicKey) {
-    supabase = createIzakhonoCoreClient(coreUrl, coreProject, corePublicKey)
+    const core = createIzakhonoCoreClient(coreUrl, coreProject, corePublicKey)
+    const coreFrom = core.from.bind(core)
+
+    core.from = table => {
+      if (!core.session && table === 'releases') return coreFrom('published_releases')
+      if (!core.session && table === 'profiles') return coreFrom('public_profiles')
+      return coreFrom(table)
+    }
+
+    supabase = core
     isSupabaseConfigured = true
     backendProvider = 'izakhono-core'
     return supabase
