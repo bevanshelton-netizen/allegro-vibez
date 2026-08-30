@@ -11,6 +11,10 @@ alter table profiles
   add column if not exists role text not null default 'creator',
   add column if not exists updated_at timestamptz not null default now();
 
+create or replace view public_profiles as
+select id, display_name, stage_name, account_type, country, city, bio, avatar_path, created_at
+from profiles;
+
 create table if not exists releases (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null,

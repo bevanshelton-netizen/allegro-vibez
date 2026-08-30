@@ -7,8 +7,16 @@
   ],
   "exposures": [
     {
-      "table_name": "profiles",
+      "table_name": "public_profiles",
       "select_policy": "public",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "id"
+    },
+    {
+      "table_name": "profiles",
+      "select_policy": "owner",
       "insert_policy": "owner",
       "update_policy": "owner",
       "delete_policy": "none",
