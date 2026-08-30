@@ -1,69 +1,77 @@
 # ALLEGRO-VIBEZ production activation
 
-## Hosting
+## Architecture
 
-Netlify is the production host connected to the GitHub `main` branch. Add `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` as Production environment variables. `netlify.toml` provides the build settings, SPA routing and baseline security headers.
+The public React/Vite frontend remains on Netlify from GitHub `main`. The application runtime backend is **IZAKHONO Core**, not Supabase.
 
-The public production origin is:
-
-`https://allegro-vibez.netlify.app`
-
-Before promoting a build, confirm the GitHub launch gate and Netlify deploy both succeed.
-
-## Supabase database
-
-Run `supabase/ALLEGRO_VIBEZ_GO_LIVE.sql`, followed by:
-
-1. `supabase/migrations/20260819_payfast_commerce.sql`
-2. `supabase/migrations/20260822_payfast_hardening.sql`
-3. `supabase/migrations/20260822_payfast_zar_plans.sql`
-
-The ZAR plan migration aligns the paid plans with PayFast checkout for the South African launch. Current launch pricing is Free R0/month, Pro R179/month and Label R899/month, with platform-fee percentages unchanged at 10%, 8% and 6% respectively.
-
-## Supabase Auth URLs
-
-Set the Supabase Authentication **Site URL** to:
+Production frontend origin:
 
 `https://allegro-vibez.netlify.app`
 
-Allow redirect URLs required by the app, including:
+The frontend requires three browser-safe values:
 
-- `https://allegro-vibez.netlify.app/login`
-- `https://allegro-vibez.netlify.app/update-password`
+- `VITE_IZAKHONO_CORE_URL`
+- `VITE_IZAKHONO_PROJECT=allegro_vibez`
+- `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
 
-Add the active Netlify deploy-preview origin during acceptance testing, then remove unnecessary preview origins after launch.
+Never place an `ik_sec_*` key, the Core root-admin key, database password, PayFast merchant key/passphrase or any other server credential in the Vite build.
 
-## PayFast Edge Functions
+## Zero-Cost Host Mode
 
-Deploy both Edge Functions:
+No paid VPS is required for the first self-hosted environment. IZAKHONO CLOUD Zero-Cost Host Mode v1.0 runs Core, PostgreSQL, storage, the application control plane, deployment runner, backups and Owner Console on an existing Docker-capable computer.
 
-- `payfast-checkout` with JWT verification enabled
-- `payfast-notify` with JWT verification disabled, because PayFast authenticates notifications using server-side security checks
+Local Core URL:
 
-Set these Edge Function secrets:
+`http://127.0.0.1:8787`
 
-- `APP_ORIGIN=https://allegro-vibez.netlify.app`
-- `PAYFAST_MERCHANT_ID`
-- `PAYFAST_MERCHANT_KEY`
-- `PAYFAST_PASSPHRASE`
-- `PAYFAST_SANDBOX=true` during testing; change to `false` only after a successful sandbox payment
+This loopback URL is for software running on the host computer. **Do not put it into the public Netlify production environment.** Public visitors need a stable HTTPS Core URL routed to that same computer, using an existing public network route or a free encrypted tunnel.
 
-The PayFast notification function verifies the signature, merchant ID, expected amount and validates the notification back against PayFast before activating a subscription. The hardening migration also makes subscription activation idempotent so a retried notification cannot grant the same purchase twice.
+## Provision ALLEGRO
 
-Supabase supplies its own URL, anon key and service-role key to deployed functions. Never expose the service-role key in Netlify or the browser.
+Use IZAKHONO Core v0.3.1 or newer. The Zero Host package provides:
 
-## Launch acceptance test
+```powershell
+.\scripts\provision-allegro.ps1
+```
 
-1. Open Home, Discover, Artists and Join on desktop and mobile.
-2. Register and verify a creator account.
-3. Save profile information and upload private artwork/audio.
-4. Add rights totalling 100%, submit, moderate and publish the release.
-5. Confirm the published release appears in Discover and private drafts do not.
-6. Complete a PayFast sandbox plan purchase and confirm the subscription activates only after the validated notification.
-7. Replay/retry the same notification and confirm the subscription period is not extended a second time.
-8. Add a royalty entry, confirm wallet balances and request a payout.
-9. Confirm a non-admin cannot access moderation or payout operations.
-10. Confirm Privacy, Terms, reset-password and unknown-route pages work on direct navigation.
-11. Run `npm run verify:all` and require a green GitHub launch gate.
+It provisions this repository's `izakhono/manifest.json`, `schema.sql` and `seed.sql`, data policies and the private `release_assets` bucket. Store the one-time `ik_sec_*` key privately; the browser receives only the public key.
 
-Do not enable live PayFast processing until the sandbox acceptance test passes.
+## Data and creator acceptance
+
+Before public routing cutover, verify on the actual Core host:
+
+1. `/healthz` and `/readyz` return healthy.
+2. New creator signup/signin works and sessions persist.
+3. Creator profile data is owner-protected while `public_profiles` remains publicly readable.
+4. Private releases stay owner-only and only `published_releases` appears publicly.
+5. Artwork/audio upload and download work from the private bucket.
+6. A second creator cannot read or overwrite another creator's private media.
+7. Rights/contributor records remain owner-only.
+8. Royalty, subscription, wallet and payout rows remain owner-only.
+9. A payout request cannot exceed the server-validated withdrawable balance.
+10. Backup creation and restore proof complete successfully.
+
+## Protected operations
+
+The Core browser adapter intentionally does not emulate privileged operations in the browser. Before full transactional launch, add and validate protected IZAKHONO-hosted services for:
+
+- release moderation / publish decisions
+- payout administration and finalisation
+- PayFast checkout creation
+- PayFast notification validation and idempotent subscription activation
+- password recovery / email delivery
+
+PayFast credentials must remain server-side. Keep live payment processing disabled until a complete sandbox checkout, validated notification, replay/idempotency and subscription-activation test passes.
+
+## Public cutover
+
+Only after the Core host has a stable public HTTPS route:
+
+1. Put the public Core URL and `ik_pub_*` project key in Netlify production variables.
+2. Deploy the exact tested commit.
+3. Test Home, Discover, Artists, Join and Login from a device that is **not** the Core host.
+4. Run creator signup, private upload, discovery and owner-isolation tests again over the public route.
+5. Verify security headers, Terms, Privacy and direct SPA navigation.
+6. Activate protected payment/admin services only after their server-side gates pass.
+
+The host computer must remain powered on and internet-connected for a workstation-hosted public service to remain available.
