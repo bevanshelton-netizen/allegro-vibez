@@ -15,13 +15,12 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - name: Verify IZAKHONO runtime, lint and build
+      - name: Verify IZAKHONO preference, failover, lint and build
         run: npm run verify:all
+      - name: Prove current Netlify production is launch-ready
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: npm run smoke:production
         env:
-          VITE_IZAKHONO_CORE_URL: https://api.izakhono.africa
-          VITE_IZAKHONO_PROJECT: allegro_vibez
-          VITE_IZAKHONO_PUBLIC_KEY: ik_pub_ci_placeholder
-      - name: Record production cutover gate
-        run: |
-          echo "Code gate passed."
-          echo "Live promotion remains blocked until IZAKHONO Core/CLOUD is running on the production server and the end-to-end health gate passes."
+          PRODUCTION_ORIGIN: https://allegro-vibez.netlify.app
+          PRODUCTION_SMOKE_ATTEMPTS: 30
+          PRODUCTION_SMOKE_DELAY_MS: 10000
