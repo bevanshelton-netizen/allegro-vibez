@@ -40,3 +40,5 @@ export async function initSupabase() {
 
   return supabase
 }
+
+void initSupabase()
