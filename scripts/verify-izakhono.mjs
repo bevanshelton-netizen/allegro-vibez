@@ -21,18 +21,10 @@ for (const file of ['schema.sql', 'seed.sql']) {
 
 const exposed = new Set(manifest.exposures.map(item => item.table_name))
 for (const table of [
-  'public_profiles',
-  'profiles',
-  'published_releases',
-  'releases',
-  'release_contributors',
-  'release_events',
-  'royalty_ledger',
-  'creator_royalty_summary',
-  'subscription_plans',
-  'creator_subscriptions',
-  'creator_wallets',
-  'payout_requests',
+  'public_profiles','profiles','published_releases','releases',
+  'release_contributors','release_events','royalty_ledger',
+  'creator_royalty_summary','subscription_plans','creator_subscriptions',
+  'creator_wallets','payout_requests',
 ]) {
   if (!exposed.has(table)) {
     console.error(`IZAKHONO exposure missing: ${table}`)
@@ -70,12 +62,8 @@ if (!schema.includes('create or replace view public_profiles')) {
 }
 
 const publishedViewMatch = schema.match(/create or replace view published_releases as\s+select([\s\S]*?)from releases\s+where status = 'published';/i)
-if (!publishedViewMatch) {
-  console.error('IZAKHONO schema must retain the safe published_releases view.')
-  process.exit(1)
-}
-if (!/\bstatus\b/i.test(publishedViewMatch[1])) {
-  console.error('published_releases must include status for frontend discovery compatibility.')
+if (!publishedViewMatch || !/\bstatus\b/i.test(publishedViewMatch[1])) {
+  console.error('IZAKHONO published_releases view must exist and include status.')
   process.exit(1)
 }
 
@@ -97,33 +85,24 @@ for (const required of ['VITE_IZAKHONO_CORE_URL', 'VITE_IZAKHONO_PROJECT', 'VITE
   }
 }
 
-if (!runtime.includes('createIzakhonoCoreClient')) {
-  console.error('ALLEGRO runtime must initialize IZAKHONO Core.')
+if (!runtime.includes('createIzakhonoCoreClient') || !runtime.includes("selectedProvider = 'izakhono-core'")) {
+  console.error('ALLEGRO runtime must prefer IZAKHONO Core when its public configuration is supplied.')
   process.exit(1)
 }
 
-const forbiddenRuntime = [
-  "from '@supabase/supabase-js'",
-  'FALLBACK_SUPABASE_URL',
-  'FALLBACK_SUPABASE_PUBLISHABLE_KEY',
-  'PUBLIC_CONFIG_URL',
-  'VITE_SUPABASE_URL',
-  'VITE_SUPABASE_ANON_KEY',
-]
-for (const token of forbiddenRuntime) {
-  if (runtime.includes(token) || dockerfile.includes(token) || envExample.includes(token)) {
-    console.error(`Supabase fallback remains in the production runtime contract: ${token}`)
+// Until the first self-hosted Core production host is actually running, the
+// active browser-safe Supabase project is a deliberate zero-cost launch/failover
+// path. Server-only keys remain forbidden by verify-security.mjs.
+for (const required of ['createClient', 'FALLBACK_SUPABASE_URL', 'FALLBACK_SUPABASE_PUBLISHABLE_KEY']) {
+  if (!runtime.includes(required)) {
+    console.error(`Live failover contract missing: ${required}`)
     process.exit(1)
   }
 }
 
-if (nginx.includes('supabase.co')) {
-  console.error('Production CSP must not retain Supabase network origins after the IZAKHONO move.')
-  process.exit(1)
-}
-if (!nginx.includes('*.izakhono.africa')) {
-  console.error('Production CSP must allow the IZAKHONO API origin family.')
+if (!nginx.includes('*.izakhono.africa') || !nginx.includes('*.supabase.co')) {
+  console.error('Container CSP must allow both preferred IZAKHONO Core and temporary Supabase failover origins.')
   process.exit(1)
 }
 
-console.log('ALLEGRO VIBEZ IZAKHONO Core provisioning and runtime migration verified.')
+console.log('ALLEGRO VIBEZ IZAKHONO Core preference and zero-cost production failover verified.')
