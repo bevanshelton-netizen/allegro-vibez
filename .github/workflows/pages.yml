@@ -1,0 +1,69 @@
+name: Deploy ALLEGRO-VIBEZ to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: allegro-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - name: Verify application
+        run: npm run verify:all
+      - name: Build for project-path hosting
+        run: npm run build -- --base=/allegro-vibez/
+      - name: Prepare SPA routes
+        run: |
+          set -euo pipefail
+          routes=(login register reset-password update-password discover artists creator-hub dashboard upload my-music profile prosperity billing wallet admin/review admin/commercial)
+          for route in "${routes[@]}"; do
+            mkdir -p "dist/$route"
+            cp dist/index.html "dist/$route/index.html"
+          done
+          cat > dist/404.html <<'EOF'
+          <!doctype html>
+          <html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex"></head><body>
+          <script>
+          (() => {
+            const base = '/allegro-vibez/'
+            const path = location.pathname.startsWith(base) ? location.pathname.slice(base.length) : ''
+            const restored = '/' + path.replace(/^\/+/, '')
+            const target = base + '?__spa=' + encodeURIComponent(restored) + location.search.replace(/^\?/, '&') + location.hash
+            location.replace(target)
+          })()
+          </script>
+          </body></html>
+          EOF
+          touch dist/.nojekyll
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
