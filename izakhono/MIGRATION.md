@@ -1,10 +1,12 @@
 # ALLEGRO VIBEZ → IZAKHONO Core
 
-ALLEGRO VIBEZ now carries its own IZAKHONO Core provisioning pack and a dual-backend browser adapter.
+ALLEGRO VIBEZ carries its own IZAKHONO Core provisioning pack and a dual-backend browser adapter.
 
 ## Operating rule
 
-The live application remains on the current Supabase backend until the self-hosted IZAKHONO Core server passes production validation. No customer-facing downtime is required for the migration.
+A paid VPS is **not** required to continue this migration. IZAKHONO CLOUD Zero-Cost Host Mode can run Core on an existing computer and use that machine as the first host. A later move to dedicated hardware or paid infrastructure changes the deployment target, not the ALLEGRO application contract.
+
+The live application remains on the current Supabase backend until whichever self-hosted IZAKHONO machine we use passes the launch gates below. No customer-facing downtime is required for the migration.
 
 When these browser-safe variables are present, the app automatically prefers IZAKHONO Core:
 
@@ -14,19 +16,37 @@ When these browser-safe variables are present, the app automatically prefers IZA
 
 If they are absent, the existing Supabase production path remains active.
 
+## Zero-Cost Host path
+
+Start **IZAKHONO CLOUD Zero-Cost Host Mode v1.0** on an existing Docker-capable computer. Its default local Core address is:
+
+```text
+http://127.0.0.1:8787
+```
+
+The Zero Host package includes a fast-path helper that downloads this repository's `manifest.json`, `schema.sql` and `seed.sql` and provisions ALLEGRO on Core:
+
+```powershell
+.\scripts\provision-allegro.ps1
+```
+
+The resulting `allegro-vibez-keys.json` contains the one-time project keys. The browser receives only the `ik_pub_*` value. The `ik_sec_*` value remains private/server-side.
+
 ## Minimum Core release
 
 Use **IZAKHONO Core v0.3.1 or newer**. v0.3.1 hardens private storage so browser/public project keys may read or overwrite only objects owned by the authenticated user; server-side `ik_sec_*` credentials retain trusted protected-operation access.
 
-## One-command project provisioning
+## Generic project provisioning
 
-From an IZAKHONO Core v0.3.1+ release on the server:
+From an IZAKHONO Core v0.3.1+ release:
 
 ```bash
 python3 scripts/provision-project.py /path/to/allegro-vibez/izakhono/manifest.json \
-  --base-url https://YOUR_CORE_API \
+  --base-url http://127.0.0.1:8787 \
   --out /secure/allegro-vibez-keys.json
 ```
+
+For a later public host, replace the base URL with that host's HTTPS Core address.
 
 The manifest applies `schema.sql`, `seed.sql`, table policies and the private `release_assets` bucket.
 
@@ -43,7 +63,7 @@ The manifest applies `schema.sql`, `seed.sql`, table policies and the private `r
 
 ## Cutover gate
 
-Do not switch production variables until all of these pass on the real server:
+Do not switch the public production frontend to IZAKHONO Core until all of these pass on the actual machine that will serve users:
 
 1. Core `/healthz` and `/readyz`.
 2. Project provisioning and one-time key capture.
@@ -54,8 +74,12 @@ Do not switch production variables until all of these pass on the real server:
 7. Payout validation.
 8. Backup and isolated restore drill.
 9. Protected ALLEGRO admin operations and PayFast server functions.
-10. Production smoke test after DNS/environment cutover.
+10. Production smoke test after the public routing/environment cutover.
 
 ## Protected operations
 
 The browser adapter deliberately does not expose administrative credentials. Release moderation, payout administration and PayFast checkout remain protected server operations. Until the IZAKHONO server-operations layer is activated, the current Supabase server functions remain the production implementation for those flows.
+
+## Cost rule
+
+Keep the working production fallback while we prove our own host. Do not buy infrastructure simply because it is the conventional next step. Introduce paid compute only when uptime, traffic, storage, redundancy or revenue gives us a measured reason to do so.
