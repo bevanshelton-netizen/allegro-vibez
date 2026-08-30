@@ -25,7 +25,11 @@ function jsReferences(text,base){
   for(const match of text.matchAll(/["']([^"']+\.js(?:\?[^"']*)?)["']/g)){
     const value=match[1]
     if(value.startsWith('http://')||value.startsWith('https://')) continue
-    try{refs.add(new URL(value,base).href)}catch{}
+    try{
+      refs.add(new URL(value,base).href)
+    }catch{
+      continue
+    }
   }
   return [...refs]
 }
