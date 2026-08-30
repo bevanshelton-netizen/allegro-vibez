@@ -65,8 +65,13 @@ if (!schema.includes('create or replace view public_profiles')) {
   process.exit(1)
 }
 
-if (!schema.includes('create or replace view published_releases')) {
+const publishedViewMatch = schema.match(/create or replace view published_releases as\s+select([\s\S]*?)from releases\s+where status = 'published';/i)
+if (!publishedViewMatch) {
   console.error('IZAKHONO schema must retain the safe published_releases view.')
+  process.exit(1)
+}
+if (!/\bstatus\b/i.test(publishedViewMatch[1])) {
+  console.error('published_releases must include status for frontend discovery compatibility.')
   process.exit(1)
 }
 
