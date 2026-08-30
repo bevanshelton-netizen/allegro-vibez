@@ -1,6 +1,6 @@
 # ALLEGRO-VIBEZ on IZAKHONO CLOUD Fast Build
 
-This repository is prepared for IZAKHONO CLOUD v1.2 Fast Build Mode.
+ALLEGRO-VIBEZ is now prepared to run on the first-party IZAKHONO stack rather than depending on Netlify/Supabase as its production architecture.
 
 ## Fast path
 
@@ -8,7 +8,7 @@ Paste this repository URL into Owner Fast Build:
 
 `https://github.com/bevanshelton-netizen/allegro-vibez`
 
-The build can derive the app name and slug automatically, build the repository with Docker, attach secrets, run the container health gate, and promote only a healthy version.
+IZAKHONO CLOUD derives the app name and slug, builds the Docker image, injects the browser-safe IZAKHONO Core connection values, runs the container health gate, and promotes only a healthy version.
 
 ## Runtime
 
@@ -16,15 +16,19 @@ The build can derive the app name and slug automatically, build the repository w
 - Health endpoint: `/healthz`
 - SPA fallback: enabled through nginx
 - Static assets: immutable long-cache headers
-- Security headers: aligned with the current Netlify production policy
+- Backend: IZAKHONO Core
+- Project slug: `allegro_vibez`
 
-## Browser-safe build variables
+## Required browser-safe build variables
 
-The current frontend can use:
+- `VITE_IZAKHONO_CORE_URL`
+- `VITE_IZAKHONO_PROJECT=allegro_vibez`
+- `VITE_IZAKHONO_PUBLIC_KEY`
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
+Only an `ik_pub_*` project key belongs in the frontend build. Never put an `ik_sec_*` project key, root-admin key, PayFast secret, database password or other server credential in a Vite variable.
 
-Only the public/publishable Supabase browser key belongs in `VITE_SUPABASE_ANON_KEY`. Never place a Supabase service-role/secret key in the frontend build.
+The repository contains `izakhono/manifest.json`, `izakhono/schema.sql`, and `izakhono/seed.sql` so IZAKHONO Core can provision the ALLEGRO project before the application container is promoted.
 
-The repository also contains `izakhono/manifest.json`, `izakhono/schema.sql`, and `izakhono/seed.sql` for the IZAKHONO Core backend transition.
+## Cutover rule
+
+Keep the existing public deployment online until the IZAKHONO server passes project provisioning, creator sign-up/sign-in, owner-data isolation, private upload, release submission and rollback checks. DNS/production promotion happens only after those gates pass.
