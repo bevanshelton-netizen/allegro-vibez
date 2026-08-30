@@ -1,0 +1,105 @@
+{
+  "name": "ALLEGRO VIBEZ",
+  "slug": "allegro_vibez",
+  "schema_files": [
+    "schema.sql",
+    "seed.sql"
+  ],
+  "exposures": [
+    {
+      "table_name": "profiles",
+      "select_policy": "public",
+      "insert_policy": "owner",
+      "update_policy": "owner",
+      "delete_policy": "none",
+      "owner_column": "id"
+    },
+    {
+      "table_name": "published_releases",
+      "select_policy": "public",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "releases",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "owner",
+      "delete_policy": "owner",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "release_contributors",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "owner",
+      "delete_policy": "owner",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "release_events",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "royalty_ledger",
+      "select_policy": "owner",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "creator_royalty_summary",
+      "select_policy": "owner",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "subscription_plans",
+      "select_policy": "public",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "code"
+    },
+    {
+      "table_name": "creator_subscriptions",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "creator_wallets",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    },
+    {
+      "table_name": "payout_requests",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "owner_id"
+    }
+  ],
+  "buckets": [
+    {
+      "name": "release_assets",
+      "public": false,
+      "max_file_bytes": 314572800
+    }
+  ]
+}
