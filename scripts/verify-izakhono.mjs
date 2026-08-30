@@ -17,6 +17,7 @@ for (const file of ['schema.sql', 'seed.sql']) {
 
 const exposed = new Set(manifest.exposures.map(item => item.table_name))
 for (const table of [
+  'public_profiles',
   'profiles',
   'published_releases',
   'releases',
@@ -35,6 +36,18 @@ for (const table of [
   }
 }
 
+const profileExposure = manifest.exposures.find(item => item.table_name === 'profiles')
+if (profileExposure?.select_policy === 'public') {
+  console.error('Internal creator profiles must not expose role/admin fields publicly.')
+  process.exit(1)
+}
+
+const publicProfileExposure = manifest.exposures.find(item => item.table_name === 'public_profiles')
+if (publicProfileExposure?.select_policy !== 'public') {
+  console.error('public_profiles must remain the safe public artist directory surface.')
+  process.exit(1)
+}
+
 const releaseExposure = manifest.exposures.find(item => item.table_name === 'releases')
 if (releaseExposure?.select_policy === 'public') {
   console.error('Private/draft releases must never be publicly exposed through IZAKHONO Core.')
@@ -44,6 +57,11 @@ if (releaseExposure?.select_policy === 'public') {
 const publicReleaseExposure = manifest.exposures.find(item => item.table_name === 'published_releases')
 if (publicReleaseExposure?.select_policy !== 'public') {
   console.error('published_releases must remain the public discovery surface.')
+  process.exit(1)
+}
+
+if (!schema.includes('create or replace view public_profiles')) {
+  console.error('IZAKHONO schema must retain the safe public_profiles view.')
   process.exit(1)
 }
 
