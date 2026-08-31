@@ -1,6 +1,15 @@
 {
+  "version": 2,
+  "name": "ALLEGRO VIBEZ",
+  "slug": "allegro-vibez",
   "build_context": ".",
   "dockerfile_path": "Dockerfile",
   "container_port": 8080,
-  "health_path": "/healthz"
+  "health_path": "/healthz",
+  "branch": "main",
+  "alpha": {
+    "preflight": true,
+    "rehearsal": false,
+    "windows_package": false
+  }
 }
