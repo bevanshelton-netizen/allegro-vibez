@@ -9,7 +9,6 @@ on:
       - 'Dockerfile'
       - 'package.json'
       - 'src/**'
-      - 'scripts/izakhono/**'
       - '.github/workflows/izakhono-central-core.yml'
   push:
     branches: [main]
@@ -18,7 +17,6 @@ on:
       - 'Dockerfile'
       - 'package.json'
       - 'src/**'
-      - 'scripts/izakhono/**'
       - '.github/workflows/izakhono-central-core.yml'
 
 permissions:
@@ -26,6 +24,8 @@ permissions:
 
 jobs:
   alpha-core:
-    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@main
+    # Pin the reviewed Builder policy so ALLEGRO cannot change gates merely because
+    # the central repository moves. Upgrade this SHA only after Builder canaries pass.
+    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@efbb9fc15f95d9123a12079bf11f9d8a22769edc
     with:
       manifest_path: .izakhono.json
