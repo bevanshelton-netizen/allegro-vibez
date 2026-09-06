@@ -10,6 +10,12 @@ export default function RadioAcademyLearner({session}){
   const[completed,setCompleted]=useState(new Set())
   const[practicals,setPracticals]=useState([])
   const[certificate,setCertificate]=useState(null)
+  const[theoryHistory,setTheoryHistory]=useState([])
+  const[theoryAttempt,setTheoryAttempt]=useState(null)
+  const[theoryAnswers,setTheoryAnswers]=useState({})
+  const[theoryResult,setTheoryResult]=useState(null)
+  const[requirements,setRequirements]=useState([])
+  const[completion,setCompletion]=useState(null)
   const[message,setMessage]=useState('')
   const[loading,setLoading]=useState(true)
   const[busy,setBusy]=useState('')
@@ -34,12 +40,15 @@ export default function RadioAcademyLearner({session}){
   useEffect(()=>{loadEnrollments()},[loadEnrollments])
 
   useEffect(()=>{let active=true;(async()=>{
-    if(!supabase||!session||!selected){setModules([]);setPracticals([]);setCertificate(null);return}
-    const[{data:mods,error:modError},{data:prog},{data:prac},{data:cert}]=await Promise.all([
+    if(!supabase||!session||!selected){setModules([]);setPracticals([]);setCertificate(null);setTheoryHistory([]);setRequirements([]);setCompletion(null);return}
+    const[{data:mods,error:modError},{data:prog},{data:prac},{data:cert},{data:attempts},{data:reqs},{data:statusData}]=await Promise.all([
       supabase.from('radio_academy_modules').select('id,module_no,title,learning_outcomes,practical_required,assessment_required').eq('program_id',selected.program_id).order('module_no'),
       supabase.from('radio_academy_module_progress').select('module_id,status').eq('enrollment_id',selected.id).eq('user_id',session.user.id),
-      supabase.from('radio_academy_practicals').select('id,practical_type,scheduled_at,completed_at,result,feedback').eq('enrollment_id',selected.id).order('created_at'),
-      supabase.from('radio_academy_certificates').select('certificate_no,certificate_type,issued_at,revoked_at').eq('enrollment_id',selected.id).maybeSingle()
+      supabase.from('radio_academy_practicals').select('id,requirement_id,practical_type,scheduled_at,completed_at,result,feedback').eq('enrollment_id',selected.id).order('created_at'),
+      supabase.from('radio_academy_certificates').select('certificate_no,certificate_type,issued_at,revoked_at').eq('enrollment_id',selected.id).maybeSingle(),
+      supabase.from('radio_academy_theory_attempts').select('id,score_percent,pass_mark,passed,started_at,submitted_at').eq('enrollment_id',selected.id).order('started_at',{ascending:false}).limit(10),
+      supabase.from('radio_academy_practical_requirements').select('id,practical_type,title,description,rubric,required').eq('program_id',selected.program_id).eq('active',true).order('sort_order'),
+      supabase.rpc('academy_completion_status',{p_enrollment_id:selected.id})
     ])
     if(!active)return
     if(modError)setMessage(modError.message)
@@ -47,7 +56,42 @@ export default function RadioAcademyLearner({session}){
     setCompleted(new Set((prog||[]).filter(x=>x.status==='completed').map(x=>x.module_id)))
     setPracticals(prac||[])
     setCertificate(cert||null)
+    setTheoryHistory(attempts||[])
+    setRequirements(reqs||[])
+    setCompletion(statusData||null)
+    setTheoryAttempt(null)
+    setTheoryAnswers({})
+    setTheoryResult(null)
   })();return()=>{active=false}},[selected,session])
+
+  async function startTheory(){
+    if(!supabase||!selected)return
+    setBusy('theory-start');setMessage('');setTheoryResult(null)
+    const{data,error}=await supabase.rpc('academy_start_theory_test',{p_enrollment_id:selected.id})
+    setBusy('')
+    if(error){setMessage(error.message||'Could not start the theory test.');return}
+    setTheoryAttempt(data);setTheoryAnswers({})
+  }
+
+  async function submitTheory(){
+    if(!supabase||!theoryAttempt)return
+    const questions=theoryAttempt.questions||[]
+    if(questions.some(q=>theoryAnswers[q.id]===undefined)){
+      setMessage('Answer every theory question before submitting.')
+      return
+    }
+    setBusy('theory-submit');setMessage('')
+    const{data,error}=await supabase.rpc('academy_submit_theory_test',{p_attempt_id:theoryAttempt.attempt_id,p_answers:theoryAnswers})
+    setBusy('')
+    if(error){setMessage(error.message||'Could not submit the theory test.');return}
+    setTheoryResult(data);setTheoryAttempt(null)
+    setMessage(data?.passed?'Theory test passed. Your practical competence still needs to be completed.':'Theory test not yet passed. Review the learning material and retake it when ready.')
+    const[{data:attempts},{data:statusData}]=await Promise.all([
+      supabase.from('radio_academy_theory_attempts').select('id,score_percent,pass_mark,passed,started_at,submitted_at').eq('enrollment_id',selected.id).order('started_at',{ascending:false}).limit(10),
+      supabase.rpc('academy_completion_status',{p_enrollment_id:selected.id})
+    ])
+    setTheoryHistory(attempts||[]);setCompletion(statusData||null)
+  }
 
   async function complete(module){
     if(!supabase)return
@@ -101,6 +145,50 @@ export default function RadioAcademyLearner({session}){
                 <button disabled={done||busy===m.id} onClick={()=>complete(m)}>{done?'Completed ✓':busy===m.id?'Saving…':'Mark learning complete'}</button>
               </article>
             })}
+          </div>
+
+          <div className="learner-assessment">
+            <div className="assessment-head">
+              <div><span>THEORY TEST</span><h3>Knowledge assessment</h3><p>Pass mark: {theoryAttempt?.pass_mark||theoryHistory[0]?.pass_mark||70}%.</p></div>
+              {!theoryAttempt&&<button disabled={busy==='theory-start'} onClick={startTheory}>{busy==='theory-start'?'Preparing…':theoryHistory.length?'Retake theory test':'Start theory test'}</button>}
+            </div>
+
+            {theoryAttempt&&<div className="theory-paper">
+              {(theoryAttempt.questions||[]).map((q,index)=><fieldset key={q.id}>
+                <legend>{index+1}. {q.prompt}</legend>
+                {(q.options||[]).map((option,choice)=><label key={choice}>
+                  <input type="radio" name={q.id} checked={theoryAnswers[q.id]===choice} onChange={()=>setTheoryAnswers(prev=>({...prev,[q.id]:choice}))}/>
+                  <span>{option}</span>
+                </label>)}
+              </fieldset>)}
+              <button className="submit-theory" disabled={busy==='theory-submit'} onClick={submitTheory}>{busy==='theory-submit'?'Marking…':'Submit theory test'}</button>
+            </div>}
+
+            {theoryResult&&<div className={theoryResult.passed?'theory-result pass':'theory-result retry'}>
+              <strong>{theoryResult.score_percent}%</strong>
+              <span>{theoryResult.passed?'PASS':'NOT YET COMPETENT'} • {theoryResult.correct_count}/{theoryResult.question_count} correct</span>
+            </div>}
+
+            {!!theoryHistory.length&&<div className="attempt-history">
+              <strong>Previous attempts</strong>
+              {theoryHistory.map(a=><span key={a.id}>{a.submitted_at?new Date(a.submitted_at).toLocaleDateString():'In progress'} — {a.score_percent??'—'}% {a.passed===true?'✓ PASS':a.passed===false?'• RETAKE':''}</span>)}
+            </div>}
+          </div>
+
+          <div className="learner-practical-requirements">
+            <div><span>PRACTICAL ASSESSMENT</span><h3>Demonstrate competence on the station</h3><p>Theory alone cannot complete the programme. Required practicals are assessed by an authorised ALLEGRO supervisor against a defined rubric.</p></div>
+            {requirements.map(req=>{
+              const evidence=practicals.find(p=>p.requirement_id===req.id)
+              return <article key={req.id}>
+                <div><strong>{req.title}</strong><p>{req.description}</p><ul>{(req.rubric||[]).map(item=><li key={item.key}>{item.label}</li>)}</ul></div>
+                <span className={evidence?.result==='competent'?'competent':evidence?.result==='retry'?'retry':''}>{evidence?.result==='competent'?'COMPETENT ✓':evidence?.result==='retry'?'RETRY REQUIRED':'PENDING SUPERVISED PRACTICAL'}</span>
+              </article>
+            })}
+          </div>
+
+          <div className="learner-gates">
+            <h3>Programme completion gates</h3>
+            <div><span className={completion?.learning_percent===100?'ok':''}>Learning {completion?.learning_percent??selected.progress_percent}%</span><span className={completion?.theory_passed?'ok':''}>Theory {completion?.theory_passed?'Passed':'Pending'}</span><span className={completion?.required_practicals>0&&completion?.competent_practicals>=completion?.required_practicals?'ok':''}>Practical {completion?.competent_practicals??0}/{completion?.required_practicals??requirements.length}</span></div>
           </div>
 
           <div className="learner-practicals">
