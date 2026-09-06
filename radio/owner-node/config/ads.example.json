@@ -1,0 +1,15 @@
+[
+  {
+    "id": "ad-001",
+    "advertiser_name": "Example Advertiser",
+    "campaign_name": "Example Campaign",
+    "path": "/media/ads/example-ad.mp3",
+    "duration_seconds": 30,
+    "starts_at": "2026-09-01T00:00:00Z",
+    "ends_at": "2026-09-30T23:59:59Z",
+    "approved": true,
+    "status": "active",
+    "priority": 5,
+    "approval_reference": "ALLEGRO-AD-APPROVAL-001"
+  }
+]
