@@ -6,9 +6,12 @@ export function minutesOfDay(value){
   return h*60+m
 }
 
-export function programForNow(programs,now=new Date()){
-  const day=DAY_NAMES[now.getDay()]
-  const minute=now.getHours()*60+now.getMinutes()
+export function programForNow(programs,now=new Date(),timeZone='Africa/Johannesburg'){
+  const parts=new Intl.DateTimeFormat('en-US',{timeZone,weekday:'short',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).formatToParts(now)
+  const part=type=>parts.find(p=>p.type===type)?.value
+  const day=String(part('weekday')||'').slice(0,3).toLowerCase()
+  const hour=Number(part('hour'))
+  const minute=hour*60+Number(part('minute'))
   const active=(programs||[]).filter(p=>p.active!==false&&(p.day===day||p.day==='daily'))
   const matches=active.filter(p=>{
     const start=minutesOfDay(p.start)
