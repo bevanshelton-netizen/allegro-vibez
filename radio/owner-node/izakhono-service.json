@@ -1,0 +1,9 @@
+{
+  "app": "allegro-radio",
+  "repo": "https://github.com/bevanshelton-netizen/allegro-vibez.git",
+  "ref": "main",
+  "mode": "compose",
+  "compose_file": "radio/owner-node/docker-compose.izakhono.yml",
+  "health_url": "http://127.0.0.1:8000/status-json.xsl",
+  "env_file": "/etc/izakhono/apps/allegro-radio.env"
+}

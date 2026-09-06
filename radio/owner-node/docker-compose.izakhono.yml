@@ -1,0 +1,41 @@
+services:
+  autopilot:
+    image: python:3.13-slim
+    restart: unless-stopped
+    working_dir: /app
+    command: ["python","/app/autopilot.py"]
+    env_file: ${ALLEGRO_RADIO_ENV_FILE:-/etc/izakhono/apps/allegro-radio.env}
+    volumes:
+      - ./radio/owner-node/autopilot.py:/app/autopilot.py:ro
+      - ${ALLEGRO_RADIO_CONFIG_ROOT:-/var/lib/izakhono-radio/config}:/config:ro
+      - ${ALLEGRO_RADIO_STATE_ROOT:-/var/lib/izakhono-radio/state}:/state
+      - ${ALLEGRO_RADIO_MEDIA_ROOT:-/var/lib/izakhono-radio/media}:/media:ro
+    environment:
+      ALLEGRO_RADIO_CONFIG: /config
+      ALLEGRO_RADIO_STATE: /state
+
+  icecast:
+    build:
+      context: ./radio/owner-node
+      dockerfile: Dockerfile.icecast
+    restart: unless-stopped
+    env_file: ${ALLEGRO_RADIO_ENV_FILE:-/etc/izakhono/apps/allegro-radio.env}
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - ${ALLEGRO_RADIO_LOG_ROOT:-/var/lib/izakhono-radio/logs}/icecast:/var/log/icecast2
+
+  playout:
+    image: savonet/liquidsoap:latest
+    restart: unless-stopped
+    depends_on:
+      - autopilot
+      - icecast
+    env_file: ${ALLEGRO_RADIO_ENV_FILE:-/etc/izakhono/apps/allegro-radio.env}
+    command: ["liquidsoap","/config/liquidsoap.liq"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - ./radio/owner-node/liquidsoap.liq:/config/liquidsoap.liq:ro
+      - ${ALLEGRO_RADIO_STATE_ROOT:-/var/lib/izakhono-radio/state}:/state:ro
+      - ${ALLEGRO_RADIO_MEDIA_ROOT:-/var/lib/izakhono-radio/media}:/media:ro
