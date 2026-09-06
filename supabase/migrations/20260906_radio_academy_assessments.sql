@@ -87,6 +87,50 @@ create policy "academy supervisors read own supervisor row"
 on public.radio_academy_supervisors for select
 using (auth.uid() = user_id);
 
+
+create or replace function public.academy_recompute_enrollment(p_enrollment_id uuid)
+returns boolean
+language plpgsql
+security definer
+set search_path=public
+as $
+declare
+  v_learning integer;
+  v_theory boolean;
+  v_program uuid;
+  v_required integer;
+  v_practical integer;
+  v_complete boolean;
+begin
+  select progress_percent,program_id into v_learning,v_program
+  from radio_academy_enrollments where id=p_enrollment_id for update;
+  if v_program is null then return false; end if;
+
+  select coalesce(bool_or(passed),false) into v_theory
+  from radio_academy_theory_attempts
+  where enrollment_id=p_enrollment_id and submitted_at is not null;
+
+  select count(*) into v_required
+  from radio_academy_practical_requirements
+  where program_id=v_program and required=true and active=true;
+
+  select count(distinct requirement_id) into v_practical
+  from radio_academy_practicals
+  where enrollment_id=p_enrollment_id and result='competent' and requirement_id is not null;
+
+  v_complete := v_learning=100 and v_theory and v_required>0 and v_practical>=v_required;
+
+  update radio_academy_enrollments
+  set status=case when v_complete then 'completed' when v_learning>0 then 'in_progress' else 'enrolled' end,
+      completed_at=case when v_complete then coalesce(completed_at,now()) else null end
+  where id=p_enrollment_id;
+
+  return v_complete;
+end;
+$;
+
+revoke all on function public.academy_recompute_enrollment(uuid) from public;
+
 create or replace function public.academy_start_theory_test(p_enrollment_id uuid)
 returns jsonb
 language plpgsql
@@ -207,6 +251,8 @@ begin
       submitted_at=now()
   where id=p_attempt_id;
 
+  perform public.academy_recompute_enrollment(v_attempt.enrollment_id);
+
   return jsonb_build_object(
     'ok',true,
     'score_percent',v_score,
@@ -319,6 +365,10 @@ begin
       feedback=left(coalesce(p_feedback,''),4000),
       assessor_notes=p_scores
   where id=p_practical_id;
+
+  perform public.academy_recompute_enrollment(
+    (select enrollment_id from radio_academy_practicals where id=p_practical_id)
+  );
 
   return jsonb_build_object('ok',true,'result',v_result);
 end;
@@ -454,3 +504,114 @@ select p.id,v.prompt,v.options::jsonb,v.correct,v.explain from p cross join (val
 ('A programme format should be designed around…','["A defined audience and proposition","Random scheduling only","One advertiser","The server password"]',0,'A clear audience proposition guides programming.'),
 ('Healthy station revenue management should…','["Balance advertiser delivery with audience trust","Play adverts continuously","Hide proof-of-play","Ignore campaign obligations"]',0,'Long-term value requires both audience and advertiser outcomes.')
 ) v(prompt,options,correct,explain);
+
+
+-- Learning completion alone must never mark a programme complete.
+create or replace function public.academy_mark_module_complete(p_module_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_program uuid;
+  v_enrollment uuid;
+  v_total integer;
+  v_done integer;
+  v_progress integer;
+  v_complete boolean;
+begin
+  if v_user is null then raise exception 'authentication_required'; end if;
+
+  select program_id into v_program from radio_academy_modules where id=p_module_id;
+  if v_program is null then raise exception 'module_not_found'; end if;
+
+  select id into v_enrollment
+  from radio_academy_enrollments
+  where user_id=v_user and program_id=v_program
+    and status in ('enrolled','in_progress','completed');
+  if v_enrollment is null then raise exception 'enrollment_required'; end if;
+
+  insert into radio_academy_module_progress(
+    user_id,enrollment_id,module_id,status,started_at,completed_at,updated_at
+  )
+  values(v_user,v_enrollment,p_module_id,'completed',now(),now(),now())
+  on conflict (user_id,module_id) do update
+    set status='completed',
+        started_at=coalesce(radio_academy_module_progress.started_at,now()),
+        completed_at=now(),
+        updated_at=now();
+
+  select count(*) into v_total from radio_academy_modules where program_id=v_program;
+  select count(*) into v_done
+  from radio_academy_module_progress mp
+  join radio_academy_modules m on m.id=mp.module_id
+  where mp.user_id=v_user and m.program_id=v_program and mp.status='completed';
+
+  v_progress := case when v_total=0 then 0 else floor((v_done::numeric/v_total::numeric)*100)::integer end;
+
+  update radio_academy_enrollments
+  set progress_percent=v_progress
+  where id=v_enrollment;
+
+  v_complete := public.academy_recompute_enrollment(v_enrollment);
+
+  return jsonb_build_object(
+    'ok',true,
+    'enrollment_id',v_enrollment,
+    'completed_modules',v_done,
+    'total_modules',v_total,
+    'progress_percent',v_progress,
+    'learning_complete',v_progress=100,
+    'programme_complete',v_complete,
+    'theory_and_practical_still_required',not v_complete
+  );
+end;
+$$;
+
+revoke all on function public.academy_mark_module_complete(uuid) from public;
+grant execute on function public.academy_mark_module_complete(uuid) to authenticated;
+
+create or replace function public.academy_schedule_practical(
+  p_enrollment_id uuid,
+  p_requirement_id uuid,
+  p_scheduled_at timestamptz
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path=public
+as $$
+declare
+  v_user uuid := auth.uid();
+  v_program uuid;
+  v_req_program uuid;
+  v_type text;
+  v_id uuid;
+begin
+  if v_user is null then raise exception 'authentication_required'; end if;
+  if not exists(select 1 from radio_academy_supervisors where user_id=v_user and active=true) then
+    raise exception 'supervisor_required';
+  end if;
+
+  select program_id into v_program from radio_academy_enrollments where id=p_enrollment_id;
+  select program_id,practical_type into v_req_program,v_type
+  from radio_academy_practical_requirements where id=p_requirement_id and active=true;
+
+  if v_program is null or v_req_program is null or v_program<>v_req_program then
+    raise exception 'invalid_practical_requirement';
+  end if;
+
+  insert into radio_academy_practicals(
+    enrollment_id,requirement_id,practical_type,supervisor_user_id,scheduled_at,result
+  )
+  values(p_enrollment_id,p_requirement_id,v_type,v_user,p_scheduled_at,'not_yet_assessed')
+  returning id into v_id;
+
+  return jsonb_build_object('ok',true,'practical_id',v_id);
+end;
+$$;
+
+revoke all on function public.academy_schedule_practical(uuid,uuid,timestamptz) from public;
+grant execute on function public.academy_schedule_practical(uuid,uuid,timestamptz) to authenticated;
