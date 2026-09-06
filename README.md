@@ -18,6 +18,7 @@ The current release candidate includes:
 - Rights and contributor records attached to releases
 - Administrator moderation, approval and publishing workflow
 - Published-release discovery and public artist directory
+- ALLEGRO Radio 24/7 online station shell with rights-aware autopilot scheduling, programme clocks, advertising inventory and live presenter takeover model
 - Royalty ledger, creator prosperity dashboard and wallet visibility
 - Payout requests and administrator payout operations
 - Creator subscription plans and PayFast hosted checkout
