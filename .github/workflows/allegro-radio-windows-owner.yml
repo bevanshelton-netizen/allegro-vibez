@@ -1,0 +1,46 @@
+name: ALLEGRO Radio Windows Owner EXE
+
+on:
+  pull_request:
+    paths:
+      - 'radio/windows_owner.py'
+      - 'radio/owner-node/docker-compose.windows.yml'
+      - 'radio/owner-node/liquidsoap.windows.liq'
+      - '.github/workflows/allegro-radio-windows-owner.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'radio/windows_owner.py'
+      - 'radio/owner-node/docker-compose.windows.yml'
+      - 'radio/owner-node/liquidsoap.windows.liq'
+      - '.github/workflows/allegro-radio-windows-owner.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Self-test
+        run: python radio/windows_owner.py --self-test
+      - name: Build standalone EXE
+        run: |
+          python -m pip install --disable-pip-version-check pyinstaller
+          pyinstaller --onefile --name IZAKHONO-ALLEGRO-RADIO radio/windows_owner.py
+      - name: Verify EXE self-test
+        run: .\dist\IZAKHONO-ALLEGRO-RADIO.exe --self-test
+      - name: SHA256
+        shell: powershell
+        run: |
+          Get-FileHash .\dist\IZAKHONO-ALLEGRO-RADIO.exe -Algorithm SHA256 | Format-List
+      - uses: actions/upload-artifact@v4
+        with:
+          name: IZAKHONO-ALLEGRO-RADIO-WINDOWS-OWNER
+          path: dist/IZAKHONO-ALLEGRO-RADIO.exe
+          if-no-files-found: error

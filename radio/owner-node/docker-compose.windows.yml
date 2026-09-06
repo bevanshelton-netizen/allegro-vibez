@@ -1,0 +1,66 @@
+services:
+  autopilot:
+    image: python:3.13-slim
+    restart: unless-stopped
+    working_dir: /app
+    command: ["python","/app/autopilot.py"]
+    env_file:
+      - "${ALLEGRO_RADIO_WINDOWS_DATA}/allegro-radio.env"
+    volumes:
+      - type: bind
+        source: "./autopilot.py"
+        target: /app/autopilot.py
+        read_only: true
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/config"
+        target: /config
+        read_only: true
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/state"
+        target: /state
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/media"
+        target: /media
+        read_only: true
+    environment:
+      ALLEGRO_RADIO_CONFIG: /config
+      ALLEGRO_RADIO_STATE: /state
+
+  icecast:
+    build:
+      context: .
+      dockerfile: Dockerfile.icecast
+    restart: unless-stopped
+    env_file:
+      - "${ALLEGRO_RADIO_WINDOWS_DATA}/allegro-radio.env"
+    ports:
+      - "127.0.0.1:8000:8000"
+    volumes:
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/logs/icecast"
+        target: /var/log/icecast2
+
+  playout:
+    image: savonet/liquidsoap:latest
+    restart: unless-stopped
+    depends_on:
+      - autopilot
+      - icecast
+    env_file:
+      - "${ALLEGRO_RADIO_WINDOWS_DATA}/allegro-radio.env"
+    command: ["liquidsoap","/config/liquidsoap.windows.liq"]
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - type: bind
+        source: "./liquidsoap.windows.liq"
+        target: /config/liquidsoap.windows.liq
+        read_only: true
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/state"
+        target: /state
+        read_only: true
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/media"
+        target: /media
+        read_only: true
