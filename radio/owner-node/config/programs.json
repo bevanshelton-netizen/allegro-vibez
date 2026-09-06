@@ -1,0 +1,52 @@
+[
+  {
+    "id": "sunrise",
+    "name": "Sunrise Africa",
+    "day": "daily",
+    "start": "05:00",
+    "end": "09:00",
+    "genre": "afropop",
+    "priority": 10,
+    "explicit_allowed": false
+  },
+  {
+    "id": "daylight",
+    "name": "Vibez All Day",
+    "day": "daily",
+    "start": "09:00",
+    "end": "15:00",
+    "genre": "afropop",
+    "priority": 10,
+    "explicit_allowed": true
+  },
+  {
+    "id": "drive",
+    "name": "Africa Drive",
+    "day": "daily",
+    "start": "15:00",
+    "end": "19:00",
+    "genre": "amapiano",
+    "priority": 20,
+    "explicit_allowed": true
+  },
+  {
+    "id": "night",
+    "name": "Night Pulse",
+    "day": "daily",
+    "start": "19:00",
+    "end": "00:00",
+    "genre": "rnb",
+    "priority": 10,
+    "explicit_allowed": true
+  },
+  {
+    "id": "overnight",
+    "name": "After Dark",
+    "day": "daily",
+    "start": "00:00",
+    "end": "05:00",
+    "genre": "mixed",
+    "priority": 5,
+    "explicit_allowed": true
+  }
+]
