@@ -1,0 +1,41 @@
+services:
+  autopilot:
+    image: python:3.13-slim
+    restart: unless-stopped
+    working_dir: /app
+    command: ["python","/app/autopilot.py"]
+    env_file: .env
+    volumes:
+      - ./autopilot.py:/app/autopilot.py:ro
+      - ./config:/config:ro
+      - ./state:/state
+      - ./media:/media:ro
+    environment:
+      ALLEGRO_RADIO_CONFIG: /config
+      ALLEGRO_RADIO_STATE: /state
+
+  icecast:
+    build:
+      context: .
+      dockerfile: Dockerfile.icecast
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./logs/icecast:/var/log/icecast2
+
+  playout:
+    image: savonet/liquidsoap:latest
+    restart: unless-stopped
+    depends_on:
+      - autopilot
+      - icecast
+    env_file: .env
+    command: ["liquidsoap","/config/liquidsoap.liq"]
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./liquidsoap.liq:/config/liquidsoap.liq:ro
+      - ./state:/state:ro
+      - ./media:/media:ro
