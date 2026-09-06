@@ -43,7 +43,7 @@ export default function RadioAcademy({session}){
       <div className="academy-kicker">ALLEGRO RADIO ACADEMY • LEARN • PRACTISE • GO LIVE</div>
       <h1>Don’t just listen to radio.<br/><em>Learn to run it.</em></h1>
       <p>Training built inside a real digital station: presenting, production, engineering, advertising, rights, interviewing, DJ performance and station management.</p>
-      <div className="academy-actions"><a href="#programmes" className="primary">Explore training</a><Link to="/radio" className="secondary">Listen to ALLEGRO Radio</Link></div>
+      <div className="academy-actions"><a href="#programmes" className="primary">Explore training</a>{session&&<Link to="/radio-academy/my-learning" className="secondary">My Learning</Link>}<Link to="/radio" className="secondary">Listen to ALLEGRO Radio</Link></div>
     </section>
 
     <section className="academy-pipeline">
