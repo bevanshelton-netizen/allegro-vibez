@@ -1,0 +1,22 @@
+[
+  {
+    "id": "track-001",
+    "artist_id": "artist-001",
+    "artist_name": "Example Cleared Artist",
+    "title": "Example Track",
+    "path": "/media/music/example-track.mp3",
+    "duration_seconds": 210,
+    "genres": [
+      "afropop"
+    ],
+    "territories": [
+      "ZA"
+    ],
+    "explicit": false,
+    "rights_status": "verified",
+    "radio_clearance": "cleared",
+    "clearance_reference": "ALLEGRO-RADIO-CLEARANCE-001",
+    "rotation_weight": 8,
+    "active": true
+  }
+]
