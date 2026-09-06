@@ -1,5 +1,3 @@
-const DAY_NAMES=['sun','mon','tue','wed','thu','fri','sat']
-
 export function minutesOfDay(value){
   const [h,m]=String(value||'').split(':').map(Number)
   if(!Number.isInteger(h)||!Number.isInteger(m)||h<0||h>23||m<0||m>59)throw new Error('invalid_time')
