@@ -17,11 +17,6 @@ Deno.serve(async(req)=>{
     const contentType=String(body?.content_type||'').trim()
     if(!allowedTypes.has(contentType))return new Response(JSON.stringify({error:'Unsupported content type'}),{status:422,headers:{'content-type':'application/json'}})
 
-    const{data:profile}=await supabase.from('profiles').select('id,kora_link_status,kora_creator_reference').eq('id',user.id).maybeSingle()
-    if(!profile||profile.kora_link_status!=='linked'||!profile.kora_creator_reference){
-      return new Response(JSON.stringify({error:'Link your KORA creator identity before video handoff'}),{status:409,headers:{'content-type':'application/json'}})
-    }
-
     const base=Deno.env.get('KORA_INTERNAL_URL')||''
     const key=Deno.env.get('ALLEGRO_KORA_INTEGRATION_KEY')||''
     if(!base||!key)return new Response(JSON.stringify({error:'KORA integration is not active yet'}),{status:503,headers:{'content-type':'application/json'}})
@@ -30,7 +25,7 @@ Deno.serve(async(req)=>{
 
     const payload={
       ...body,
-      allegro_creator_ref:profile.kora_creator_reference,
+      allegro_creator_ref:user.id,
       source_reference:`allegro:${user.id}:${crypto.randomUUID()}`
     }
     const r=await fetch(url,{method:'POST',redirect:'error',headers:{'content-type':'application/json','x-allegro-kora-key':key},body:JSON.stringify(payload)})
