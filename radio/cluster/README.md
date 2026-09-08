@@ -4,15 +4,14 @@ This package migrates the ALLEGRO Radio engine from one Windows owner node to th
 
 ## Recovery model
 
-- Icecast runs with two replicas on different nodes.
-- The playout/autopilot engine runs as one active unit.
+- Autopilot, Liquidsoap and Icecast run together as one atomic radio-engine pod.
 - Its media and state live on Longhorn volumes with three storage replicas.
-- If the active node fails, Kubernetes can recreate the engine on another Ready node and reattach the replicated volume.
+- If the active node fails, Kubernetes can recreate the complete radio engine on another Ready node and reattach the replicated volumes.
 - NODE 01 is preferred, but not required.
 - Images are preloaded onto all four nodes and use imagePullPolicy: Never so an internet registry outage cannot block failover.
 - Public traffic remains behind IZAKHONO EDGE. No database/admin/container port is exposed directly.
 
-This is failover, not zero-interruption broadcast. A hard failure of the active playout node can cause a short listener interruption while the engine is recreated. True active/active playout requires a separate synchronized broadcast design and is intentionally not claimed here.
+This is failover, not zero-interruption broadcast. A hard failure of the active node can cause a short listener interruption while the engine and replicated volume are recreated on another node. True active/active synchronized playout is a separate broadcast architecture and is intentionally not claimed here.
 
 ## Prerequisites
 
@@ -80,7 +79,13 @@ sudo ALLEGRO_SECRET_FILE=/etc/izakhono/allegro-radio.env \
   ./radio/cluster/deploy.sh
 ```
 
-Then seed rights-cleared audio into the `allegro-radio-media` PVC and run `verify-failover.sh`.
+Then seed rights-cleared audio, including `fallback/station-id.wav`, into the replicated media volume:
+
+```bash
+sudo ALLEGRO_CONFIG_DIR=/srv/izakhono/allegro/config \
+  ALLEGRO_MEDIA_DIR=/srv/izakhono/allegro/media-seed \
+  ./radio/cluster/seed-media.sh
+```
 
 ## Edge contract
 
@@ -95,13 +100,12 @@ The services are ClusterIP only. The cluster workload does not publish NodePorts
 
 Do not call the four-node radio live until all of these pass:
 
-- both Icecast replicas Ready
-- radio engine Ready
-- internal stream produces bytes
+- radio engine Ready with Icecast + Autopilot + Liquidsoap containers
+- internal Icecast endpoint responds
 - rights-cleared playlist generated
 - replicated volumes healthy
-- controlled NODE 01 shutdown test
-- engine successfully rescheduled when needed
+- controlled active-node shutdown test
+- engine successfully rescheduled onto another node
 - public IZAKHONO EDGE listener test
 - continuous 24-hour stream test
 - music-rights/legal gates
