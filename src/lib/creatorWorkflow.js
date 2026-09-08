@@ -73,6 +73,11 @@ export async function updateCreatorProfile(userId, values) {
     instagram_url: values.instagramUrl?.trim() || null,
     tiktok_url: values.tiktokUrl?.trim() || null,
     youtube_url: values.youtubeUrl?.trim() || null,
+    home_region: values.homeRegion?.trim() || null,
+    primary_genres: String(values.primaryGenres || '').split(',').map(v=>v.trim()).filter(Boolean).slice(0,12),
+    languages: String(values.languages || '').split(',').map(v=>v.trim()).filter(Boolean).slice(0,12),
+    available_for_international_bookings: Boolean(values.internationalBookings),
+    booking_regions: String(values.bookingRegions || '').split(',').map(v=>v.trim()).filter(Boolean).slice(0,12),
     updated_at: new Date().toISOString(),
   }
   const { data, error } = await client

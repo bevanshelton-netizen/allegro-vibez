@@ -2,7 +2,7 @@
 
 ## Architecture
 
-The public React/Vite frontend remains on Netlify from GitHub `main`. The application runtime backend is **IZAKHONO Core**, not Supabase.
+The public React/Vite frontend remains on Netlify from GitHub `main`. **IZAKHONO Core is the target owner-controlled runtime**, while the current application still contains a Supabase compatibility path for existing authentication/data/Edge Function flows. Do not claim the Core cutover complete until the public Core route and protected adapters have passed the acceptance tests below.
 
 Production frontend origin:
 
@@ -75,3 +75,29 @@ Only after the Core host has a stable public HTTPS route:
 6. Activate protected payment/admin services only after their server-side gates pass.
 
 The host computer must remain powered on and internet-connected for a workstation-hosted public service to remain available.
+
+
+## ALLEGRO ↔ KORA screen integration
+
+Browser-safe frontend variable:
+
+- `VITE_KORA_URL` — the public KORA origin used only to open the creator-link page.
+
+Server-only handoff values:
+
+- `KORA_INTERNAL_URL` — KORA HTTPS origin used by the server adapter;
+- `ALLEGRO_KORA_INTEGRATION_KEY` — shared secret used only server-to-server.
+
+The integration secret must never be present in the Vite bundle.
+
+Current compatibility implementation uses the `kora-video-handoff` server/Edge Function. When ALLEGRO protected operations move fully to IZAKHONO Core, the same contract should be implemented by the Creator OS `media_handoff` module without changing the browser workflow.
+
+Acceptance test:
+
+1. Artist logs into ALLEGRO and copies their Creator Code.
+2. Same artist logs into KORA Creator Studio and links the code.
+3. Artist creates a rights-declared project in ALLEGRO Screen Studio.
+4. KORA creates a **draft**, not a public production.
+5. KORA returns a secure upload allocation.
+6. Moderation/rights state remains pending/review until evidence is approved.
+7. No secret appears in browser network payloads or built assets.
