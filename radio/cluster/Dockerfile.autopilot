@@ -1,0 +1,8 @@
+FROM python:3.13-slim
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends tzdata ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+COPY radio/owner-node/autopilot.py /app/autopilot.py
+WORKDIR /app
+USER 65532:65532
+ENTRYPOINT ["python","/app/autopilot.py"]
