@@ -32,81 +32,6 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: allegro-radio-icecast
-  namespace: allegro-radio
-spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: allegro-radio-icecast
-  template:
-    metadata:
-      labels:
-        app: allegro-radio-icecast
-    spec:
-      topologySpreadConstraints:
-        - maxSkew: 1
-          topologyKey: kubernetes.io/hostname
-          whenUnsatisfiable: DoNotSchedule
-          labelSelector:
-            matchLabels:
-              app: allegro-radio-icecast
-      containers:
-        - name: icecast
-          image: izakhono/allegro-radio-icecast:cluster-v1
-          imagePullPolicy: Never
-          envFrom:
-            - secretRef:
-                name: allegro-radio-secrets
-          ports:
-            - name: stream
-              containerPort: 8000
-          readinessProbe:
-            httpGet:
-              path: /status-json.xsl
-              port: stream
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /status-json.xsl
-              port: stream
-            initialDelaySeconds: 20
-            periodSeconds: 20
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              memory: 512Mi
----
-apiVersion: policy/v1
-kind: PodDisruptionBudget
-metadata:
-  name: allegro-radio-icecast
-  namespace: allegro-radio
-spec:
-  minAvailable: 1
-  selector:
-    matchLabels:
-      app: allegro-radio-icecast
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: allegro-radio-stream
-  namespace: allegro-radio
-spec:
-  selector:
-    app: allegro-radio-icecast
-  ports:
-    - name: stream
-      port: 8000
-      targetPort: stream
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
   name: allegro-radio-engine
   namespace: allegro-radio
 spec:
@@ -149,7 +74,56 @@ spec:
                   - key: kubernetes.io/hostname
                     operator: In
                     values: [node04]
+      initContainers:
+        - name: initial-autopilot
+          image: izakhono/allegro-radio-autopilot:cluster-v1
+          imagePullPolicy: Never
+          args: ["--once"]
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          env:
+            - name: ALLEGRO_RADIO_CONFIG
+              value: /config
+            - name: ALLEGRO_RADIO_STATE
+              value: /state
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: state
+              mountPath: /state
+            - name: media
+              mountPath: /media
+              readOnly: true
       containers:
+        - name: icecast
+          image: izakhono/allegro-radio-icecast:cluster-v1
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          ports:
+            - name: stream
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /status-json.xsl
+              port: stream
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /status-json.xsl
+              port: stream
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
         - name: autopilot
           image: izakhono/allegro-radio-autopilot:cluster-v1
           imagePullPolicy: Never
@@ -220,6 +194,19 @@ spec:
         - name: media
           persistentVolumeClaim:
             claimName: allegro-radio-media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allegro-radio-stream
+  namespace: allegro-radio
+spec:
+  selector:
+    app: allegro-radio-engine
+  ports:
+    - name: stream
+      port: 8000
+      targetPort: stream
 ---
 apiVersion: v1
 kind: Service
