@@ -17,6 +17,35 @@
     "radio_clearance": "cleared",
     "clearance_reference": "ALLEGRO-RADIO-CLEARANCE-001",
     "rotation_weight": 8,
-    "active": true
+    "active": true,
+    "rights_source": "direct_artist",
+    "license_class": "DIRECT-ALLEGRO-LICENCE"
+  },
+  {
+    "id": "track-public-001",
+    "artist_id": "public-source-artist",
+    "artist_name": "Example CC Artist",
+    "title": "Example External Track",
+    "path": "/media/music/example-external-track.mp3",
+    "duration_seconds": 180,
+    "genres": [
+      "mixed"
+    ],
+    "territories": [
+      "*"
+    ],
+    "explicit": false,
+    "rights_status": "verified",
+    "radio_clearance": "cleared",
+    "clearance_reference": "ALLEGRO-RADIO-CLEARANCE-PUBLIC-001",
+    "rights_source": "creative_commons",
+    "license_class": "CC-BY-4.0",
+    "source_url": "https://example.invalid/source-page",
+    "recording_rights_reference": "EVIDENCE-RECORDING-001",
+    "composition_rights_reference": "EVIDENCE-COMPOSITION-001",
+    "evidence_captured_at": "2026-09-08T00:00:00Z",
+    "attribution_text": "Example CC Artist — Example External Track — CC BY 4.0",
+    "rotation_weight": 2,
+    "active": false
   }
 ]
