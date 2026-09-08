@@ -65,6 +65,14 @@ export async function updateCreatorProfile(userId, values) {
     country: values.country?.trim() || null,
     city: values.city?.trim() || null,
     bio: values.bio?.trim() || null,
+    press_headline: values.pressHeadline?.trim() || null,
+    marketing_message: values.marketingMessage?.trim() || null,
+    booking_email: values.bookingEmail?.trim() || null,
+    booking_phone: values.bookingPhone?.trim() || null,
+    website_url: values.websiteUrl?.trim() || null,
+    instagram_url: values.instagramUrl?.trim() || null,
+    tiktok_url: values.tiktokUrl?.trim() || null,
+    youtube_url: values.youtubeUrl?.trim() || null,
     updated_at: new Date().toISOString(),
   }
   const { data, error } = await client
