@@ -1,14 +1,22 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { programForNow } from '../lib/radioAutopilot'
 import '../styles/radio.css'
 
 const fallbackPrograms=[
-  {id:'sunrise',name:'Sunrise Africa',day:'daily',start:'05:00',end:'09:00',genre:'afropop',description:'Energy, headlines, culture and new African music.'},
-  {id:'daylight',name:'Vibez All Day',day:'daily',start:'09:00',end:'15:00',genre:'afropop',description:'Music-first daytime programming with creator stories.'},
-  {id:'drive',name:'Africa Drive',day:'daily',start:'15:00',end:'19:00',genre:'amapiano',description:'Drive-time music, entertainment, interviews and audience interaction.'},
-  {id:'night',name:'Night Pulse',day:'daily',start:'19:00',end:'00:00',genre:'rnb',description:'R&B, soul, hip-hop and live guest sessions.'},
-  {id:'overnight',name:'After Dark',day:'daily',start:'00:00',end:'05:00',genre:'mixed',description:'Autopilot discovery, classics and emerging talent.'},
+  {id:'sunrise-africa',name:'Sunrise Africa',day:'daily',start:'05:00',end:'09:00',genre:'afropop',description:'Energy, headlines, inspiration, culture and uplifting African music.',priority:10},
+  {id:'vibez-all-day',name:'Vibez All Day',day:'daily',start:'09:00',end:'15:00',genre:'afropop',description:'Music-first daytime radio, creator stories, workday energy and discovery.',priority:10},
+  {id:'africa-drive',name:'Africa Drive',day:'daily',start:'15:00',end:'19:00',genre:'amapiano',description:'High-energy drive-time music, culture, entertainment and audience interaction.',priority:20},
+  {id:'night-pulse',name:'Night Pulse',day:'daily',start:'19:00',end:'23:00',genre:'rnb',description:'R&B, soul, hip-hop, conversation and guest sessions.',priority:10},
+  {id:'after-dark',name:'After Dark',day:'daily',start:'23:00',end:'05:00',genre:'mixed',description:'Late-night discovery, chilled classics, neo-soul, jazz and emerging talent.',priority:5},
+  {id:'friday-fire',name:'Friday Fire',day:'fri',start:'19:00',end:'23:00',genre:'amapiano',description:'Weekend launch: amapiano, gqom, afrobeats, DJs and party culture.',priority:50},
+  {id:'allegro-hitlist',name:'The ALLEGRO Hitlist',day:'sat',start:'10:00',end:'13:00',genre:'mixed',description:'Rights-cleared listener favourites, new releases and emerging-artist countdown.',priority:50},
+  {id:'sports-culture',name:'Sports & Culture Live',day:'sat',start:'13:00',end:'16:00',genre:'mixed',description:'Sport, street culture, entertainment and music around the weekend action.',priority:50},
+  {id:'sunday-spirit',name:'Sunday Spirit',day:'sun',start:'05:00',end:'10:00',genre:'gospel',description:'Gospel, inspiration, testimony, family and community voices.',priority:60},
+  {id:'roots-legends',name:'Roots & Legends',day:'sun',start:'10:00',end:'13:00',genre:'mixed',description:'African classics, heritage, jazz, folk and stories behind timeless music.',priority:60},
+  {id:'new-music-lab',name:'New Music Lab',day:'sun',start:'13:00',end:'16:00',genre:'mixed',description:'Emerging creators, first listens, interviews and rights-cleared independent releases.',priority:60},
+  {id:'love-lounge',name:'The Love Lounge',day:'sun',start:'19:00',end:'23:00',genre:'rnb',description:'Soul, R&B, love songs, dedications and intimate conversations.',priority:60},
 ]
 
 export default function Radio(){
@@ -42,6 +50,7 @@ export default function Radio(){
     <section className="radio-section"><div className="radio-heading"><span>PROGRAMMING</span><h2>Different shows. One nonstop station.</h2></div>
       <div className="radio-grid">{programs.map(p=><article key={p.id} className={live?.id===p.id?'on-air':''}><div className="radio-time">{p.start}–{p.end}</div><h3>{p.name}</h3><p>{p.description||'Curated music and culture.'}</p><span>{p.genre||'mixed'}</span></article>)}</div>
     </section>
+    <section className="radio-legal"><strong>Founding advertisers:</strong> reserve launch inventory now with proof-of-play and make-good protection. Radio airtime is invoiced only after the first verified airdate. <Link to="/revenue">See founding deals →</Link></section>
     <section className="radio-business">
       <article><span>01</span><h3>Artist engine</h3><p>Priority discovery for rights-cleared ALLEGRO artists, plus licensed catalogue from partner labels and independent creators.</p></article>
       <article><span>02</span><h3>Advertising engine</h3><p>Scheduled audio spots, sponsored shows, branded segments, host reads and campaign proof-of-play reporting.</p></article>
