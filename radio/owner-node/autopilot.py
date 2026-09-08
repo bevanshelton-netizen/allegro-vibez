@@ -222,7 +222,7 @@ def render_m3u(queue):
     lines = ["#EXTM3U"]
     for item in queue["items"]:
         path = str(item.get("path") or "")
-        if not path.startswith("/"):
+        if not path.startswith("/") or not Path(path).exists():
             continue
         title = f'{item.get("artist","")} - {item.get("title","")}'.strip(" -")
         lines.append(f"#EXTINF:-1,{title}")
