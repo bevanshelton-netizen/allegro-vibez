@@ -41,10 +41,9 @@ $KUBECTL -n allegro-radio create secret generic allegro-radio-secrets   --from-e
 
 $KUBECTL -n allegro-radio create configmap allegro-radio-programming   --from-file=programs.json="$CONFIG_DIR/programs.json"   --from-file=tracks.json="$CONFIG_DIR/tracks.json"   --from-file=ads.json="$CONFIG_DIR/ads.json"   --dry-run=client -o yaml | $KUBECTL apply -f -
 
-$KUBECTL -n allegro-radio create configmap allegro-radio-runtime   --from-file=liquidsoap.liq="$ROOT/radio/owner-node/liquidsoap.windows.liq"   --dry-run=client -o yaml | $KUBECTL apply -f -
+$KUBECTL -n allegro-radio create configmap allegro-radio-runtime   --from-file=liquidsoap.liq="$ROOT/radio/cluster/liquidsoap.cluster.liq"   --dry-run=client -o yaml | $KUBECTL apply -f -
 
-$KUBECTL -n allegro-radio rollout restart deployment/allegro-radio-icecast
 $KUBECTL -n allegro-radio rollout restart deployment/allegro-radio-engine
 
 echo "ALLEGRO_CLUSTER_CONFIG=APPLIED"
-echo "Seed rights-cleared audio into allegro-radio-media before waiting for the engine to become Ready."
+echo "Seed rights-cleared audio and fallback/station-id.wav into allegro-radio-media, then verify the engine."
