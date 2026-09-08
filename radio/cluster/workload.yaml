@@ -1,0 +1,252 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: allegro-radio
+  labels:
+    izakhono.africa/workload: allegro-radio
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: allegro-radio-media
+  namespace: allegro-radio
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 100Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: allegro-radio-state
+  namespace: allegro-radio
+spec:
+  accessModes: [ReadWriteOnce]
+  storageClassName: longhorn
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: allegro-radio-engine
+  namespace: allegro-radio
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: allegro-radio-engine
+  template:
+    metadata:
+      labels:
+        app: allegro-radio-engine
+    spec:
+      terminationGracePeriodSeconds: 30
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [node01]
+            - weight: 80
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [node02]
+            - weight: 60
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [node03]
+            - weight: 40
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values: [node04]
+      initContainers:
+        - name: initial-autopilot
+          image: izakhono/allegro-radio-autopilot:cluster-v1
+          imagePullPolicy: Never
+          args: ["--once"]
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          env:
+            - name: ALLEGRO_RADIO_CONFIG
+              value: /config
+            - name: ALLEGRO_RADIO_STATE
+              value: /state
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: state
+              mountPath: /state
+            - name: media
+              mountPath: /media
+              readOnly: true
+      containers:
+        - name: icecast
+          image: izakhono/allegro-radio-icecast:cluster-v1
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          ports:
+            - name: stream
+              containerPort: 8000
+          readinessProbe:
+            httpGet:
+              path: /status-json.xsl
+              port: stream
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /status-json.xsl
+              port: stream
+            initialDelaySeconds: 20
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: autopilot
+          image: izakhono/allegro-radio-autopilot:cluster-v1
+          imagePullPolicy: Never
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          env:
+            - name: ALLEGRO_RADIO_CONFIG
+              value: /config
+            - name: ALLEGRO_RADIO_STATE
+              value: /state
+          volumeMounts:
+            - name: config
+              mountPath: /config
+              readOnly: true
+            - name: state
+              mountPath: /state
+            - name: media
+              mountPath: /media
+              readOnly: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              memory: 512Mi
+        - name: playout
+          image: savonet/liquidsoap:v2.4.5
+          imagePullPolicy: Never
+          command: ["liquidsoap","/runtime/liquidsoap.liq"]
+          envFrom:
+            - secretRef:
+                name: allegro-radio-secrets
+          ports:
+            - name: live
+              containerPort: 8080
+          readinessProbe:
+            tcpSocket:
+              port: live
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          volumeMounts:
+            - name: runtime
+              mountPath: /runtime
+              readOnly: true
+            - name: state
+              mountPath: /state
+              readOnly: true
+            - name: media
+              mountPath: /media
+              readOnly: true
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: allegro-radio-programming
+        - name: runtime
+          configMap:
+            name: allegro-radio-runtime
+        - name: state
+          persistentVolumeClaim:
+            claimName: allegro-radio-state
+        - name: media
+          persistentVolumeClaim:
+            claimName: allegro-radio-media
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allegro-radio-stream
+  namespace: allegro-radio
+spec:
+  selector:
+    app: allegro-radio-engine
+  ports:
+    - name: stream
+      port: 8000
+      targetPort: stream
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: allegro-radio-live
+  namespace: allegro-radio
+spec:
+  selector:
+    app: allegro-radio-engine
+  ports:
+    - name: live
+      port: 8080
+      targetPort: live
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: allegro-radio
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-radio-internal-and-edge
+  namespace: allegro-radio
+spec:
+  podSelector: {}
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector: {}
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: izakhono-edge
+      ports:
+        - protocol: TCP
+          port: 8000
+        - protocol: TCP
+          port: 8080
