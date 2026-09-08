@@ -1,0 +1,32 @@
+{
+  email {$ALLEGRO_RADIO_TLS_EMAIL}
+}
+
+{$ALLEGRO_RADIO_PUBLIC_HOST} {
+  encode zstd gzip
+
+  @health path /healthz
+  respond @health "ALLEGRO_RADIO_EDGE_OK" 200
+
+  @admin path /admin /admin/* /server_version.xsl
+  respond @admin 404
+
+  @stream path /allegro.mp3
+  reverse_proxy @stream icecast:8000 {
+    flush_interval -1
+    header_down Access-Control-Allow-Origin "*"
+    header_down Cache-Control "no-store, no-cache, must-revalidate"
+    header_down X-Content-Type-Options "nosniff"
+  }
+
+  reverse_proxy icecast:8000 {
+    header_down Access-Control-Allow-Origin "*"
+    header_down X-Content-Type-Options "nosniff"
+  }
+
+  header {
+    Strict-Transport-Security "max-age=31536000; includeSubDomains"
+    Referrer-Policy "no-referrer"
+    X-Frame-Options "DENY"
+  }
+}

@@ -1,0 +1,40 @@
+services:
+  edge:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    depends_on:
+      - icecast
+    env_file:
+      - "${ALLEGRO_RADIO_WINDOWS_DATA}/allegro-radio.env"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - type: bind
+        source: "./Caddyfile"
+        target: /etc/caddy/Caddyfile
+        read_only: true
+      - caddy_data:/data
+      - caddy_config:/config
+
+  public-monitor:
+    image: python:3.13-slim
+    restart: unless-stopped
+    depends_on:
+      - icecast
+    env_file:
+      - "${ALLEGRO_RADIO_WINDOWS_DATA}/allegro-radio.env"
+    command: ["python", "/app/public_monitor.py"]
+    volumes:
+      - type: bind
+        source: "./public_monitor.py"
+        target: /app/public_monitor.py
+        read_only: true
+      - type: bind
+        source: "${ALLEGRO_RADIO_WINDOWS_DATA}/state"
+        target: /state
+
+volumes:
+  caddy_data:
+  caddy_config:
