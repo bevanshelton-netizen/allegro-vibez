@@ -34,6 +34,38 @@ const offers=[
     lead:'Own a bigger piece of the founding launch campaign.',
     items:['Premium founding-partner placement','Dedicated branded campaign feature','Priority launch-week inventory','Commercial planning session and proof-of-delivery report'],
   },
+  {
+    code:'radio-try',
+    audience:'RADIO · FOUNDING TRIAL',
+    name:'Try ALLEGRO Radio',
+    price:'R750',
+    lead:'A low-risk 7-day radio trial with proof of delivery.',
+    items:['20 × 30-second spots after verified station activation','Founding-advertiser web recognition','Creative script polish','Proof-of-play report','Make-good spots for missed booked plays'],
+  },
+  {
+    code:'radio-grow',
+    audience:'RADIO · GROWTH',
+    name:'Grow with ALLEGRO',
+    price:'R1,500',
+    lead:'A stronger 14-day launch package for brands that want repetition.',
+    items:['50 × 30-second spots after verified activation','2 presenter-read mentions','Web sponsor placement','10 founding bonus spots','Proof-of-play + make-good guarantee'],
+  },
+  {
+    code:'radio-daypart',
+    audience:'RADIO · CATEGORY EXCLUSIVITY',
+    name:'Own the Daypart',
+    price:'R3,500',
+    lead:'Own a high-attention programme window while founding inventory lasts.',
+    items:['120 × 30-second spots over 30 verified broadcast days','4 presenter reads','One approved branded recurring feature','Category exclusivity in one selected show/daypart','20 launch bonus spots + proof-of-play'],
+  },
+  {
+    code:'radio-show-partner',
+    audience:'RADIO · PREMIUM',
+    name:'Founding Show Partner',
+    price:'R7,500',
+    lead:'Attach your brand to one of ALLEGRO’s signature programmes.',
+    items:['300 × 30-second spots over 30 verified broadcast days','Naming association with one agreed programme','8 presenter reads','Programme category exclusivity','50 launch bonus spots + premium web placement + proof-of-play'],
+  },
 ]
 
 export default function Revenue(){
@@ -67,7 +99,7 @@ export default function Revenue(){
     <section className="revenue-hero">
       <div className="eyebrow">ALLEGRO REVENUE DESK · FOUNDING LAUNCH</div>
       <h1>Get seen.<br/><em>Get heard. Get moving.</em></h1>
-      <p>Book launch services that ALLEGRO can deliver now. Secure payment is requested only after your booking is accepted, scope and delivery date are confirmed, and an invoice is issued.</p>
+      <p>Book creator, sponsor and founding radio packages. Radio inventory can be reserved now, but no radio-airtime invoice becomes payable until ALLEGRO confirms the first verified airdate.</p>
       <div className="revenue-trust"><span>NO CARD DETAILS COLLECTED HERE</span><span>LAUNCH RATES</span><span>LIMITED FOUNDING INVENTORY</span></div>
     </section>
 
