@@ -24,12 +24,29 @@ ads=[
 
 a.QUEUE_ITEMS=12
 a.AD_EVERY_TRACKS=2
-queue=a.build_queue(programs,tracks,ads,now=datetime(2026,9,7,15,30,tzinfo=timezone.utc),seed=1)
+formats={
+ "drive":{
+   "music_lanes":["amapiano"],
+   "max_paid_minutes_per_hour":1,
+   "sequence":["station_id","music","music","ad","talk_hook","music","ad","promo"]
+ }
+}
+imaging={
+ "station_id":{"path":"/media/imaging/station.wav","title":"Station ID"},
+ "promo":{"path":"/media/imaging/promo.wav","title":"Promo"}
+}
+programs[0]["format_id"]="drive"
+queue=a.build_queue(programs,tracks,ads,formats=formats,imaging=imaging,now=datetime(2026,9,7,15,30,tzinfo=timezone.utc),seed=1)
 ids=[x["id"] for x in queue["items"] if x["type"]=="track"]
 assert "bad1" not in ids
 assert "t1" in ids or "t2" in ids
 assert any(x["type"]=="ad" for x in queue["items"])
-assert all(x.get("clearance_reference") for x in queue["items"])
+assert any(x["type"]=="marker" and x.get("marker")=="talk_hook" for x in queue["items"])
+assert queue["format_id"]=="drive"
+assert queue["commercial_cap_seconds_per_clock"]==60
+for item in queue["items"]:
+    if item["type"] in ("track","ad"):
+        assert item.get("clearance_reference")
 
 tmp=tempfile.TemporaryDirectory()
 a.STATE_DIR=Path(tmp.name)
