@@ -10,9 +10,15 @@ CONFIG_DIR="${ALLEGRO_CONFIG_DIR:-}"
 [[ -n "$SECRET_FILE" && -f "$SECRET_FILE" ]] || { echo "ALLEGRO_SECRET_FILE is required." >&2; exit 2; }
 [[ -n "$CONFIG_DIR" && -d "$CONFIG_DIR" ]] || { echo "ALLEGRO_CONFIG_DIR is required." >&2; exit 2; }
 
-for f in programs.json tracks.json ads.json; do
+for f in tracks.json ads.json; do
   [[ -f "$CONFIG_DIR/$f" ]] || { echo "Missing $CONFIG_DIR/$f" >&2; exit 3; }
 done
+
+PROGRAMS_FILE="$CONFIG_DIR/programs.json"
+if [[ ! -f "$PROGRAMS_FILE" ]]; then
+  PROGRAMS_FILE="$ROOT/radio/programming/programs.launch.json"
+fi
+[[ -f "$PROGRAMS_FILE" ]] || { echo "Missing ALLEGRO programme grid" >&2; exit 3; }
 
 $KUBECTL get storageclass longhorn >/dev/null || {
   echo "Longhorn StorageClass is required before ALLEGRO deployment." >&2
@@ -39,7 +45,13 @@ $KUBECTL apply -f "$ROOT/radio/cluster/workload.yaml"
 
 $KUBECTL -n allegro-radio create secret generic allegro-radio-secrets   --from-env-file="$SECRET_FILE"   --dry-run=client -o yaml | $KUBECTL apply -f -
 
-$KUBECTL -n allegro-radio create configmap allegro-radio-programming   --from-file=programs.json="$CONFIG_DIR/programs.json"   --from-file=tracks.json="$CONFIG_DIR/tracks.json"   --from-file=ads.json="$CONFIG_DIR/ads.json"   --dry-run=client -o yaml | $KUBECTL apply -f -
+$KUBECTL -n allegro-radio create configmap allegro-radio-programming \
+  --from-file=programs.json="$PROGRAMS_FILE" \
+  --from-file=tracks.json="$CONFIG_DIR/tracks.json" \
+  --from-file=ads.json="$CONFIG_DIR/ads.json" \
+  --from-file=formats.json="$ROOT/radio/programming/formats.json" \
+  --from-file=imaging.json="$ROOT/radio/programming/imaging.json" \
+  --dry-run=client -o yaml | $KUBECTL apply -f -
 
 $KUBECTL -n allegro-radio create configmap allegro-radio-runtime   --from-file=liquidsoap.liq="$ROOT/radio/cluster/liquidsoap.cluster.liq"   --dry-run=client -o yaml | $KUBECTL apply -f -
 
