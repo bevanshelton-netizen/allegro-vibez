@@ -54,6 +54,25 @@ def program_for_now(programs, now=None):
     matches.sort(key=lambda p: int(p.get("priority", 0)), reverse=True)
     return matches[0] if matches else None
 
+def licence_evidence_ok(track):
+    source = str(track.get("rights_source") or "direct_artist").strip().lower()
+    if source in ("direct_artist", "collective_licence"):
+        return True
+    if source not in ("public_domain", "creative_commons", "paid_catalogue"):
+        return False
+    required = ("license_class", "source_url", "recording_rights_reference", "composition_rights_reference", "evidence_captured_at")
+    if any(not str(track.get(key) or "").strip() for key in required):
+        return False
+    licence = str(track.get("license_class") or "").upper()
+    if "BY-NC" in licence or licence.startswith("NC-") or "NONCOMMERCIAL" in licence:
+        return False
+    if source == "creative_commons" and ("BY-" in licence or "CC-BY" in licence):
+        if not str(track.get("attribution_text") or "").strip():
+            return False
+    if source == "paid_catalogue" and not str(track.get("radio_scope_reference") or "").strip():
+        return False
+    return True
+
 def rights_cleared(track, program, music_lanes=None):
     if track.get("active", True) is False:
         return False
@@ -62,6 +81,8 @@ def rights_cleared(track, program, music_lanes=None):
     if track.get("radio_clearance") != "cleared":
         return False
     if not str(track.get("clearance_reference") or "").strip():
+        return False
+    if not licence_evidence_ok(track):
         return False
     territories = track.get("territories") or []
     if territories and "*" not in territories and TERRITORY not in territories:
