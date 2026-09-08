@@ -1,0 +1,12 @@
+{
+  "allowed": [
+    {"code":"CC0-1.0","commercial":true,"radio":true,"attribution_required":false},
+    {"code":"PUBLIC-DOMAIN-VERIFIED","commercial":true,"radio":true,"attribution_required":false},
+    {"code":"CC-BY-4.0","commercial":true,"radio":true,"attribution_required":true},
+    {"code":"CC-BY-SA-4.0","commercial":true,"radio":true,"attribution_required":true},
+    {"code":"DIRECT-ALLEGRO-LICENCE","commercial":true,"radio":true,"attribution_required":false},
+    {"code":"PAID-RADIO-LICENCE","commercial":true,"radio":true,"attribution_required":false}
+  ],
+  "blocked_prefixes": ["CC-BY-NC","NC-","PERSONAL-USE","EDITORIAL-ONLY","STREAM-RIP"],
+  "rule": "A track also requires verified recording + composition evidence and the territory/broadcast grant."
+}
