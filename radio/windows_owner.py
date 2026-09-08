@@ -83,10 +83,18 @@ def download_source():
 def ensure_data():
     for rel in ("config","state","media/music","media/ads","media/fallback","logs/icecast"):
         (DATA / rel).mkdir(parents=True, exist_ok=True)
-    src_programs = APP / "radio" / "owner-node" / "config" / "programs.json"
+    launch_programs = APP / "radio" / "programming" / "programs.launch.json"
+    legacy_programs = APP / "radio" / "owner-node" / "config" / "programs.json"
     dst_programs = DATA / "config" / "programs.json"
-    if not dst_programs.exists() and src_programs.exists():
-        shutil.copy2(src_programs, dst_programs)
+    if not dst_programs.exists():
+        source = launch_programs if launch_programs.exists() else legacy_programs
+        if source.exists():
+            shutil.copy2(source, dst_programs)
+    for name in ("formats.json","imaging.json"):
+        source = APP / "radio" / "programming" / name
+        target = DATA / "config" / name
+        if source.exists() and not target.exists():
+            shutil.copy2(source, target)
     for name in ("tracks.json","ads.json"):
         p = DATA / "config" / name
         if not p.exists():
@@ -111,24 +119,45 @@ def ensure_data():
             encoding="utf-8"
         )
 
-def ensure_station_ident():
-    wav = DATA / "media" / "fallback" / "station-id.wav"
+def ensure_spoken_wav(filename, text):
+    wav = DATA / "media" / "fallback" / filename
     if wav.exists() and wav.stat().st_size > 1000:
         return wav
     ps = shutil.which("powershell.exe") or shutil.which("powershell")
     if not ps:
-        raise RuntimeError("powershell_not_found_for_station_ident")
+        raise RuntimeError("powershell_not_found_for_station_imaging")
+    safe_path = str(wav).replace(chr(39), chr(39)*2)
+    safe_text = str(text).replace(chr(39), chr(39)*2)
     script = (
         "Add-Type -AssemblyName System.Speech; "
         "$s=New-Object System.Speech.Synthesis.SpeechSynthesizer; "
-        f"$s.SetOutputToWaveFile('{str(wav).replace(chr(39), chr(39)*2)}'); "
-        "$s.Speak('ALLEGRO Radio. Africa to the World.'); "
+        f"$s.SetOutputToWaveFile('{safe_path}'); "
+        f"$s.Speak('{safe_text}'); "
         "$s.Dispose();"
     )
     run([ps, "-NoProfile", "-Command", script])
     if not wav.exists() or wav.stat().st_size < 1000:
-        raise RuntimeError("station_ident_generation_failed")
+        raise RuntimeError(f"station_imaging_generation_failed:{filename}")
     return wav
+
+def ensure_station_ident():
+    media_imaging = DATA / "media" / "imaging"
+    media_imaging.mkdir(parents=True, exist_ok=True)
+
+    ident = ensure_spoken_wav("station-id.wav", "ALLEGRO Radio. Africa to the World.")
+    scripts = {
+        "allegro-station-id.wav": "ALLEGRO Radio. Africa to the World.",
+        "allegro-promo.wav": "ALLEGRO. More than music. A movement. African born and built for the world.",
+        "allegro-tease.wav": "Stay with ALLEGRO Radio. Your music. Your culture. Your movement.",
+        "artist-submissions.wav": "Artists. Own your sound and protect your rights. Submit your rights cleared music to ALLEGRO."
+    }
+    for filename, text in scripts.items():
+        target = media_imaging / filename
+        if target.exists() and target.stat().st_size > 1000:
+            continue
+        generated = ensure_spoken_wav(filename, text)
+        shutil.copy2(generated, target)
+    return ident
 
 def ensure_initial_playlist():
     playlist = DATA / "state" / "autopilot.m3u"
