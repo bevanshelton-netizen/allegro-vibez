@@ -8,6 +8,7 @@ KUBECTL="${KUBECTL:-k3s kubectl}"
 [[ "$(id -u)" -eq 0 ]] || { echo "Run on a k3s server node as root." >&2; exit 2; }
 [[ -n "$MEDIA_DIR" && -d "$MEDIA_DIR" ]] || { echo "ALLEGRO_MEDIA_DIR is required." >&2; exit 2; }
 [[ -n "$CONFIG_DIR" && -f "$CONFIG_DIR/tracks.json" ]] || { echo "ALLEGRO_CONFIG_DIR/tracks.json is required." >&2; exit 2; }
+[[ -f "$MEDIA_DIR/fallback/station-id.wav" ]] || { echo "Missing fallback/station-id.wav" >&2; exit 3; }
 
 $KUBECTL -n allegro-radio delete pod allegro-media-loader --ignore-not-found=true
 cat <<'YAML' | $KUBECTL apply -f -
@@ -34,6 +35,7 @@ YAML
 
 $KUBECTL -n allegro-radio wait --for=condition=Ready pod/allegro-media-loader --timeout=5m
 $KUBECTL -n allegro-radio cp "$MEDIA_DIR/." allegro-media-loader:/media
+$KUBECTL -n allegro-radio exec allegro-media-loader -- test -f /media/fallback/station-id.wav
 
 python3 - "$CONFIG_DIR/tracks.json" > /tmp/allegro-cleared-paths.txt <<'PY'
 import json,sys
@@ -63,7 +65,6 @@ done < /tmp/allegro-cleared-paths.txt
 $KUBECTL -n allegro-radio delete pod allegro-media-loader --wait=true
 
 $KUBECTL -n allegro-radio rollout restart deployment/allegro-radio-engine
-$KUBECTL -n allegro-radio rollout status deployment/allegro-radio-icecast --timeout=5m
 $KUBECTL -n allegro-radio rollout status deployment/allegro-radio-engine --timeout=10m
 
-echo "ALLEGRO_MEDIA_SEED=PASS files=$count"
+echo "ALLEGRO_MEDIA_SEED=PASS files=$count fallback=PASS"
