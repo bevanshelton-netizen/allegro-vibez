@@ -11,7 +11,7 @@ Production frontend origin:
 The frontend requires three browser-safe values:
 
 - `VITE_IZAKHONO_CORE_URL`
-- `VITE_IZAKHONO_PROJECT=allegro_vibez`
+- `VITE_IZAKHONO_PROJECT=allegro-vibez`
 - `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
 
 Never place an `ik_sec_*` key, the Core root-admin key, database password, PayFast merchant key/passphrase or any other server credential in the Vite build.
@@ -28,13 +28,17 @@ This loopback URL is for software running on the host computer. **Do not put it 
 
 ## Provision ALLEGRO
 
-Use IZAKHONO Core v0.3.1 or newer. The Zero Host package provides:
+Use the reviewed IZAKHONO owner-host tooling. The Core project identifier is **`allegro-vibez`**.
 
-```powershell
-.\scripts\provision-allegro.ps1
+On the owner host, provision the Core project with signup enabled:
+
+```bash
+sudo /opt/izakhono/bin/provision-core-project.sh allegro-vibez --allow-signup
 ```
 
-It provisions this repository's `izakhono/manifest.json`, `schema.sql` and `seed.sql`, data policies and the private `release_assets` bucket. Store the one-time `ik_sec_*` key privately; the browser receives only the public key.
+Keep the generated owner-only project record private. Only the returned browser-safe public project key belongs in `VITE_IZAKHONO_PUBLIC_KEY`.
+
+The ALLEGRO repository's `izakhono/manifest.json`, `schema.sql` and `seed.sql` remain the reviewed application data contract. Do not claim the Core cutover complete until those tables/policies and the private `release_assets` bucket have been provisioned and the acceptance tests below pass.
 
 ## Data and creator acceptance
 
