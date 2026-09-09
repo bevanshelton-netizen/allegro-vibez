@@ -106,7 +106,7 @@ class CoreQueryBuilder {
     query.set('limit', String(this.limitValue ?? (this.head || this.countMode ? 1000 : 100)))
     if (this.offsetValue) query.set('offset', String(this.offsetValue))
 
-    const rows = await this.client.request(`/v1/data/${this.client.project}/${this.table}?${query}`)
+    const rows = await this.client.request(`/v2/data/${this.client.project}/${this.table}?${query}`)
     const projected = (rows || []).map(row => projectColumns(row, this.columns))
     const count = this.countMode ? projected.length : null
 
@@ -126,7 +126,7 @@ class CoreQueryBuilder {
     const values = Array.isArray(this.payload) ? this.payload : [this.payload]
     const rows = []
     for (const value of values) {
-      rows.push(await this.client.request(`/v1/data/${this.client.project}/${this.table}`, {
+      rows.push(await this.client.request(`/v2/data/${this.client.project}/${this.table}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: value }),
@@ -140,7 +140,7 @@ class CoreQueryBuilder {
   async executeUpdate() {
     const id = this.filters.id
     if (!id) return { data: null, error: new Error("IZAKHONO Core updates require .eq('id', value).") }
-    const row = await this.client.request(`/v1/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, {
+    const row = await this.client.request(`/v2/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: this.payload || {} }),
@@ -153,7 +153,7 @@ class CoreQueryBuilder {
   async executeDelete() {
     const id = this.filters.id
     if (!id) return { data: null, error: new Error("IZAKHONO Core deletes require .eq('id', value).") }
-    const data = await this.client.request(`/v1/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const data = await this.client.request(`/v2/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, { method: 'DELETE' })
     return { data, error: null }
   }
 
@@ -170,11 +170,10 @@ class CoreBucketClient {
 
   async upload(path, file) {
     try {
-      const form = new FormData()
-      form.append('file', file)
       const data = await this.client.request(`/v1/storage/${this.client.project}/${this.bucket}/${path}`, {
         method: 'PUT',
-        body: form,
+        headers: { 'Content-Type': file?.type || 'application/octet-stream' },
+        body: file,
       })
       return { data, error: null }
     } catch (error) {
@@ -225,17 +224,48 @@ class CoreAuthClient {
       this.client.setSession(session, 'SIGNED_IN')
 
       const metadata = options.data || {}
+      const now = new Date().toISOString()
       const profile = {
+        id: session.user.id,
         display_name: metadata.display_name || null,
         stage_name: metadata.stage_name || null,
         account_type: metadata.account_type || 'artist',
-        updated_at: new Date().toISOString(),
+        updated_at: now,
+        created_at: now,
       }
-      await this.client.request(`/v1/data/${this.client.project}/profiles/${encodeURIComponent(session.user.id)}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ data: profile }),
-      })
+      const publicProfile = {
+        id: session.user.id,
+        display_name: profile.display_name,
+        stage_name: profile.stage_name,
+        account_type: profile.account_type,
+        created_at: now,
+      }
+
+      const profileResult = await this.client.from('profiles').insert(profile).select('*').single()
+      if (profileResult.error) throw profileResult.error
+      const publicResult = await this.client.from('public_profiles').insert(publicProfile).select('*').single()
+      if (publicResult.error) throw publicResult.error
+
+      const walletResult = await this.client.from('creator_wallets').insert({
+        id: session.user.id,
+        owner_id: session.user.id,
+        currency: 'ZAR',
+        available_balance: 0,
+        pending_balance: 0,
+        lifetime_paid: 0,
+        updated_at: now,
+      }).select('*').single()
+      if (walletResult.error) throw walletResult.error
+
+      const subscriptionResult = await this.client.from('creator_subscriptions').insert({
+        id: session.user.id,
+        owner_id: session.user.id,
+        plan_code: 'free',
+        status: 'active',
+        created_at: now,
+        updated_at: now,
+      }).select('*').single()
+      if (subscriptionResult.error) throw subscriptionResult.error
 
       return { data: { user: session.user, session }, error: null }
     } catch (error) {
@@ -404,11 +434,10 @@ class IzakhonoCoreClient {
 
   async rpc(name, params = {}) {
     if (name === 'request_payout') {
-      return this.from('payout_requests').insert({
-        owner_id: this.session?.user?.id,
-        amount: params.p_amount,
-        destination_label: params.p_destination_label || null,
-      })
+      return {
+        data: null,
+        error: new Error('Payout requests remain disabled until the IZAKHONO server-side balance validator is active.'),
+      }
     }
 
     if (name === 'submit_release') {
