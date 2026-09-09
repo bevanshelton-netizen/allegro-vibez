@@ -9,10 +9,33 @@ alter table profiles
   add column if not exists bio text,
   add column if not exists avatar_path text,
   add column if not exists role text not null default 'creator',
+  add column if not exists press_headline text,
+  add column if not exists marketing_message text,
+  add column if not exists booking_email text,
+  add column if not exists booking_phone text,
+  add column if not exists website_url text,
+  add column if not exists instagram_url text,
+  add column if not exists tiktok_url text,
+  add column if not exists youtube_url text,
+  add column if not exists home_region text,
+  add column if not exists primary_genres text[] not null default '{}'::text[],
+  add column if not exists languages text[] not null default '{}'::text[],
+  add column if not exists available_for_international_bookings boolean not null default false,
+  add column if not exists booking_regions text[] not null default '{}'::text[],
+  add column if not exists career_path text,
+  add column if not exists career_goal text,
+  add column if not exists has_video_catalogue boolean not null default false,
+  add column if not exists touring_artist boolean not null default false,
   add column if not exists updated_at timestamptz not null default now();
 
 create or replace view public_profiles as
-select id, display_name, stage_name, account_type, country, city, bio, avatar_path, created_at
+select
+  id, display_name, stage_name, account_type, country, city, bio, avatar_path,
+  press_headline, marketing_message, booking_email, booking_phone,
+  website_url, instagram_url, tiktok_url, youtube_url,
+  home_region, primary_genres, languages, available_for_international_bookings,
+  booking_regions, career_path, career_goal, has_video_catalogue, touring_artist,
+  created_at
 from profiles;
 
 create table if not exists releases (
@@ -190,3 +213,189 @@ drop trigger if exists allegro_validate_payout_trigger on payout_requests;
 create trigger allegro_validate_payout_trigger
 before insert on payout_requests
 for each row execute function allegro_validate_payout();
+
+
+-- ALLEGRO Artist Booking Engine — owner-controlled IZAKHONO Core contract.
+-- Public promoters receive write-only intake access. Private booking records remain artist-owned.
+
+create table if not exists artist_booking_settings (
+  id uuid primary key default gen_random_uuid(),
+  artist_id uuid not null unique references profiles(id) on delete cascade,
+  booking_enabled boolean not null default true,
+  base_currency text not null default 'ZAR' check (char_length(base_currency)=3),
+  minimum_fee numeric(14,2) check (minimum_fee is null or minimum_fee >= 0),
+  deposit_percent numeric(5,2) not null default 50 check (deposit_percent between 0 and 100),
+  default_set_minutes integer not null default 60 check (default_set_minutes between 10 and 360),
+  performance_types text[] not null default array['Live performance','Festival','Corporate event','Private event','Club / venue','Livestream']::text[],
+  travel_policy text,
+  rider_summary text,
+  quote_valid_days integer not null default 7 check (quote_valid_days between 1 and 30),
+  updated_at timestamptz not null default now()
+);
+
+create or replace view public_artist_booking_settings as
+select artist_id, booking_enabled, base_currency, minimum_fee, deposit_percent,
+       default_set_minutes, performance_types, travel_policy, rider_summary, quote_valid_days
+from artist_booking_settings
+where booking_enabled = true;
+
+create table if not exists artist_booking_requests (
+  id uuid primary key default gen_random_uuid(),
+  request_code text not null unique,
+  artist_id uuid not null references profiles(id) on delete cascade,
+  company_name text not null check (char_length(trim(company_name)) between 2 and 180),
+  contact_name text not null check (char_length(trim(contact_name)) between 2 and 180),
+  contact_email text not null check (position('@' in contact_email) > 1),
+  contact_phone text not null check (char_length(trim(contact_phone)) between 6 and 60),
+  preferred_contact text not null default 'email' check (preferred_contact in ('email','phone','text','whatsapp')),
+  performance_type text not null,
+  performance_other text,
+  event_date date not null,
+  event_time text,
+  event_visibility text not null default 'public' check (event_visibility in ('public','private')),
+  venue_name text,
+  venue_address text not null check (char_length(trim(venue_address)) >= 4),
+  city text,
+  country text not null default 'South Africa',
+  event_description text not null check (char_length(trim(event_description)) >= 10),
+  expected_audience integer check (expected_audience is null or expected_audience >= 0),
+  proposed_budget numeric(14,2) check (proposed_budget is null or proposed_budget >= 0),
+  budget_currency text not null default 'ZAR' check (char_length(budget_currency)=3),
+  backline_provided boolean,
+  flights_hotel_provided boolean,
+  ground_transport_provided boolean,
+  visa_support_required boolean not null default false,
+  livestream_rights_requested boolean not null default false,
+  recording_rights_requested boolean not null default false,
+  merchandise_opportunity boolean not null default false,
+  special_requests text,
+  status text not null default 'new' check (status in ('new','qualified','quoted','negotiating','deposit_due','confirmed','completed','declined','cancelled')),
+  quoted_gross_amount numeric(14,2) check (quoted_gross_amount is null or quoted_gross_amount >= 0),
+  quote_currency text check (quote_currency is null or char_length(quote_currency)=3),
+  platform_fee_bps integer not null default 1000 check (platform_fee_bps = 1000),
+  platform_fee_amount numeric(14,2) generated always as (
+    case when quoted_gross_amount is null then null else round(quoted_gross_amount * 0.10, 2) end
+  ) stored,
+  creator_net_amount numeric(14,2) generated always as (
+    case when quoted_gross_amount is null then null else round(quoted_gross_amount * 0.90, 2) end
+  ) stored,
+  quote_valid_until date,
+  deposit_percent numeric(5,2) check (deposit_percent is null or deposit_percent between 0 and 100),
+  deposit_amount numeric(14,2) generated always as (
+    case
+      when quoted_gross_amount is null or deposit_percent is null then null
+      else round(quoted_gross_amount * deposit_percent / 100, 2)
+    end
+  ) stored,
+  deposit_status text not null default 'not_collected' check (deposit_status in ('not_collected','pending','paid','waived','refunded')),
+  privacy_consent boolean not null default true,
+  source text not null default 'izakhono_core',
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create index if not exists artist_booking_requests_artist_created_idx
+  on artist_booking_requests(artist_id, created_at desc);
+create index if not exists artist_booking_requests_artist_status_idx
+  on artist_booking_requests(artist_id, status, event_date);
+
+create table if not exists artist_booking_events (
+  id uuid primary key default gen_random_uuid(),
+  booking_id uuid not null references artist_booking_requests(id) on delete cascade,
+  artist_id uuid not null references profiles(id) on delete cascade,
+  event_type text not null,
+  actor_id uuid,
+  note text,
+  created_at timestamptz not null default now()
+);
+
+create index if not exists artist_booking_events_booking_idx
+  on artist_booking_events(booking_id, created_at desc);
+
+-- Deliberately contains only fields that an unauthenticated promoter is allowed to submit.
+-- There are no status, fee, deposit-payment or settlement columns on this surface.
+create table if not exists artist_booking_intake (
+  id uuid primary key default gen_random_uuid(),
+  request_code text not null unique default ('AB-' || upper(substr(replace(gen_random_uuid()::text,'-',''),1,10))),
+  artist_id uuid not null references profiles(id) on delete cascade,
+  company_name text not null check (char_length(trim(company_name)) between 2 and 180),
+  contact_name text not null check (char_length(trim(contact_name)) between 2 and 180),
+  contact_email text not null check (position('@' in contact_email) > 1),
+  contact_phone text not null check (char_length(trim(contact_phone)) between 6 and 60),
+  preferred_contact text not null default 'email' check (preferred_contact in ('email','phone','text','whatsapp')),
+  performance_type text not null,
+  performance_other text,
+  event_date date not null,
+  event_time text,
+  event_visibility text not null default 'public' check (event_visibility in ('public','private')),
+  venue_name text,
+  venue_address text not null check (char_length(trim(venue_address)) >= 4),
+  city text,
+  country text not null default 'South Africa',
+  event_description text not null check (char_length(trim(event_description)) >= 10),
+  expected_audience integer check (expected_audience is null or expected_audience >= 0),
+  proposed_budget numeric(14,2) check (proposed_budget is null or proposed_budget >= 0),
+  budget_currency text not null default 'ZAR' check (char_length(budget_currency)=3),
+  backline_provided boolean,
+  flights_hotel_provided boolean,
+  ground_transport_provided boolean,
+  visa_support_required boolean not null default false,
+  livestream_rights_requested boolean not null default false,
+  recording_rights_requested boolean not null default false,
+  merchandise_opportunity boolean not null default false,
+  special_requests text,
+  privacy_consent boolean not null check (privacy_consent = true),
+  created_at timestamptz not null default now()
+);
+
+create or replace function allegro_route_booking_intake()
+returns trigger language plpgsql as $$
+declare
+  v_booking_id uuid;
+begin
+  if not exists (
+    select 1
+    from artist_booking_settings s
+    where s.artist_id = new.artist_id and s.booking_enabled = true
+  ) then
+    -- Artists without an explicit settings row use the default open posture.
+    if exists (
+      select 1
+      from artist_booking_settings s
+      where s.artist_id = new.artist_id and s.booking_enabled = false
+    ) then
+      raise exception 'This artist is not accepting booking requests';
+    end if;
+  end if;
+
+  insert into artist_booking_requests (
+    request_code, artist_id, company_name, contact_name, contact_email, contact_phone,
+    preferred_contact, performance_type, performance_other, event_date, event_time,
+    event_visibility, venue_name, venue_address, city, country, event_description,
+    expected_audience, proposed_budget, budget_currency, backline_provided,
+    flights_hotel_provided, ground_transport_provided, visa_support_required,
+    livestream_rights_requested, recording_rights_requested, merchandise_opportunity,
+    special_requests, privacy_consent, source
+  ) values (
+    new.request_code, new.artist_id, trim(new.company_name), trim(new.contact_name),
+    lower(trim(new.contact_email)), trim(new.contact_phone), new.preferred_contact,
+    new.performance_type, new.performance_other, new.event_date, new.event_time,
+    new.event_visibility, new.venue_name, new.venue_address, new.city, new.country,
+    new.event_description, new.expected_audience, new.proposed_budget, upper(new.budget_currency),
+    new.backline_provided, new.flights_hotel_provided, new.ground_transport_provided,
+    new.visa_support_required, new.livestream_rights_requested, new.recording_rights_requested,
+    new.merchandise_opportunity, new.special_requests, true, 'izakhono_core_public_intake'
+  )
+  returning id into v_booking_id;
+
+  insert into artist_booking_events(booking_id, artist_id, event_type, note)
+  values(v_booking_id, new.artist_id, 'request_created', 'Public booking request received through IZAKHONO Core intake.');
+
+  return new;
+end;
+$$;
+
+drop trigger if exists allegro_route_booking_intake_trigger on artist_booking_intake;
+create trigger allegro_route_booking_intake_trigger
+after insert on artist_booking_intake
+for each row execute function allegro_route_booking_intake();

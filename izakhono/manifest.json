@@ -101,6 +101,46 @@
       "update_policy": "none",
       "delete_policy": "none",
       "owner_column": "owner_id"
+    },
+    {
+      "table_name": "public_artist_booking_settings",
+      "select_policy": "public",
+      "insert_policy": "none",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "artist_id"
+    },
+    {
+      "table_name": "artist_booking_settings",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "owner",
+      "delete_policy": "owner",
+      "owner_column": "artist_id"
+    },
+    {
+      "table_name": "artist_booking_intake",
+      "select_policy": "none",
+      "insert_policy": "public",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "artist_id"
+    },
+    {
+      "table_name": "artist_booking_requests",
+      "select_policy": "owner",
+      "insert_policy": "none",
+      "update_policy": "owner",
+      "delete_policy": "none",
+      "owner_column": "artist_id"
+    },
+    {
+      "table_name": "artist_booking_events",
+      "select_policy": "owner",
+      "insert_policy": "owner",
+      "update_policy": "none",
+      "delete_policy": "none",
+      "owner_column": "artist_id"
     }
   ],
   "buckets": [
