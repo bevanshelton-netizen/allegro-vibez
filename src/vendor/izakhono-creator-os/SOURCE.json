@@ -1,0 +1,23 @@
+{
+  "source_repository": "bevanshelton-netizen/izakhono-builder",
+  "source_commit": "b3f016ef424aaf2fa50210e629691493b680f417",
+  "mode": "reviewed vendored snapshot for owner-controlled deterministic ALLEGRO builds",
+  "files": {
+    "artist": {
+      "source_path": "products/izakhono-artist-protect/src/core.js",
+      "blob_sha": "e7bbcf37bf13dc7c648336c07d6022d761caecc2"
+    },
+    "revenue": {
+      "source_path": "products/izakhono-revenue/src/core.js",
+      "blob_sha": "72b9100318b301766d1346ce696180b7647a923d"
+    },
+    "clearset": {
+      "source_path": "products/izakhono-clearset/src/core.js",
+      "blob_sha": "71189427eddacec7d03e646b9947d9a59b26af45"
+    },
+    "contract": {
+      "source_path": "products/izakhono-artist-protect/contracts/06-live-performance-booking.md",
+      "blob_sha": "145636b8097c5ec53ef1b08bbb2d5091f22abb33"
+    }
+  }
+}
