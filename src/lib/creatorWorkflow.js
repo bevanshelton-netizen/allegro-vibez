@@ -89,3 +89,84 @@ export async function updateCreatorProfile(userId, values) {
   if (error) throw error
   return data
 }
+
+
+export async function createArtistBookingRequest(artistId, payload) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('create_artist_booking_request', {
+    p_artist_id: artistId,
+    p_payload: payload,
+  })
+  if (error) throw error
+  return Array.isArray(data) ? data[0] : data
+}
+
+export async function getArtistBookingSettings(artistId) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('artist_booking_settings')
+    .select('artist_id,booking_enabled,base_currency,minimum_fee,deposit_percent,default_set_minutes,performance_types,travel_policy,rider_summary,quote_valid_days,updated_at')
+    .eq('artist_id', artistId)
+    .maybeSingle()
+  if (error) throw error
+  return data || null
+}
+
+export async function saveArtistBookingSettings(artistId, values) {
+  const client = requireSupabase()
+  const payload = {
+    artist_id: artistId,
+    booking_enabled: Boolean(values.booking_enabled),
+    base_currency: String(values.base_currency || 'ZAR').toUpperCase(),
+    minimum_fee: values.minimum_fee === '' ? null : Number(values.minimum_fee),
+    deposit_percent: Number(values.deposit_percent ?? 50),
+    default_set_minutes: Number(values.default_set_minutes ?? 60),
+    performance_types: String(values.performance_types || '').split(',').map(v=>v.trim()).filter(Boolean).slice(0,20),
+    travel_policy: values.travel_policy?.trim() || null,
+    rider_summary: values.rider_summary?.trim() || null,
+    quote_valid_days: Number(values.quote_valid_days ?? 7),
+    updated_at: new Date().toISOString(),
+  }
+  const { data, error } = await client
+    .from('artist_booking_settings')
+    .upsert(payload, { onConflict: 'artist_id' })
+    .select()
+    .single()
+  if (error) throw error
+  return data
+}
+
+export async function getArtistBookingRequests(artistId, limit = 100) {
+  const client = requireSupabase()
+  const { data, error } = await client
+    .from('artist_booking_requests')
+    .select('id,request_code,artist_id,company_name,contact_name,contact_email,contact_phone,preferred_contact,performance_type,performance_other,event_date,event_time,event_visibility,venue_name,venue_address,city,country,event_description,expected_audience,proposed_budget,budget_currency,backline_provided,flights_hotel_provided,ground_transport_provided,visa_support_required,livestream_rights_requested,recording_rights_requested,merchandise_opportunity,special_requests,status,quoted_gross_amount,quote_currency,platform_fee_bps,platform_fee_amount,creator_net_amount,quote_valid_until,deposit_percent,deposit_amount,deposit_status,created_at,updated_at')
+    .eq('artist_id', artistId)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  if (error) throw error
+  return data || []
+}
+
+export async function quoteArtistBooking(bookingId, grossAmount, currency = 'ZAR', depositPercent = null) {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('quote_artist_booking', {
+    p_booking_id: bookingId,
+    p_gross_amount: grossAmount,
+    p_currency: currency,
+    p_deposit_percent: depositPercent,
+  })
+  if (error) throw error
+  return data
+}
+
+export async function setArtistBookingStatus(bookingId, status, note = '') {
+  const client = requireSupabase()
+  const { data, error } = await client.rpc('set_artist_booking_status', {
+    p_booking_id: bookingId,
+    p_status: status,
+    p_note: note || null,
+  })
+  if (error) throw error
+  return data
+}
