@@ -8,7 +8,7 @@ const FALLBACK_SUPABASE_URL = 'https://zoolsumifdtanycjryje.supabase.co'
 const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8LBaWtgMxlewODl4STQ9YA_jMMEt5Gt'
 
 const coreUrl = import.meta.env.VITE_IZAKHONO_CORE_URL || ''
-const coreProject = import.meta.env.VITE_IZAKHONO_PROJECT || 'allegro_vibez'
+const coreProject = import.meta.env.VITE_IZAKHONO_PROJECT || 'allegro-vibez'
 const corePublicKey = import.meta.env.VITE_IZAKHONO_PUBLIC_KEY || ''
 
 let selectedClient
