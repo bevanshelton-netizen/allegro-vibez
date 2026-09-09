@@ -161,6 +161,9 @@ export async function getArtistBookingSettings(artistId) {
     .eq('artist_id', artistId)
     .maybeSingle()
   if (error) throw error
+  if (backendProvider === 'izakhono-core' && data) {
+    return { status:'new', budget_currency:'ZAR', deposit_status:'not_collected', ...data }
+  }
   return data || null
 }
 
@@ -275,7 +278,7 @@ export async function quoteArtistBooking(bookingId, grossAmount, currency = 'ZAR
       : Number(depositPercent)
 
     const updated = await client
-      .from('artist_booking_requests')
+      .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
       .update({
         status: 'quoted',
         quoted_gross_amount: Number(grossAmount),
@@ -324,7 +327,7 @@ export async function setArtistBookingStatus(bookingId, status, note = '') {
     if (!current.data) throw new Error('Booking request not found.')
 
     const updated = await client
-      .from('artist_booking_requests')
+      .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', bookingId)
       .single()
@@ -353,7 +356,7 @@ export async function setArtistBookingStatus(bookingId, status, note = '') {
 export async function getArtistBookingRequestById(bookingId) {
   const client = requireSupabase()
   const { data, error } = await client
-    .from('artist_booking_requests')
+    .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
     .select('id,request_code,artist_id,company_name,contact_name,contact_email,contact_phone,preferred_contact,performance_type,performance_other,event_date,event_time,event_visibility,venue_name,venue_address,city,country,event_description,expected_audience,proposed_budget,budget_currency,backline_provided,flights_hotel_provided,ground_transport_provided,visa_support_required,livestream_rights_requested,recording_rights_requested,merchandise_opportunity,special_requests,status,quoted_gross_amount,quote_currency,platform_fee_bps,platform_fee_amount,creator_net_amount,quote_valid_until,deposit_percent,deposit_amount,deposit_status,created_at,updated_at')
     .eq('id', bookingId)
     .maybeSingle()
