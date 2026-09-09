@@ -26,6 +26,8 @@ for (const table of [
   'release_contributors','release_events','royalty_ledger',
   'creator_royalty_summary','subscription_plans','creator_subscriptions',
   'creator_wallets','payout_requests',
+  'public_artist_booking_settings','artist_booking_settings','artist_booking_intake',
+  'artist_booking_requests','artist_booking_events',
 ]) {
   if (!exposed.has(table)) {
     console.error(`IZAKHONO exposure missing: ${table}`)
@@ -70,6 +72,37 @@ if (!publishedViewMatch || !/\bstatus\b/i.test(publishedViewMatch[1])) {
 
 if (!schema.includes('allegro_validate_payout')) {
   console.error('IZAKHONO schema must retain server-side payout balance validation.')
+  process.exit(1)
+}
+
+for (const token of [
+  'create table if not exists artist_booking_intake',
+  'create table if not exists artist_booking_requests',
+  'create or replace view public_artist_booking_settings',
+  'platform_fee_bps integer not null default 1000 check (platform_fee_bps = 1000)',
+  'allegro_route_booking_intake',
+]) {
+  if (!schema.includes(token)) {
+    console.error(`IZAKHONO booking contract missing: ${token}`)
+    process.exit(1)
+  }
+}
+
+const bookingIntake = manifest.exposures.find(item => item.table_name === 'artist_booking_intake')
+if (bookingIntake?.insert_policy !== 'public' || bookingIntake?.select_policy !== 'none') {
+  console.error('Public booking intake must be write-only: public insert, no public select.')
+  process.exit(1)
+}
+
+const bookingRequests = manifest.exposures.find(item => item.table_name === 'artist_booking_requests')
+if (bookingRequests?.select_policy !== 'owner' || bookingRequests?.insert_policy !== 'none') {
+  console.error('Private booking requests must remain artist-owned and not directly public-insertable.')
+  process.exit(1)
+}
+
+const seed = readFileSync('izakhono/seed.sql', 'utf8')
+if (seed.includes("'USD',8") || seed.includes("'USD',6")) {
+  console.error('IZAKHONO seed must not silently reduce the locked ALLEGRO 10% creator platform share.')
   process.exit(1)
 }
 
