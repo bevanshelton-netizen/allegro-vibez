@@ -9,6 +9,7 @@ import {
   saveArtistBookingSettings,
   setArtistBookingStatus,
 } from '../lib/creatorWorkflow'
+import { bookingSettlementGate, creatorBookingQuotePreview } from '../lib/creatorOsBridge'
 import '../styles/artist-launch.css'
 
 const yesNo=[['','Select an option'],['true','Yes'],['false','No']]
@@ -167,7 +168,13 @@ export function ArtistBookingDesk({session}){
   async function quote(row){
     const amount=Number(quotes[row.id]||row.quoted_gross_amount||0)
     if(!amount){setMessage('Enter a quote amount first.');return}
-    try{await quoteArtistBooking(row.id,amount,settings.base_currency||'ZAR',Number(settings.deposit_percent||50));setMessage('Quote recorded. No payment has been collected.');await load()}catch(error){setMessage(error.message||'Could not create quote.')}
+    try{
+      const preview=creatorBookingQuotePreview(amount,settings.base_currency||'ZAR',Number(settings.deposit_percent||50))
+      if(preview.fee_bps!==1000)throw new Error('IZAKHONO Revenue rejected the booking split.')
+      await quoteArtistBooking(row.id,amount,preview.currency,Number(settings.deposit_percent||50))
+      setMessage('Quote recorded through IZAKHONO Revenue rules. No payment has been collected.')
+      await load()
+    }catch(error){setMessage(error.message||'Could not create quote.')}
   }
   async function move(row,status){
     try{await setArtistBookingStatus(row.id,status);setMessage('Booking moved to '+status+'.');await load()}catch(error){setMessage(error.message||'Could not update booking.')}
@@ -178,6 +185,11 @@ export function ArtistBookingDesk({session}){
   return <main className="booking-desk">
     <section className="booking-desk-head"><div><div className="eyebrow">ALLEGRO ARTIST BOOKING ENGINE™</div><h1>Booking Desk</h1><p>Qualify enquiries, quote transparently, confirm engagements and keep the commercial trail in one place.</p></div><Link className="secondary inline" to={'/artist/'+session.user.id}>View my public artist space</Link></section>
     <div className="booking-payment-gate"><strong>PAYMENT GATE</strong><span>Quote and deposit amounts are calculated now. Deposit collection stays off until an approved payment gateway is verified and connected.</span></div>
+    <section className="creator-os-rails">
+      <article><div className="eyebrow">IZAKHONO Revenue</div><h3>Money rule</h3><p>Creator bookings use the owner-controlled 90/10 commercial rule. ALLEGRO's 10% share is checked before the quote is recorded.</p></article>
+      <article><div className="eyebrow">ARTIST PROTECT</div><h3>Contract Shield</h3><p>Quoted bookings can generate a live-performance agreement draft with rights, production, cancellation and signature safeguards.</p></article>
+      <article><div className="eyebrow">CLEARSET</div><h3>Settlement gate</h3><p>No receipt is called AVAILABLE until beneficial ownership, ledger posting, obligations and reserve funding are confirmed.</p></article>
+    </section>
     {message&&<div className="notice booking-notice">{message}</div>}
     <section className="booking-settings">
       <div><div className="eyebrow">ARTIST CONTROLS</div><h2>Your booking rules</h2></div>
@@ -204,6 +216,10 @@ export function ArtistBookingDesk({session}){
         <p className="booking-description">{row.event_description}</p>
         {(row.livestream_rights_requested||row.recording_rights_requested||row.merchandise_opportunity)&&<div className="booking-flags">{row.livestream_rights_requested&&<span>Livestream rights</span>}{row.recording_rights_requested&&<span>Recording rights</span>}{row.merchandise_opportunity&&<span>Merch opportunity</span>}</div>}
         {row.quoted_gross_amount!=null?<div className="booking-split"><span><small>Client quote</small><strong>{money(row.quoted_gross_amount,row.quote_currency)}</strong></span><span><small>ALLEGRO {Number(row.platform_fee_bps||1000)/100}%</small><strong>{money(row.platform_fee_amount,row.quote_currency)}</strong></span><span><small>Artist net</small><strong>{money(row.creator_net_amount,row.quote_currency)}</strong></span><span><small>Deposit target</small><strong>{money(row.deposit_amount,row.quote_currency)}</strong></span></div>:<div className="booking-quote-box"><label>Quote amount ({settings.base_currency})<input type="number" min="0" step="0.01" value={quotes[row.id]||''} onChange={e=>setQuotes(q=>({...q,[row.id]:e.target.value}))}/></label><button type="button" onClick={()=>quote(row)}>Create transparent quote</button></div>}
+        {row.quoted_gross_amount!=null&&<div className="creator-os-booking-checks">
+          <div><span className="eyebrow">ARTIST PROTECT</span><strong>Live booking agreement required</strong><Link to={'/bookings/'+row.id+'/contract'}>Open Contract Shield draft</Link></div>
+          <div><span className="eyebrow">CLEARSET</span><strong>{bookingSettlementGate(row).status}</strong><small>{bookingSettlementGate(row).reason}</small></div>
+        </div>}
         <div className="booking-actions">
           {row.status==='new'&&<button onClick={()=>move(row,'qualified')}>Qualify</button>}
           {['qualified','quoted','negotiating'].includes(row.status)&&<button onClick={()=>move(row,'negotiating')}>Negotiating</button>}
