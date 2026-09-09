@@ -8,8 +8,8 @@ const dockerfile = readFileSync('Dockerfile', 'utf8')
 const nginx = readFileSync('deploy/nginx.conf', 'utf8')
 const envExample = readFileSync('.env.example', 'utf8')
 
-if (manifest.slug !== 'allegro_vibez') {
-  console.error('IZAKHONO manifest slug must remain allegro_vibez.')
+if (manifest.slug !== 'allegro-vibez') {
+  console.error('IZAKHONO manifest slug must remain allegro-vibez.')
   process.exit(1)
 }
 

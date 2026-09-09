@@ -1,6 +1,6 @@
 {
   "name": "ALLEGRO VIBEZ",
-  "slug": "allegro_vibez",
+  "slug": "allegro-vibez",
   "schema_files": [
     "schema.sql",
     "seed.sql"
