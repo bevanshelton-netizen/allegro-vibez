@@ -18,5 +18,19 @@ url('/allegro-vibez-music-evolution.jpg') center/cover no-repeat}
 .av-auth-returning{background:radial-gradient(circle at 22% 28%,rgba(255,33,79,.18),transparent 24%),radial-gradient(circle at 76% 70%,rgba(101,79,255,.18),transparent 26%),linear-gradient(145deg,#11131b,#08090e)}
 .av-auth-returning .av-auth-benefits{display:flex;flex-wrap:wrap}.av-auth-returning .av-auth-benefits span{padding:9px 12px;border-radius:999px;font-size:.68rem;letter-spacing:.12em}
 
-@media(max-width:900px){.av-auth-enhanced{grid-template-columns:1fr}.av-auth-side{min-height:500px;order:0}.av-auth-enhanced>section{order:1}}
-@media(max-width:650px){.av-auth-enhanced{width:91%;padding:26px 0 54px;gap:16px}.av-auth-side{min-height:430px;padding:30px 24px;border-radius:25px}.av-auth-side h1{font-size:clamp(3rem,14vw,4.6rem)}.av-auth-enhanced>section{padding:29px 22px!important;border-radius:25px}.av-auth-enhanced>section h2{font-size:clamp(2.9rem,13vw,4.4rem)}.av-auth-benefits span{font-size:.76rem}}
+@media(max-width:900px){
+  .av-auth-enhanced{grid-template-columns:1fr;min-height:0;padding-top:28px;align-items:start}
+  .av-auth-enhanced>section{order:0;justify-content:flex-start}
+  .av-auth-side{order:1;min-height:360px}
+}
+@media(max-width:650px){
+  .av-auth-enhanced{width:min(94%,560px);padding:18px 0 36px;gap:14px}
+  .av-auth-enhanced>section{padding:24px 18px!important;border-radius:22px}
+  .av-auth-enhanced>section h2{font-size:clamp(2.45rem,11vw,3.7rem);line-height:.94;margin:.12em 0 .3em}
+  .av-auth-side{min-height:300px;padding:24px 20px;border-radius:22px}
+  .av-auth-side h1{font-size:clamp(2.55rem,11.5vw,3.8rem)}
+  .av-auth-side>p{font-size:.96rem;line-height:1.6}
+  .av-auth-benefits{margin:18px 0;gap:7px}
+  .av-auth-benefits span{font-size:.73rem;padding:10px 12px}
+  .av-auth-roles{font-size:.62rem}
+}
