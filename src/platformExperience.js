@@ -2,6 +2,15 @@ const TARGETS = new Set(['/discover','/artists','/creator-hub','/dashboard','/up
 
 function currentRoute(){return window.location.pathname.replace(/\/$/,'')||'/'}
 function slug(path){return path==='/'?'home':path.slice(1).replace(/\//g,'-')}
+function visualRoute(path){
+  if(/^\/rights\//.test(path))return 'rights'
+  if(/^\/artist\/[^/]+\/book$/.test(path))return 'artist-booking'
+  if(/^\/artist\/[^/]+$/.test(path))return 'artist-profile'
+  if(path==='/bookings')return 'bookings'
+  if(path==='/radio')return 'radio'
+  if(path==='/revenue')return 'revenue'
+  return slug(path)
+}
 
 function decorateReleaseCards(page){
   page.querySelectorAll('.release-grid article').forEach((card,index)=>{
@@ -63,5 +72,5 @@ function ensureHub(page){
 }
 
 function ensureWorkspace(page,path){if(!TARGETS.has(path)||['/discover','/artists','/creator-hub'].includes(path))return;document.body.dataset.avRoute=slug(path);page.classList.add('av-workspace-page');const title=page.querySelector(':scope > h2');if(title&&!page.querySelector('.av-workspace-accent'))title.insertAdjacentHTML('beforebegin','<div class="av-workspace-accent" aria-hidden="true"><span></span><span></span><span></span></div>')}
-function enhance(){const path=currentRoute();if(path==='/'){document.body.dataset.avRoute='home';return}const page=document.querySelector('main.page');if(!page)return;if(path==='/discover')ensureDiscover(page);else if(path==='/artists')ensureArtists(page);else if(path==='/creator-hub')ensureHub(page);else ensureWorkspace(page,path)}
+function enhance(){const path=currentRoute();document.body.dataset.avRoute=visualRoute(path);if(path==='/')return;const page=document.querySelector('main.page');if(!page)return;if(path==='/discover')ensureDiscover(page);else if(path==='/artists')ensureArtists(page);else if(path==='/creator-hub')ensureHub(page);else ensureWorkspace(page,path)}
 const root=document.getElementById('root');if(root){const observer=new MutationObserver(()=>requestAnimationFrame(enhance));observer.observe(root,{childList:true,subtree:true})}window.addEventListener('popstate',()=>requestAnimationFrame(enhance));requestAnimationFrame(enhance)

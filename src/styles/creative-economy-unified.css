@@ -1,0 +1,328 @@
+/* ALLEGRO SOUTH AFRICA · Unified Creative Economy Visual System
+   Loaded last so working product logic stays untouched while creator-facing surfaces
+   share the emerald / teal / gold language established by the SHELTON PROTOCOL™. */
+
+:root{
+  --av-green:#0ca678;
+  --av-green-bright:#16d39b;
+  --av-teal:#0d7f72;
+  --av-gold:#d5b24c;
+  --av-gold-bright:#f1d67a;
+  --av-ink:#07100d;
+  --av-panel:#0d1714;
+  --av-cream:#f7f3e7;
+  --av-soft:#b8c2bd;
+  --av-line:rgba(255,255,255,.13);
+}
+
+body{
+  background:
+    radial-gradient(circle at 12% 5%,rgba(12,166,120,.13),transparent 28%),
+    radial-gradient(circle at 86% 9%,rgba(213,178,76,.09),transparent 25%),
+    #070b0a;
+}
+
+/* Global chrome */
+.site-header{
+  background:rgba(5,14,12,.90);
+  border-color:rgba(241,214,122,.13);
+  box-shadow:0 8px 30px rgba(0,0,0,.22);
+}
+.brand b{color:var(--av-gold-bright)}
+.site-header nav a:hover,.site-header nav a.active{color:var(--av-gold-bright)}
+.pill,.primary,.small-primary{
+  background:linear-gradient(135deg,#087f5b 0%,#0ca678 48%,#b78b25 100%);
+  color:white;
+  box-shadow:0 10px 28px rgba(12,166,120,.15);
+}
+.pill:hover,.primary:hover,.small-primary:hover{filter:brightness(1.08)}
+.secondary{border-color:rgba(241,214,122,.24);background:rgba(255,255,255,.025)}
+.eyebrow,.av-kicker{color:#95e4ca!important}
+.hub-cards article a,.empty a,.cards article a,.release-links a,.artist-links a,.consent a,.footer-links a{
+  color:var(--av-gold-bright)!important;
+}
+footer{background:#060a09;border-color:rgba(241,214,122,.10)}
+
+/* Cards, workspaces and forms */
+.cards article,.panel,.empty,.release-grid article,.release-list article,.rights-summary>div,
+.money-grid article,.ledger-list article,.moderation-list article,.plan-card,.wallet-grid article,
+.av-workspace-page .panel,.av-workspace-page .release-list article{
+  background:linear-gradient(155deg,rgba(18,40,33,.78),rgba(10,15,13,.93));
+  border-color:rgba(255,255,255,.12);
+  box-shadow:0 18px 48px rgba(0,0,0,.22);
+}
+.cards article:hover,.release-grid article:hover,.plan-card:hover{
+  border-color:rgba(241,214,122,.30);
+}
+input,select,textarea{
+  background:#0b1512;
+  border-color:rgba(255,255,255,.14);
+}
+input:focus,select:focus,textarea:focus{
+  outline:2px solid rgba(12,166,120,.55);
+  outline-offset:1px;
+  border-color:rgba(12,166,120,.75);
+}
+.notice{
+  border-color:rgba(213,178,76,.36);
+  background:linear-gradient(135deg,rgba(12,166,120,.08),rgba(213,178,76,.08));
+  color:#f0dfac;
+}
+.status-submitted,.status-requested,.status-processing{border-color:rgba(213,178,76,.48);color:#f1d67a}
+.status-published,.status-approved,.status-paid{border-color:rgba(22,211,155,.38);color:#8ff0c8}
+.plan-current{border-color:rgba(213,178,76,.58);box-shadow:0 0 0 1px rgba(213,178,76,.13) inset}
+
+/* Legacy platform-experience accents -> SA creative economy palette */
+.av-button-primary{
+  background:linear-gradient(135deg,#087f5b,#0ca678 52%,#b98f2c)!important;
+  box-shadow:0 12px 35px rgba(12,166,120,.18)!important;
+}
+.av-button-ghost{border-color:rgba(241,214,122,.24)!important}
+.av-workspace-accent span:nth-child(1){background:#0ca678!important}
+.av-workspace-accent span:nth-child(2){background:#d5b24c!important}
+.av-workspace-accent span:nth-child(3){background:#2bbfb0!important}
+.av-hub-icon{
+  border-color:rgba(213,178,76,.32)!important;
+  background:linear-gradient(145deg,rgba(12,166,120,.16),rgba(213,178,76,.10))!important;
+  color:#f1d67a!important;
+}
+.av-hub-path i{color:#d5b24c!important}
+.av-discovery-rail span:first-child,.av-artist-role-rail span:first-child{
+  border-color:rgba(213,178,76,.42)!important;
+  background:rgba(12,166,120,.12)!important;
+  color:#f7f3e7!important;
+}
+.av-release-art,.av-artist-avatar{
+  background:
+    radial-gradient(circle at 52% 40%,rgba(12,166,120,.24),transparent 28%),
+    radial-gradient(circle at 35% 30%,rgba(213,178,76,.14),transparent 24%),
+    linear-gradient(145deg,#10201b,#070b0a)!important;
+}
+.av-release-art:before{
+  background:conic-gradient(from 0deg,rgba(12,166,120,.72),rgba(213,178,76,.24),rgba(43,191,176,.55),rgba(241,214,122,.38),rgba(12,166,120,.72))!important;
+}
+.av-release-art b,.av-artist-avatar span{
+  background:linear-gradient(145deg,#fff,#d9e8e1 44%,#f1d67a 52%,#0ca678)!important;
+  -webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;
+}
+.av-artist-avatar i{background:#f1d67a!important;box-shadow:0 0 20px #d5b24c!important}
+.av-future-copy h3 em{color:#f1d67a!important}
+.av-founding-callout{
+  background:
+    radial-gradient(circle at 85% 45%,rgba(12,166,120,.17),transparent 30%),
+    linear-gradient(145deg,rgba(255,255,255,.05),rgba(213,178,76,.035))!important;
+  border-color:rgba(213,178,76,.18)!important;
+}
+
+/* Shared photographic treatment */
+.artist-public-hero,.booking-hero,.radio-hero,.revenue-hero{
+  position:relative;
+  overflow:hidden;
+  border:1px solid rgba(241,214,122,.19);
+  box-shadow:0 28px 75px rgba(0,0,0,.32);
+}
+.artist-public-hero:before,.booking-hero:before,.radio-hero:before,.revenue-hero:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    linear-gradient(90deg,rgba(5,15,12,.98) 0%,rgba(5,15,12,.88) 36%,rgba(5,15,12,.42) 62%,rgba(5,15,12,.16) 100%),
+    url('/sa/protocol/allegro-protocol-hero.webp') 70% center/cover no-repeat;
+}
+.artist-public-hero>*,
+.booking-hero>*,
+.radio-hero>*,
+.revenue-hero>*{position:relative;z-index:1}
+
+/* Artist public profiles */
+.artist-public-space{width:min(1240px,92%);padding-top:42px}
+.artist-public-hero{
+  min-height:520px;
+  border-radius:32px;
+  padding:60px clamp(26px,5vw,64px);
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-end;
+}
+.artist-public-hero h1{font-size:clamp(4rem,8vw,7.4rem);text-shadow:0 5px 30px rgba(0,0,0,.75)}
+.artist-public-hero p{color:#d8e1dc;max-width:660px;text-shadow:0 2px 15px #000}
+.artist-public-hero .artist-links span{
+  border:1px solid rgba(241,214,122,.28);background:rgba(7,16,13,.62);
+  border-radius:999px;padding:8px 12px;color:#f1d67a;font-size:.76rem;font-weight:900;
+}
+.artist-public-grid{margin-top:20px}
+.artist-public-grid>article{
+  background:
+    radial-gradient(circle at 95% 0%,rgba(213,178,76,.08),transparent 30%),
+    linear-gradient(160deg,rgba(15,39,31,.86),rgba(8,13,11,.95));
+  border-color:rgba(255,255,255,.12);
+}
+.artist-public-grid>article:nth-child(5){
+  border-color:rgba(213,178,76,.26);
+  background:linear-gradient(145deg,rgba(12,166,120,.12),rgba(213,178,76,.06));
+}
+
+/* Rights / IP ledger */
+body[data-av-route="rights"] .page{
+  position:relative;
+  isolation:isolate;
+  padding-top:110px;
+}
+body[data-av-route="rights"] .page:before{
+  content:"";
+  position:absolute;z-index:-1;right:-6vw;top:25px;width:min(600px,58vw);height:380px;
+  border-radius:36px;opacity:.38;
+  background:
+    linear-gradient(90deg,#070b0a 0%,rgba(7,11,10,.36) 55%,rgba(7,11,10,.1)),
+    url('/sa/protocol/allegro-protocol-hero.webp') 77% center/cover no-repeat;
+  filter:saturate(.92);
+}
+body[data-av-route="rights"] .rights-summary>div{
+  background:linear-gradient(145deg,rgba(12,166,120,.12),rgba(213,178,76,.055));
+}
+body[data-av-route="rights"] .rights-summary strong{color:#f1d67a}
+
+/* Booking */
+.booking-page,.booking-desk{
+  background:
+    radial-gradient(circle at 15% 0%,rgba(12,166,120,.14),transparent 28%),
+    radial-gradient(circle at 88% 14%,rgba(213,178,76,.09),transparent 24%),
+    #070b0a;
+}
+.booking-hero{
+  min-height:440px;border-radius:30px;padding:55px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.booking-hero h1 em{color:#f1d67a}
+.booking-trust-row span{background:rgba(7,16,13,.58);border-color:rgba(241,214,122,.24)}
+.booking-form{background:#f6f1e4;box-shadow:0 35px 90px rgba(0,0,0,.42)}
+.booking-form .eyebrow{color:#087f5b!important}
+.booking-form input:focus,.booking-form select:focus,.booking-form textarea:focus{outline-color:#0ca678}
+.booking-submit{
+  background:linear-gradient(90deg,#087f5b,#d5b24c,#087f5b);
+  color:#07100d;
+}
+.booking-settings,.booking-request-card,.creator-os-rails article{
+  background:linear-gradient(155deg,rgba(16,38,31,.84),rgba(8,13,11,.95));
+}
+
+/* Radio */
+.radio-page{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(12,166,120,.16),transparent 30%),
+    radial-gradient(circle at 88% 8%,rgba(213,178,76,.11),transparent 28%),
+    #070b0a;
+}
+.radio-hero{
+  min-height:590px;
+  padding:90px max(24px,7vw) 58px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+  border-radius:0 0 36px 36px;
+  border-inline:0;border-top:0;
+}
+.radio-hero:before{
+  background:
+    linear-gradient(90deg,rgba(5,15,12,.98),rgba(5,15,12,.85) 38%,rgba(5,15,12,.28) 68%,rgba(5,15,12,.08)),
+    url('/sa/protocol/allegro-protocol-hero.webp') 72% center/cover no-repeat;
+}
+.radio-kicker,.radio-heading span,.radio-grid span,.radio-business article>span,.radio-legal strong{color:#f1d67a!important}
+.radio-player{
+  background:rgba(7,16,13,.78);
+  border-color:rgba(241,214,122,.22);
+  backdrop-filter:blur(16px);
+}
+.radio-grid article,.radio-business article{
+  background:linear-gradient(155deg,rgba(15,38,31,.84),rgba(8,13,11,.96));
+  border-color:rgba(255,255,255,.11);
+}
+.radio-grid article.on-air{border-color:#d5b24c;box-shadow:inset 0 0 0 1px rgba(213,178,76,.28)}
+.radio-business{background:rgba(213,178,76,.12);border-color:rgba(213,178,76,.12)}
+.radio-legal{border-left-color:#d5b24c;background:rgba(213,178,76,.07)}
+
+/* Revenue / promotion */
+.revenue-page{
+  background:
+    radial-gradient(circle at 12% 0%,rgba(12,166,120,.13),transparent 30%),
+    #070b0a;
+}
+.revenue-hero{
+  max-width:none;
+  width:min(1240px,92%);
+  min-height:520px;
+  margin:38px auto 45px;
+  border-radius:32px;
+  padding:64px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.revenue-hero h1 em{color:#f1d67a}
+.revenue-hero>p{color:#d4ded9;max-width:670px}
+.revenue-trust span{background:rgba(7,16,13,.62);border-color:rgba(241,214,122,.24)}
+.revenue-card{
+  background:linear-gradient(155deg,rgba(15,39,31,.84),rgba(8,13,11,.96));
+}
+.revenue-card.selected{border-color:rgba(213,178,76,.58);box-shadow:0 0 0 1px rgba(213,178,76,.12) inset}
+.revenue-price{color:#f1d67a}
+.revenue-note{border-left-color:#0ca678;background:rgba(12,166,120,.08)}
+
+/* Prosperity / earnings and creator workspaces */
+body[data-av-route="prosperity"] .page,
+body[data-av-route="wallet"] .page,
+body[data-av-route="my-music"] .page,
+body[data-av-route="dashboard"] .page,
+body[data-av-route="creator-hub"] .page{
+  position:relative;
+}
+body[data-av-route="prosperity"] .page:before,
+body[data-av-route="dashboard"] .page:before{
+  content:"";
+  position:absolute;z-index:-1;right:-7vw;top:28px;width:min(560px,55vw);height:330px;
+  border-radius:34px;opacity:.28;
+  background:linear-gradient(90deg,#070b0a,rgba(7,11,10,.18)),url('/sa/protocol/allegro-protocol-hero.webp') 78% center/cover no-repeat;
+}
+body[data-av-route="prosperity"] .money-grid article strong,
+body[data-av-route="wallet"] .wallet-grid strong{color:#f1d67a}
+body[data-av-route="creator-hub"] .av-hub-card{
+  background:
+    radial-gradient(circle at 100% 0%,rgba(213,178,76,.07),transparent 32%),
+    linear-gradient(155deg,rgba(15,39,31,.86),rgba(8,13,11,.96))!important;
+}
+body[data-av-route="creator-hub"] .av-hub-bottom{
+  border-color:rgba(213,178,76,.18);
+  background:linear-gradient(135deg,rgba(12,166,120,.08),rgba(213,178,76,.045));
+}
+
+/* Protective / governance cues across the product */
+.rights-summary,.money-grid,.wallet-grid,.booking-trust-row{
+  position:relative;
+}
+.rights-summary:before,.money-grid:before,.wallet-grid:before{
+  content:"CREATIVE ECONOMY RECORD";
+  grid-column:1/-1;
+  font-size:.66rem;font-weight:950;letter-spacing:.18em;color:#79cdb1;
+  margin:4px 0 -4px;
+}
+
+@media(max-width:900px){
+  .artist-public-hero,.booking-hero,.radio-hero,.revenue-hero{
+    min-height:600px;
+  }
+  .artist-public-hero:before,.booking-hero:before,.radio-hero:before,.revenue-hero:before{
+    background:
+      linear-gradient(180deg,rgba(5,15,12,.91) 0%,rgba(5,15,12,.78) 42%,rgba(5,15,12,.28) 68%,rgba(5,15,12,.58) 100%),
+      url('/sa/protocol/allegro-protocol-hero.webp') 68% center/cover no-repeat;
+  }
+  .artist-public-hero,.booking-hero,.revenue-hero{padding:38px 28px}
+  body[data-av-route="rights"] .page:before,
+  body[data-av-route="prosperity"] .page:before,
+  body[data-av-route="dashboard"] .page:before{opacity:.16;width:85vw}
+}
+
+@media(max-width:620px){
+  .artist-public-space{width:94%}
+  .artist-public-hero{min-height:620px;padding:34px 22px}
+  .artist-public-hero h1{font-size:3.55rem}
+  .booking-hero,.revenue-hero{min-height:570px;padding:30px 22px}
+  .radio-hero{min-height:640px}
+}
