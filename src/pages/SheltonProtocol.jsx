@@ -62,6 +62,7 @@ export default function SheltonProtocol({ session }) {
   const [loading,setLoading] = useState(Boolean(session))
   const [saving,setSaving] = useState(false)
   const [message,setMessage] = useState('')
+  const [backendReady,setBackendReady] = useState(true)
   const [form,setForm] = useState({
     eligibility_basis:'south_african_citizen',
     province:'Gauteng',
@@ -83,7 +84,15 @@ export default function SheltonProtocol({ session }) {
         .eq('owner_id', session.user.id)
         .maybeSingle()
       if (!active) return
-      if (error && error.code !== 'PGRST116') setMessage(error.message)
+      if (error && error.code !== 'PGRST116') {
+        const notActivated = ['42P01','PGRST205','PGRST204'].includes(error.code)
+        if (notActivated) {
+          setBackendReady(false)
+          setMessage('Protocol enrolment is staged and will activate when the Allegro database migration is applied.')
+        } else {
+          setMessage('We could not load your Protocol Passport. Please try again from your dashboard.')
+        }
+      }
       if (data) {
         setPassport(data)
         setForm({
@@ -115,7 +124,7 @@ export default function SheltonProtocol({ session }) {
 
   async function savePassport(e) {
     e.preventDefault()
-    if (!session || !supabase) return
+    if (!session || !supabase || !backendReady) return
     if (!form.sa_eligibility_confirmed || !form.data_assessment_consent || !form.regulated_partner_acknowledged) {
       setMessage('Complete all three declarations before submitting your Protocol Passport.')
       return
@@ -151,7 +160,16 @@ export default function SheltonProtocol({ session }) {
         .single()
     }
     setSaving(false)
-    if (result.error) { setMessage(result.error.message); return }
+    if (result.error) {
+      const notActivated = ['42P01','PGRST205','PGRST204'].includes(result.error.code)
+      if (notActivated) {
+        setBackendReady(false)
+        setMessage('Protocol enrolment is staged and will activate when the Allegro database migration is applied.')
+      } else {
+        setMessage('We could not save your Protocol Passport. Please try again from your dashboard.')
+      }
+      return
+    }
     setPassport(result.data)
     setMessage('Protocol Passport saved. Verification remains pending until reviewed.')
   }
@@ -209,6 +227,7 @@ export default function SheltonProtocol({ session }) {
         <div className="actions"><Link className="primary" to="/login">Log in</Link><Link className="secondary" to="/register">Join Allegro</Link></div>
       </div> : loading ? <div className="protocol-signin-card">Loading your Protocol Passport…</div> :
       <form className="protocol-form" onSubmit={savePassport}>
+        {!backendReady && <div className="notice">The SHELTON PROTOCOL™ experience is live, but creator enrolment records are not active on this environment yet. Your existing Allegro account, releases and earnings are unaffected.</div>}
         <label>South African eligibility basis
           <select value={form.eligibility_basis} onChange={e=>setForm({...form,eligibility_basis:e.target.value})}>
             <option value="south_african_citizen">South African citizen</option>
@@ -234,7 +253,7 @@ export default function SheltonProtocol({ session }) {
         <label className="protocol-check"><input type="checkbox" checked={form.regulated_partner_acknowledged} onChange={e=>setForm({...form,regulated_partner_acknowledged:e.target.checked})}/><span>I understand that insurance, financial advice, underwriting and regulated financial services can only be provided by appropriately authorised partners.</span></label>
         <label className="protocol-check"><input type="checkbox" checked={form.public_badge_enabled} onChange={e=>setForm({...form,public_badge_enabled:e.target.checked})}/><span>Allow Allegro to display my verified SHELTON PROTOCOL™ status publicly once approved. Private documents remain private.</span></label>
         {message && <div className="notice">{message}</div>}
-        <button className="primary" disabled={saving}>{saving ? 'Saving…' : passport ? 'Update Protocol Passport' : 'Create Protocol Passport'}</button>
+        <button className="primary" disabled={saving || !backendReady}>{saving ? 'Saving…' : backendReady ? (passport ? 'Update Protocol Passport' : 'Create Protocol Passport') : 'Enrolment activation pending'}</button>
       </form>}
     </section>
 
