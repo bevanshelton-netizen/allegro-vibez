@@ -21,7 +21,8 @@
     "verify:public-music": "node scripts/verify-public-music-policy.mjs",
     "verify:artist-booking": "node scripts/verify-artist-booking.mjs",
     "verify:creator-os": "node scripts/verify-creator-os-integration.mjs",
-    "verify:protocol": "node scripts/verify-shelton-protocol.mjs"
+    "verify:protocol": "node scripts/verify-shelton-protocol.mjs",
+    "prebuild": "node scripts/assemble-protocol-hero.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
