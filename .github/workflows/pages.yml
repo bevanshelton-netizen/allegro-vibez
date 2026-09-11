@@ -28,7 +28,7 @@ jobs:
       - name: Prepare SPA routes
         run: |
           set -euo pipefail
-          routes=(login register reset-password update-password discover artists creator-hub dashboard upload my-music profile prosperity billing wallet admin/review admin/commercial)
+          routes=(login register reset-password update-password discover artists creator-hub dashboard upload my-music profile prosperity billing wallet admin/review admin/commercial sa/protocol)
           for route in "${routes[@]}"; do
             mkdir -p "dist/$route"
             cp dist/index.html "dist/$route/index.html"
