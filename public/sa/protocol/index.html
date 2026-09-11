@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <meta name="theme-color" content="#07100d" />
+  <title>ALLEGRO South Africa — SHELTON PROTOCOL™</title>
+  <meta name="description" content="ALLEGRO South Africa — Powered by the SHELTON PROTOCOL™. Governance, protection and commercial readiness for qualifying South African creatives." />
+  <style>
+    :root{color-scheme:dark;--bg:#07100d;--panel:#0e1714;--line:rgba(255,255,255,.12);--text:#f7f6f0;--muted:#b4bbb7;--green:#0ca678;--gold:#d5b24c;--gold2:#f1d67a}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 12% 8%,rgba(12,166,120,.20),transparent 28%),radial-gradient(circle at 88% 10%,rgba(213,178,76,.18),transparent 26%),linear-gradient(180deg,#07100d,#090b0a 60%,#07100d);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    a{color:inherit;text-decoration:none}.wrap{width:min(1180px,90%);margin:auto}.top{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--line);background:rgba(7,16,13,.91);backdrop-filter:blur(18px)}.topin{height:78px;display:flex;align-items:center;justify-content:space-between;gap:24px}.brand{font-weight:1000;letter-spacing:.13em;font-size:1.35rem}.brand b{color:var(--gold2)}.nav{display:flex;gap:18px;align-items:center;font-size:.9rem;color:#d7ddd9}.pill,.primary,.secondary{display:inline-flex;align-items:center;justify-content:center;min-height:46px;border-radius:999px;padding:0 20px;font-weight:900}.pill,.primary{background:linear-gradient(135deg,#087f5b,#0ca678 52%,#bf9632);box-shadow:0 12px 34px rgba(12,166,120,.18)}.secondary{border:1px solid var(--line);background:rgba(255,255,255,.025)}
+    .hero{min-height:76vh;display:grid;grid-template-columns:1.25fr .75fr;gap:54px;align-items:center;padding:84px 0 66px}.eyebrow{font-size:.78rem;font-weight:950;letter-spacing:.18em;color:#9be5cc;text-transform:uppercase}.hero h1,.section h2,.foundation h2{font-family:Georgia,serif;font-weight:500;letter-spacing:-.035em;line-height:.94;margin:.17em 0}.hero h1{font-size:clamp(4rem,8vw,7.6rem)}.hero h1 em{color:var(--gold2);font-weight:400}.hero p{max-width:770px;font-size:1.15rem;line-height:1.72;color:var(--muted)}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}.seal{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;text-align:center;padding:38px;border:1px solid rgba(213,178,76,.46);background:radial-gradient(circle at 35% 28%,rgba(255,255,255,.05),transparent 25%),linear-gradient(145deg,#0d251c,#151107);box-shadow:0 0 0 12px rgba(213,178,76,.04),0 30px 80px rgba(0,0,0,.38)}.seal small,.seal span{letter-spacing:.18em;font-weight:900;font-size:.7rem;color:#9be5cc}.seal strong{font-family:Georgia,serif;color:var(--gold2);font-size:clamp(2rem,4vw,3.7rem);line-height:.88}
+    .section{padding:72px 0}.section h2,.foundation h2{font-size:clamp(2.7rem,5vw,5.1rem)}.intro{display:grid;grid-template-columns:1.1fr .9fr;gap:42px;align-items:end}.intro p,.card p,.split p,.notice p{color:var(--muted);line-height:1.7}.stages{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:36px}.stage{border-top:3px solid rgba(255,255,255,.11);padding:14px 4px 0;color:#727b77;display:grid;gap:6px}.stage.active{border-color:var(--gold);color:#fff}.stage span{font-size:.7rem;font-weight:900}.stage strong{font-size:.88rem}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding-bottom:64px}.card,.notice,.split article{border:1px solid var(--line);border-radius:24px;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.18)}.icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(135deg,#087f5b,#d5b24c);font-weight:1000;letter-spacing:.06em}.card h3,.split h3{font-size:1.4rem;margin:.7rem 0}.card a{color:var(--gold2);font-weight:900}.split{display:grid;grid-template-columns:1fr 1fr;gap:18px}.notice{border-color:rgba(213,178,76,.36);background:linear-gradient(135deg,rgba(12,166,120,.09),rgba(213,178,76,.08));display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}.notice strong{display:block;font-size:1.25rem;margin-bottom:6px}.notice .actions{margin:0}
+    .foundation{margin:30px auto 90px;padding:45px;border:1px solid rgba(213,178,76,.28);border-radius:30px;background:linear-gradient(135deg,rgba(12,166,120,.12),rgba(213,178,76,.07));display:grid;grid-template-columns:1fr 1fr;gap:42px;align-items:center}.equation{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.equation span,.equation strong{border:1px solid var(--line);border-radius:999px;padding:10px 14px}.equation strong{color:var(--gold2);border-color:rgba(213,178,76,.38)}.equation b{color:#70d6b4}.foot{border-top:1px solid var(--line);padding:34px 0 46px;color:#8f9994;font-size:.9rem}.footin{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    @media(max-width:900px){.hero,.intro,.foundation{grid-template-columns:1fr}.seal{max-width:330px}.grid{grid-template-columns:1fr 1fr}.stages{grid-template-columns:repeat(2,1fr)}.notice{grid-template-columns:1fr}.split{grid-template-columns:1fr}.nav a:not(.pill){display:none}}
+    @media(max-width:620px){.hero{padding-top:50px}.hero h1{font-size:3.5rem}.grid{grid-template-columns:1fr}.topin{height:70px}.brand{font-size:1.05rem}.nav{gap:8px}.pill{padding:0 14px;font-size:.78rem}.section{padding:55px 0}}
+  </style>
+</head>
+<body>
+  <header class="top"><div class="wrap topin"><a class="brand" href="/"><span>ALLEGRO</span> <b>VIBEZ</b></a><nav class="nav"><a href="/">Home</a><a href="/artists">Artists</a><a href="/radio">Radio</a><a class="pill" href="/register">Join Allegro</a></nav></div></header>
+
+  <main>
+    <section class="wrap hero">
+      <div>
+        <div class="eyebrow">ALLEGRO SOUTH AFRICA · POWERED BY THE SHELTON PROTOCOL™</div>
+        <h1>Your creative career.<br><em>Governed. Protected. Bankable.</em></h1>
+        <p>A South Africa-exclusive governance and commercial-readiness layer for qualifying creatives and creative enterprises. ALLEGRO remains your creator marketplace; the SHELTON PROTOCOL™ gives the journey structure, protection-readiness and institutional credibility.</p>
+        <div class="actions"><a class="primary" href="/register">Start with Allegro</a><a class="secondary" href="#journey">See the Protocol Journey</a></div>
+      </div>
+      <div class="seal"><span>SOUTH AFRICA</span><strong>SHELTON<br>PROTOCOL™</strong><small>CREATIVE ECONOMY GOVERNANCE LAYER</small></div>
+    </section>
+
+    <section id="journey" class="wrap section">
+      <div class="intro"><div><div class="eyebrow">ONE CREATIVE OPERATING SYSTEM</div><h2>From talent to institutional readiness.</h2></div><p>The Protocol is designed to help South African creatives move from fragmented activity to a structured record of identity, rights, assets, earnings, governance and protection needs.</p></div>
+      <div class="stages"><div class="stage active"><span>01</span><strong>Registered</strong></div><div class="stage"><span>02</span><strong>Verified</strong></div><div class="stage"><span>03</span><strong>Protocol Ready</strong></div><div class="stage"><span>04</span><strong>Protected</strong></div><div class="stage"><span>05</span><strong>Commercial Ready</strong></div><div class="stage"><span>06</span><strong>Investment Ready</strong></div></div>
+    </section>
+
+    <section class="wrap grid">
+      <article class="card"><div class="icon">GP</div><h3>Governance Passport</h3><p>Build a controlled South African creative identity and readiness record tied to your Allegro account.</p><a href="/register">Create your account →</a></article>
+      <article class="card"><div class="icon">IP</div><h3>IP & Rights</h3><p>Connect releases, ownership declarations and contributor information to an auditable rights trail.</p><a href="/my-music">Open music & rights →</a></article>
+      <article class="card"><div class="icon">AR</div><h3>Asset Register</h3><p>Structure instruments, equipment, wardrobe, production gear and other creative assets for future risk assessment.</p><a href="#activation">See activation status →</a></article>
+      <article class="card"><div class="icon">PH</div><h3>Protection Hub</h3><p>Capture protection needs without pretending Allegro is an insurer. Regulated insurance activities remain with authorised partners.</p><a href="#protection">How protection works →</a></article>
+      <article class="card"><div class="icon">ER</div><h3>Earnings Record</h3><p>Use Allegro royalties, wallet and booking activity to build a clearer commercial history over time.</p><a href="/prosperity">View prosperity tools →</a></article>
+      <article class="card"><div class="icon">CR</div><h3>Commercial Readiness</h3><p>Bring together bookings, rights, earnings and governance evidence into a stronger business profile.</p><a href="/bookings">Open booking tools →</a></article>
+    </section>
+
+    <section id="activation" class="wrap section">
+      <div class="notice"><div><strong>Protocol enrolment records are being activated separately.</strong><p>This public experience is live now. The secure creator Passport database remains staged until the dedicated Allegro production database migration is applied. Your existing Allegro account, catalogue, rights and earnings are unaffected.</p></div><div class="actions"><a class="primary" href="/register">Join Allegro</a><a class="secondary" href="/login">Existing creator</a></div></div>
+    </section>
+
+    <section id="protection" class="wrap section split">
+      <article><div class="eyebrow">ASSET & RISK READINESS</div><h3>Know what must be protected.</h3><p>The Protocol creates a cleaner record of the creative person's business, assets, activity and risk needs so an insurer can assess something structured rather than fragmented.</p></article>
+      <article><div class="eyebrow">REGULATORY SEPARATION</div><h3>Insurance is a pathway, not a promise.</h3><p>ALLEGRO and the SHELTON PROTOCOL™ can organise data and needs. Advice, underwriting, quotations, policy placement and claims decisions remain with appropriately authorised insurers and FSP partners.</p></article>
+    </section>
+
+    <section class="wrap foundation">
+      <div><div class="eyebrow">THE OPERATING MODEL</div><h2>ALLEGRO is the marketplace.<br>SHELTON PROTOCOL™ is the governance engine.</h2></div>
+      <div class="equation"><span>Verified creator identity</span><b>+</b><span>Rights & economic activity</span><b>+</b><span>Governance & protection readiness</span><b>=</b><strong>South African creative economy infrastructure</strong></div>
+    </section>
+  </main>
+
+  <footer class="foot"><div class="wrap footin"><span>ALLEGRO VIBEZ · More Than Music. A Movement.</span><span>SHELTON PROTOCOL™ · Confidential proprietary framework</span></div></footer>
+</body>
+</html>
