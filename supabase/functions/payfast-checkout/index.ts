@@ -41,7 +41,6 @@ async function izakhonoCheckout(input:{
       currency:'ZAR',
       email:input.email,
       description:`ALLEGRO-VIBEZ ${input.plan.name}`.slice(0,180),
-      // Preserve the existing PayFast-specific entitlement ledger on first rollout.
       provider:'payfast',
       return_url:`${origin}/billing?payment=success`,
       cancel_url:`${origin}/billing?payment=cancelled`,
@@ -87,7 +86,9 @@ Deno.serve(async(req)=>{
     }).select('id,merchant_payment_id').single()
     if(insertError||!transaction)throw insertError||new Error('Could not create payment transaction')
 
-    if(Deno.env.get('PAYMENT_ORCHESTRATOR')==='izakhono'){
+    // Shared IZAKHONO PAY is the default orchestration path. The legacy direct
+    // PayFast path remains available only when explicitly selected for rollback.
+    if(Deno.env.get('PAYMENT_ORCHESTRATOR')!=='legacy'){
       try{
         const checkout=await izakhonoCheckout({
           transactionId:transaction.id,
