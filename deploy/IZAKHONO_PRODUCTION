@@ -1,5 +1,7 @@
 ALLEGRO-VIBEZ
 owner_host=true
 core_project=allegro-vibez
-requested_at=2026-09-09
-launch_attempt=2
+requested_at=2026-09-12
+launch_attempt=3
+migration_mode=IZAKHONO_PRIMARY
+fallback_hosts=TEMPORARY_ONLY
