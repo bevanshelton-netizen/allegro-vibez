@@ -87,6 +87,38 @@ export async function updateCreatorProfile(userId, values) {
     .select()
     .single()
   if (error) throw error
+
+  if (backendProvider === 'izakhono-core') {
+    const publicPayload = {
+      display_name: payload.display_name,
+      stage_name: payload.stage_name,
+      account_type: payload.account_type,
+      country: payload.country,
+      city: payload.city,
+      bio: payload.bio,
+      press_headline: payload.press_headline,
+      marketing_message: payload.marketing_message,
+      booking_email: payload.booking_email,
+      booking_phone: payload.booking_phone,
+      website_url: payload.website_url,
+      instagram_url: payload.instagram_url,
+      tiktok_url: payload.tiktok_url,
+      youtube_url: payload.youtube_url,
+      home_region: payload.home_region,
+      primary_genres: payload.primary_genres,
+      languages: payload.languages,
+      available_for_international_bookings: payload.available_for_international_bookings,
+      booking_regions: payload.booking_regions,
+      updated_at: payload.updated_at,
+    }
+    const existing = await client.from('public_profiles').select('id').eq('id', userId).maybeSingle()
+    if (existing.error) throw existing.error
+    const mirror = existing.data
+      ? await client.from('public_profiles').update(publicPayload).eq('id', userId).single()
+      : await client.from('public_profiles').insert({ id: userId, ...publicPayload, created_at: new Date().toISOString() }).select('*').single()
+    if (mirror.error) throw mirror.error
+  }
+
   return data
 }
 
@@ -94,9 +126,17 @@ export async function updateCreatorProfile(userId, values) {
 export async function createArtistBookingRequest(artistId, payload) {
   const client = requireSupabase()
   if (backendProvider === 'izakhono-core') {
+    const now = new Date().toISOString()
+    const requestCode = 'AB-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase()
     const { data, error } = await client
       .from('artist_booking_intake')
-      .insert({ artist_id: artistId, ...payload })
+      .insert({
+        artist_id: artistId,
+        request_code: requestCode,
+        ...payload,
+        created_at: now,
+        updated_at: now,
+      })
       .select('id,request_code')
       .single()
     if (error) throw error
@@ -121,6 +161,9 @@ export async function getArtistBookingSettings(artistId) {
     .eq('artist_id', artistId)
     .maybeSingle()
   if (error) throw error
+  if (backendProvider === 'izakhono-core' && data) {
+    return { status:'new', budget_currency:'ZAR', deposit_status:'not_collected', ...data }
+  }
   return data || null
 }
 
@@ -150,8 +193,39 @@ export async function saveArtistBookingSettings(artistId, values) {
 
     const result = existing.data?.id
       ? await client.from('artist_booking_settings').update(payload).eq('id', existing.data.id).single()
-      : await client.from('artist_booking_settings').insert(payload).select('*').single()
+      : await client.from('artist_booking_settings').insert({ id: artistId, ...payload }).select('*').single()
     if (result.error) throw result.error
+
+    const publicExisting = await client
+      .from('public_artist_booking_settings')
+      .select('id')
+      .eq('artist_id', artistId)
+      .maybeSingle()
+    if (publicExisting.error) throw publicExisting.error
+
+    if (payload.booking_enabled) {
+      const publicPayload = {
+        artist_id: artistId,
+        booking_enabled: true,
+        base_currency: payload.base_currency,
+        minimum_fee: payload.minimum_fee,
+        deposit_percent: payload.deposit_percent,
+        default_set_minutes: payload.default_set_minutes,
+        performance_types: payload.performance_types,
+        travel_policy: payload.travel_policy,
+        rider_summary: payload.rider_summary,
+        quote_valid_days: payload.quote_valid_days,
+        updated_at: payload.updated_at,
+      }
+      const mirror = publicExisting.data?.id
+        ? await client.from('public_artist_booking_settings').update(publicPayload).eq('id', publicExisting.data.id).single()
+        : await client.from('public_artist_booking_settings').insert({ id: artistId, ...publicPayload }).select('*').single()
+      if (mirror.error) throw mirror.error
+    } else if (publicExisting.data?.id) {
+      const removed = await client.from('public_artist_booking_settings').delete().eq('id', publicExisting.data.id)
+      if (removed.error) throw removed.error
+    }
+
     return result.data
   }
 
@@ -166,20 +240,26 @@ export async function saveArtistBookingSettings(artistId, values) {
 
 export async function getArtistBookingRequests(artistId, limit = 100) {
   const client = requireSupabase()
+  const bookingTable = backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests'
   const { data, error } = await client
-    .from('artist_booking_requests')
+    .from(bookingTable)
     .select('id,request_code,artist_id,company_name,contact_name,contact_email,contact_phone,preferred_contact,performance_type,performance_other,event_date,event_time,event_visibility,venue_name,venue_address,city,country,event_description,expected_audience,proposed_budget,budget_currency,backline_provided,flights_hotel_provided,ground_transport_provided,visa_support_required,livestream_rights_requested,recording_rights_requested,merchandise_opportunity,special_requests,status,quoted_gross_amount,quote_currency,platform_fee_bps,platform_fee_amount,creator_net_amount,quote_valid_until,deposit_percent,deposit_amount,deposit_status,created_at,updated_at')
     .eq('artist_id', artistId)
     .order('created_at', { ascending: false })
     .limit(limit)
   if (error) throw error
-  return data || []
+  return (data || []).map(row => ({
+    status: 'new',
+    budget_currency: 'ZAR',
+    deposit_status: 'not_collected',
+    ...row,
+  }))
 }
 
 export async function quoteArtistBooking(bookingId, grossAmount, currency = 'ZAR', depositPercent = null) {
   const client = requireSupabase()
   if (backendProvider === 'izakhono-core') {
-    const current = await client.from('artist_booking_requests').select('*').eq('id', bookingId).maybeSingle()
+    const current = await client.from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests').select('*').eq('id', bookingId).maybeSingle()
     if (current.error) throw current.error
     if (!current.data) throw new Error('Booking request not found.')
 
@@ -198,14 +278,17 @@ export async function quoteArtistBooking(bookingId, grossAmount, currency = 'ZAR
       : Number(depositPercent)
 
     const updated = await client
-      .from('artist_booking_requests')
+      .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
       .update({
         status: 'quoted',
         quoted_gross_amount: Number(grossAmount),
         quote_currency: String(currency || 'ZAR').toUpperCase(),
         platform_fee_bps: 1000,
+        platform_fee_amount: Math.round(Number(grossAmount) * 0.10 * 100) / 100,
+        creator_net_amount: Math.round(Number(grossAmount) * 0.90 * 100) / 100,
         quote_valid_until: validUntil.toISOString().slice(0, 10),
         deposit_percent: nextDeposit,
+        deposit_amount: Math.round(Number(grossAmount) * nextDeposit / 100 * 100) / 100,
         deposit_status: 'not_collected',
         updated_at: new Date().toISOString(),
       })
@@ -239,12 +322,12 @@ export async function setArtistBookingStatus(bookingId, status, note = '') {
     const allowed = ['new','qualified','quoted','negotiating','deposit_due','confirmed','completed','declined','cancelled']
     if (!allowed.includes(status)) throw new Error('Invalid booking status.')
 
-    const current = await client.from('artist_booking_requests').select('id,artist_id').eq('id', bookingId).maybeSingle()
+    const current = await client.from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests').select('id,artist_id').eq('id', bookingId).maybeSingle()
     if (current.error) throw current.error
     if (!current.data) throw new Error('Booking request not found.')
 
     const updated = await client
-      .from('artist_booking_requests')
+      .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
       .update({ status, updated_at: new Date().toISOString() })
       .eq('id', bookingId)
       .single()
@@ -273,7 +356,7 @@ export async function setArtistBookingStatus(bookingId, status, note = '') {
 export async function getArtistBookingRequestById(bookingId) {
   const client = requireSupabase()
   const { data, error } = await client
-    .from('artist_booking_requests')
+    .from(backendProvider === 'izakhono-core' ? 'artist_booking_intake' : 'artist_booking_requests')
     .select('id,request_code,artist_id,company_name,contact_name,contact_email,contact_phone,preferred_contact,performance_type,performance_other,event_date,event_time,event_visibility,venue_name,venue_address,city,country,event_description,expected_audience,proposed_budget,budget_currency,backline_provided,flights_hotel_provided,ground_transport_provided,visa_support_required,livestream_rights_requested,recording_rights_requested,merchandise_opportunity,special_requests,status,quoted_gross_amount,quote_currency,platform_fee_bps,platform_fee_amount,creator_net_amount,quote_valid_until,deposit_percent,deposit_amount,deposit_status,created_at,updated_at')
     .eq('id', bookingId)
     .maybeSingle()
