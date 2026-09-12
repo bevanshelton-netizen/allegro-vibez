@@ -19,6 +19,7 @@ function boolValue(value){return value===''?'':value==='true'}
 function money(value,currency='ZAR'){return value==null?'—':currency+' '+Number(value).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 
 async function netlifyFallback(payload){
+  if(!window.location.hostname.endsWith('.netlify.app'))throw new Error('Legacy Netlify booking fallback is not active on the IZAKHONO owner host.')
   const body=new URLSearchParams({'form-name':'allegro-artist-booking',...Object.fromEntries(Object.entries(payload).map(([key,value])=>[key,Array.isArray(value)?value.join(', '):String(value??'')]))})
   const response=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
   if(!response.ok)throw new Error('Booking request could not be delivered.')
