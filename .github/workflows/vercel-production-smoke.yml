@@ -1,1 +1,29 @@
-name: Verify ALLEGRO Vercel Production\n\non:\n  workflow_dispatch:\n  push:\n    branches: [main]\n    paths:\n      - '.github/workflows/vercel-production-smoke.yml'\n\npermissions:\n  contents: read\n\njobs:\n  smoke:\n    runs-on: ubuntu-latest\n    steps:\n      - name: Verify public ALLEGRO routes\n        shell: bash\n        run: |\n          set -euo pipefail\n          origin="https://allegro-vibez.vercel.app"\n          for path in / /stream /radio /artists /join-artists; do\n            code="$(curl --fail-with-body --silent --show-error --location --output /tmp/allegro-route.html --write-out '%{http_code}' "$origin$path")"\n            test "$code" = "200"\n            grep -Fq 'id="root"' /tmp/allegro-route.html\n            echo "[PASS] $path -> HTTP $code"\n          done\n          curl --fail --silent --show-error --location "$origin/" | grep -Fq 'IZAKHONO global music streaming'\n          echo '[PASS] Production brand marker is current.'\n
+name: Verify ALLEGRO Vercel Production
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/vercel-production-smoke.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify public ALLEGRO routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://allegro-vibez.vercel.app"
+          for path in / /stream /radio /artists /join-artists; do
+            code="$(curl --fail-with-body --silent --show-error --location --output /tmp/allegro-route.html --write-out '%{http_code}' "$origin$path")"
+            test "$code" = "200"
+            grep -Fq 'id="root"' /tmp/allegro-route.html
+            echo "[PASS] $path -> HTTP $code"
+          done
+          curl --fail --silent --show-error --location "$origin/" | grep -Fq 'IZAKHONO global music streaming'
+          echo '[PASS] Production brand marker is current.'
