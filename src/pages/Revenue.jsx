@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import '../styles/revenue.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
+import '../styles/revenue.css'
+import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const offers=[
   {
