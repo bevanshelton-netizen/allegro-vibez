@@ -5,9 +5,10 @@ import '../styles/future.css'
 
 const regions=[
   ['AFRICA','Johannesburg · Lagos · Accra · Nairobi · Cape Town'],
-  ['EUROPE','London · Paris · Berlin · Amsterdam'],
-  ['AMERICAS','New York · Kingston · Toronto · São Paulo'],
-  ['ASIA + MENA','Seoul · Tokyo · Dubai · Mumbai']
+  ['INDIA','Mumbai · Delhi · Chennai · Hyderabad · Punjab'],
+  ['KOREA','Seoul · Busan · Incheon · Daegu'],
+  ['CHINA','Shanghai · Beijing · Shenzhen · Guangzhou'],
+  ['GLOBAL','London · New York · Toronto · São Paulo · Dubai']
 ]
 
 const pillars=[
@@ -34,19 +35,19 @@ export default function HomeGlobal(){
   return <main className="future-home">
     <section className="future-hero">
       <div className="future-copy">
-        <div className="future-badge"><span className="pulse-dot"/> LIVE CREATOR NETWORK · AFRICAN-BORN · GLOBAL</div>
-        <h1>Hear the future.<br/><em>Own your sound.</em></h1>
-        <p>ALLEGRO is a global music, radio and creator economy built from Africa—where artists protect their work, build their audience, get discovered, attract bookings and grow without surrendering the future.</p>
-        <div className="future-actions"><Link className="neon-primary" to="/radio">Enter Live Radio</Link><Link className="neon-secondary" to="/join-artists">Join as an Artist</Link><Link className="ghost-link" to="/revenue">Advertise globally →</Link></div>
+        <div className="future-badge"><span className="pulse-dot"/> GLOBAL MUSIC NETWORK · BUILT IN AFRICA · PLAYED BY THE WORLD</div>
+        <h1>One world of music.<br/><em>Own your sound.</em></h1>
+        <p>ALLEGRO is the IZAKHONO global streaming, radio and creator-commerce platform—connecting Africa, India, Korea, China and the world while artists keep rights, identity and prosperity attached to their music.</p>
+        <div className="future-actions"><Link className="neon-primary" to="/stream">Start Streaming</Link><Link className="neon-secondary" to="/join-artists">Join as an Artist</Link><Link className="ghost-link" to="/radio">Live radio →</Link></div>
         <div className="future-stats"><div><strong>90%</strong><span>creator side by default</span></div><div><strong>24/7</strong><span>radio engine</span></div><div><strong>GLOBAL</strong><span>artist onboarding</span></div></div>
       </div>
       <Pulse/>
     </section>
 
-    <section className="future-marquee"><div>ALLEGRO RADIO · ARTIST PROTECT · GLOBAL BOOKINGS · DISCOVERY · CREATOR WALLET · LIVE SHOWS · AFRICA TO THE WORLD · </div></section>
+    <section className="future-marquee"><div>ALLEGRO STREAM · AFRICA · INDIA · KOREA · CHINA · GLOBAL · LIVE RADIO · ARTIST RIGHTS · BOOKINGS · CREATOR WALLET · </div></section>
 
     <section className="future-section">
-      <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
+      <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets India, Korea, China and the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
       <div className="region-grid">{regions.map(([name,cities])=><article key={name}><div className="region-glow"/><strong>{name}</strong><p>{cities}</p><span>DISCOVER REGION ↗</span></article>)}</div>
     </section>
 
@@ -61,8 +62,8 @@ export default function HomeGlobal(){
     </section>
 
     <section className="future-cta">
-      <div><span>THE NEXT GLOBAL SOUND CAN COME FROM ANYWHERE.</span><h2>Make sure the artist owns the journey.</h2></div>
-      <div className="future-actions"><Link className="neon-primary" to="/join-artists">Claim Artist Space</Link><Link className="neon-secondary" to="/radio">Listen to ALLEGRO</Link></div>
+      <div><span>THE NEXT GLOBAL SOUND CAN COME FROM ANYWHERE.</span><h2>Listen globally. Let the artist own the journey.</h2></div>
+      <div className="future-actions"><Link className="neon-primary" to="/join-artists">Claim Artist Space</Link><Link className="neon-secondary" to="/stream">Open ALLEGRO Stream</Link></div>
     </section>
   </main>
 }
