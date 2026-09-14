@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import '../styles/artist-launch.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
+import '../styles/artist-launch.css'
+import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const benefits=[
   ['Protect your work','Rights declarations, contributor splits, clearance checks and a documented release trail.'],
