@@ -16,6 +16,9 @@ import './styles/creative-economy-unified.css'
 import './homeArtistExperience.js'
 import './platformExperience.js'
 import './authExperience.js'
+import { startIzakhonoAnalytics } from './lib/analytics'
+
+startIzakhonoAnalytics()
 
 const basePath = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '')
 
