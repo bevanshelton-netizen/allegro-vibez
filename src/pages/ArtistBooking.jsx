@@ -10,7 +10,8 @@ import {
   setArtistBookingStatus,
 } from '../lib/creatorWorkflow'
 import { bookingSettlementGate, creatorBookingQuotePreview } from '../lib/creatorOsBridge'
-import '../styles/artist-launch.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
+import '../styles/artist-launch.css'
+import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const yesNo=[['','Select an option'],['true','Yes'],['false','No']]
 const defaultTypes=['Live performance','Festival','Corporate event','Private event','Club / venue','Livestream']
