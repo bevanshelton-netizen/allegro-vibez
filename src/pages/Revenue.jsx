@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import '../styles/revenue.css'
+import '../styles/revenue.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const offers=[
   {
@@ -83,7 +83,7 @@ export default function Revenue(){
     try{
       const body=new URLSearchParams()
       for(const [key,value] of data.entries())body.append(key,String(value))
-      const response=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+      const response=await fetch(ALLEGRO_LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
       if(!response.ok)throw new Error('Reservation could not be submitted.')
       setState('done')
       setMessage('Reservation received. ALLEGRO will confirm scope, delivery date and invoice before payment is requested.')
