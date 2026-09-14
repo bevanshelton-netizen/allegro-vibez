@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import '../styles/artist-launch.css'
+import '../styles/artist-launch.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const benefits=[
   ['Protect your work','Rights declarations, contributor splits, clearance checks and a documented release trail.'],
@@ -20,7 +20,7 @@ export default function ArtistJoin(){
     try{
       const body=new URLSearchParams()
       for(const[k,v]of data.entries())body.append(k,String(v))
-      const r=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+      const r=await fetch(ALLEGRO_LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
       if(!r.ok)throw new Error('Could not reserve your artist place.')
       setState('done');setMessage('You are on the ALLEGRO artist onboarding list. We will contact you with the next step.');e.currentTarget.reset()
     }catch(err){setState('error');setMessage(err.message||'Please try again.')}
