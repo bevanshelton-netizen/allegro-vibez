@@ -1,0 +1,70 @@
+name: Prepare ALLEGRO Gateway Dist
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/PREPARE_GATEWAY_DIST'
+      - '.github/workflows/gateway-dist.yml'
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'vite.config.js'
+      - 'scripts/assemble-protocol-hero.mjs'
+      - 'assets/protocol-hero/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: allegro-gateway-dist
+  cancel-in-progress: false
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify:all
+
+      - name: Prepare SPA fallback
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > dist/vercel.json <<'EOF'
+          {
+            "rewrites": [
+              { "source": "/(.*)", "destination": "/index.html" }
+            ]
+          }
+          EOF
+
+      - name: Publish compiled gateway branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/allegro-gateway-dist
+          mkdir -p /tmp/allegro-gateway-dist
+          cp -R dist/. /tmp/allegro-gateway-dist/
+
+          cd /tmp/allegro-gateway-dist
+          git init
+          git config user.name "IZAKHONO Gateway Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b gateway-dist
+          git add .
+          git commit -m "ALLEGRO gateway dist ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin gateway-dist
