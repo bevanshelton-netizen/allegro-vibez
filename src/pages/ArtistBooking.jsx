@@ -10,7 +10,7 @@ import {
   setArtistBookingStatus,
 } from '../lib/creatorWorkflow'
 import { bookingSettlementGate, creatorBookingQuotePreview } from '../lib/creatorOsBridge'
-import '../styles/artist-launch.css'
+import '../styles/artist-launch.css'\nimport { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const yesNo=[['','Select an option'],['true','Yes'],['false','No']]
 const defaultTypes=['Live performance','Festival','Corporate event','Private event','Club / venue','Livestream']
@@ -21,7 +21,7 @@ function money(value,currency='ZAR'){return value==null?'—':currency+' '+Numbe
 async function netlifyFallback(payload){
   if(!window.location.hostname.endsWith('.netlify.app'))throw new Error('Legacy Netlify booking fallback is not active on the IZAKHONO owner host.')
   const body=new URLSearchParams({'form-name':'allegro-artist-booking',...Object.fromEntries(Object.entries(payload).map(([key,value])=>[key,Array.isArray(value)?value.join(', '):String(value??'')]))})
-  const response=await fetch('/',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
+  const response=await fetch(ALLEGRO_LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
   if(!response.ok)throw new Error('Booking request could not be delivered.')
 }
 
