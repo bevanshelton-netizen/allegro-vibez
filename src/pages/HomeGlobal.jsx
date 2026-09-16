@@ -27,39 +27,28 @@ const experiences=[
   ['EARN','Track prosperity, wallet activity and creator opportunities','/prosperity',null]
 ]
 
-function Pulse(){
-  return <div className="future-orbit" aria-hidden="true">
-    <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
-    <div className="future-core"><span>LIVE</span><strong>ALLEGRO</strong><small>AFRICA ↔ WORLD</small></div>
-    <div className="wave-bars">{Array.from({length:32},(_,i)=><i key={i} style={{'--i':i}}/> )}</div>
-  </div>
-}
-
 export default function HomeGlobal(){
   const[artists,setArtists]=useState([])
   useEffect(()=>{let active=true;(async()=>{if(!supabase)return
     const{data}=await supabase.from('profiles').select('id,stage_name,display_name,country,primary_genres,available_for_international_bookings').order('created_at',{ascending:false}).limit(8)
     if(active)setArtists(data||[])
   })();return()=>{active=false}},[])
-  return <main className="future-home">
-    <section className="future-hero">
-      <div className="future-copy">
-        <div className="future-badge"><span className="pulse-dot"/> GLOBAL MUSIC NETWORK · BUILT IN AFRICA · PLAYED BY THE WORLD</div>
-        <h1>One world of music.<br/><em>Own your sound.</em></h1>
-        <p><strong>Listen. Discover. Upload. Perform. Earn.</strong> ALLEGRO brings music streaming, radio, artist discovery and creator business tools into one global platform built from Africa.</p>
-        <div className="future-actions"><Link className="neon-primary" to="/stream">Start Streaming</Link><Link className="neon-secondary" to="/join-artists">Join as an Artist</Link><Link className="ghost-link" to="/radio">Live radio →</Link></div>
-        <div className="future-stats"><div><strong>90%</strong><span>creator side by default</span></div><div><strong>24/7</strong><span>radio engine</span></div><div><strong>GLOBAL</strong><span>artist onboarding</span></div></div>
+  return <main className="future-home product-first-home">
+    <section className="allegro-explainer product-first">
+      <div className="product-first-head">
+        <div>
+          <span className="product-kicker">ALLEGRO · BUILT IN AFRICA · PLAYED BY THE WORLD</span>
+          <h1>Listen. Discover.<br/><em>Upload. Earn.</em></h1>
+          <p>ALLEGRO is a global music platform for listeners and a business engine for artists—streaming, radio, discovery, rights, bookings and creator prosperity in one place.</p>
+        </div>
+        <div className="product-first-actions">
+          <Link className="neon-primary" to="/stream">▶ Start Streaming</Link>
+          <Link className="neon-secondary" to="/join-artists">Artists: Join ALLEGRO</Link>
+          <Link className="ghost-link" to="/radio">Live Radio →</Link>
+        </div>
       </div>
-      <Pulse/>
-    </section>
-
-    <section className="future-marquee"><div>ALLEGRO STREAM · AFRICA · INDIA · KOREA · CHINA · GLOBAL · LIVE RADIO · ARTIST RIGHTS · BOOKINGS · CREATOR WALLET · </div></section>
-
-    <section className="allegro-explainer">
-      <div className="explainer-head">
-        <span>WHAT IS ALLEGRO?</span>
-        <h2>Music for listeners.<br/>A business engine for artists.</h2>
-        <p>Come to listen and discover. Stay to follow artists, hear radio, book talent, protect music rights and grow creator income.</p>
+      <div className="market-chips" aria-label="ALLEGRO markets">
+        <span>AFRICA</span><span>INDIA</span><span>KOREA</span><span>CHINA</span><span>GLOBAL</span>
       </div>
       <div className="experience-grid">
         {experiences.map(([title,desc,to,image],i)=><Link key={title} to={to} className={'experience-card exp-'+i} style={image?{'--exp-image':'url("'+image+'")'}:undefined}>
@@ -76,6 +65,8 @@ export default function HomeGlobal(){
         </Link>
       </div>
     </section>
+
+    <section className="future-marquee"><div>ALLEGRO STREAM · AFRICA · INDIA · KOREA · CHINA · GLOBAL · LIVE RADIO · ARTIST RIGHTS · BOOKINGS · CREATOR WALLET · </div></section>
 
     <section className="future-section">
       <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets India, Korea, China and the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
