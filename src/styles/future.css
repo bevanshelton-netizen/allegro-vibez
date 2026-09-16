@@ -111,3 +111,64 @@ radial-gradient(circle at 78% 22%,rgba(255,54,146,.3),transparent 28%),radial-gr
   .explainer-head{margin-bottom:22px}
   .explainer-head h2{font-size:2.75rem}
 }
+
+
+/* Product-first homepage: the actual Allegro experience starts immediately below the header. */
+.product-first-home{background:#05060a}
+.product-first{padding:24px max(5vw,24px) 20px}
+.product-first-head{
+  min-height:300px;
+  display:grid;
+  grid-template-columns:minmax(0,1.3fr) minmax(280px,.7fr);
+  align-items:end;
+  gap:34px;
+  padding:34px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:28px;
+  overflow:hidden;
+  background:
+    linear-gradient(90deg,rgba(5,6,10,.92),rgba(5,6,10,.64) 58%,rgba(5,6,10,.16)),
+    url('/av-hero.webp') center/cover no-repeat;
+  box-shadow:0 22px 70px rgba(0,0,0,.32);
+}
+.product-kicker{display:inline-block;color:#76ecff;font-size:.72rem;font-weight:950;letter-spacing:.14em}
+.product-first-head h1{
+  margin:.18em 0;
+  font-size:clamp(3.2rem,6.8vw,6.8rem);
+  line-height:.84;
+  letter-spacing:-.06em;
+}
+.product-first-head h1 em{font-family:Georgia,serif;font-weight:400;color:#7deeff}
+.product-first-head p{max-width:760px;margin:0;color:#e1e5ed;font-size:1.05rem;line-height:1.6}
+.product-first-actions{display:flex;flex-direction:column;align-items:stretch;gap:10px;justify-self:end;width:min(340px,100%)}
+.product-first-actions .neon-primary,.product-first-actions .neon-secondary,.product-first-actions .ghost-link{width:100%;text-align:center}
+.market-chips{display:flex;gap:8px;flex-wrap:wrap;padding:16px 2px 18px}
+.market-chips span{padding:9px 13px;border-radius:999px;border:1px solid rgba(255,255,255,.11);background:#0d1017;color:#c7cedb;font-size:.68rem;font-weight:900;letter-spacing:.1em}
+.product-first .experience-grid{margin-top:0}
+.product-first .exp-0{min-height:430px}
+.product-first .experience-card{min-height:230px}
+.product-first .audience-split{margin-bottom:8px}
+
+@media(max-width:900px){
+  .product-first{padding:14px 14px 18px}
+  .product-first-head{grid-template-columns:1fr;min-height:auto;align-items:start;padding:22px;background:
+    linear-gradient(180deg,rgba(5,6,10,.50),rgba(5,6,10,.84) 58%,#05060a 100%),
+    url('/av-hero.webp') 58% top/cover no-repeat}
+  .product-first-head>div:first-child{padding-top:150px}
+  .product-first-actions{justify-self:stretch;width:100%}
+  .market-chips{padding:12px 0 14px}
+  .product-first .experience-grid{grid-template-columns:1fr 1fr}
+  .product-first .experience-card,.product-first .exp-0,.product-first .exp-1,.product-first .exp-2,.product-first .exp-3,.product-first .exp-4,.product-first .exp-5{grid-column:span 1;min-height:240px}
+  .product-first .exp-0{grid-column:span 2;min-height:330px}
+}
+
+@media(max-width:600px){
+  .product-first-head{padding:18px}
+  .product-first-head>div:first-child{padding-top:120px}
+  .product-first-head h1{font-size:clamp(2.8rem,13.5vw,4rem)}
+  .product-first-head p{font-size:.98rem;line-height:1.5}
+  .market-chips{overflow:auto;flex-wrap:nowrap}
+  .product-first .experience-grid{grid-template-columns:1fr}
+  .product-first .experience-card,.product-first .exp-0,.product-first .exp-1,.product-first .exp-2,.product-first .exp-3,.product-first .exp-4,.product-first .exp-5{grid-column:span 1;min-height:250px}
+  .product-first .experience-copy h3{font-size:2.25rem}
+}
