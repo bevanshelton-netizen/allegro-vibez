@@ -172,3 +172,57 @@ radial-gradient(circle at 78% 22%,rgba(255,54,146,.3),transparent 28%),radial-gr
   .product-first .experience-card,.product-first .exp-0,.product-first .exp-1,.product-first .exp-2,.product-first .exp-3,.product-first .exp-4,.product-first .exp-5{grid-column:span 1;min-height:250px}
   .product-first .experience-copy h3{font-size:2.25rem}
 }
+
+
+/* Bright first screen: impossible to confuse with the previous black intro. */
+.product-first-home{
+  background:
+    radial-gradient(circle at 8% 0%,rgba(255,49,95,.36),transparent 30%),
+    radial-gradient(circle at 92% 12%,rgba(17,207,229,.30),transparent 30%),
+    linear-gradient(180deg,#1a0b2e 0,#080811 42%,#05060a 100%);
+}
+.product-first{padding-top:14px}
+.product-first-head{
+  min-height:260px;
+  border-color:rgba(255,255,255,.24);
+  background:
+    linear-gradient(100deg,rgba(19,5,44,.82),rgba(255,49,95,.34) 52%,rgba(17,207,229,.22)),
+    url('/av-hero.webp') center/cover no-repeat,
+    linear-gradient(135deg,#ff315f,#7c3cff 48%,#11cfe5);
+  box-shadow:0 18px 70px rgba(124,60,255,.28),0 0 0 1px rgba(255,255,255,.05) inset;
+}
+.product-first-head:before{
+  content:"LIVE NOW";
+  position:absolute;
+  top:18px;
+  right:18px;
+  padding:8px 11px;
+  border-radius:999px;
+  background:#fff;
+  color:#16081f;
+  font-size:.62rem;
+  font-weight:950;
+  letter-spacing:.12em;
+}
+.product-first-head{position:relative}
+.market-chips span:nth-child(1){background:#ff315f33;border-color:#ff6a833f}
+.market-chips span:nth-child(2){background:#ff9f2f26;border-color:#ffba5c3f}
+.market-chips span:nth-child(3){background:#9d66ff2b;border-color:#b392ff3f}
+.market-chips span:nth-child(4){background:#ff444426;border-color:#ff77773f}
+.market-chips span:nth-child(5){background:#11cfe526;border-color:#62e9f43f}
+
+@media(max-width:900px){
+  .product-first-head{
+    min-height:240px;
+    background:
+      linear-gradient(180deg,rgba(45,7,70,.24),rgba(24,7,50,.70)),
+      url('/av-hero.webp') 58% center/cover no-repeat,
+      linear-gradient(135deg,#ff315f,#7c3cff 48%,#11cfe5);
+  }
+  .product-first-head>div:first-child{padding-top:64px}
+}
+@media(max-width:600px){
+  .product-first-head{min-height:220px}
+  .product-first-head>div:first-child{padding-top:52px}
+  .product-first-head:before{top:12px;right:12px}
+}
