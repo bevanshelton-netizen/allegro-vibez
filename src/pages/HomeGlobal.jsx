@@ -18,6 +18,15 @@ const pillars=[
   ['04','PROSPER','Transparent 90/10 creator economics by default, plus wallet, reporting and payout rails.']
 ]
 
+const experiences=[
+  ['STREAM','Play music from published artists','/stream','/av-hero.webp'],
+  ['DISCOVER','Find artists across Africa, India, Korea, China and beyond','/artists','/av-discover.webp'],
+  ['RADIO','Tune into ALLEGRO Radio and programmed culture','/radio',null],
+  ['ARTISTS','Create a profile, upload music and build an audience','/join-artists','/av-artists.webp'],
+  ['RIGHTS','Keep ownership, splits and commercial records attached to the music','/sa/protocol',null],
+  ['EARN','Track prosperity, wallet activity and creator opportunities','/prosperity',null]
+]
+
 function Pulse(){
   return <div className="future-orbit" aria-hidden="true">
     <div className="orbit orbit-a"/><div className="orbit orbit-b"/><div className="orbit orbit-c"/>
@@ -37,7 +46,7 @@ export default function HomeGlobal(){
       <div className="future-copy">
         <div className="future-badge"><span className="pulse-dot"/> GLOBAL MUSIC NETWORK · BUILT IN AFRICA · PLAYED BY THE WORLD</div>
         <h1>One world of music.<br/><em>Own your sound.</em></h1>
-        <p>ALLEGRO is the IZAKHONO global streaming, radio and creator-commerce platform—connecting Africa, India, Korea, China and the world while artists keep rights, identity and prosperity attached to their music.</p>
+        <p><strong>Listen. Discover. Upload. Perform. Earn.</strong> ALLEGRO brings music streaming, radio, artist discovery and creator business tools into one global platform built from Africa.</p>
         <div className="future-actions"><Link className="neon-primary" to="/stream">Start Streaming</Link><Link className="neon-secondary" to="/join-artists">Join as an Artist</Link><Link className="ghost-link" to="/radio">Live radio →</Link></div>
         <div className="future-stats"><div><strong>90%</strong><span>creator side by default</span></div><div><strong>24/7</strong><span>radio engine</span></div><div><strong>GLOBAL</strong><span>artist onboarding</span></div></div>
       </div>
@@ -45,6 +54,28 @@ export default function HomeGlobal(){
     </section>
 
     <section className="future-marquee"><div>ALLEGRO STREAM · AFRICA · INDIA · KOREA · CHINA · GLOBAL · LIVE RADIO · ARTIST RIGHTS · BOOKINGS · CREATOR WALLET · </div></section>
+
+    <section className="allegro-explainer">
+      <div className="explainer-head">
+        <span>WHAT IS ALLEGRO?</span>
+        <h2>Music for listeners.<br/>A business engine for artists.</h2>
+        <p>Come to listen and discover. Stay to follow artists, hear radio, book talent, protect music rights and grow creator income.</p>
+      </div>
+      <div className="experience-grid">
+        {experiences.map(([title,desc,to,image],i)=><Link key={title} to={to} className={'experience-card exp-'+i} style={image?{'--exp-image':'url("'+image+'")'}:undefined}>
+          <div className="experience-shade"/>
+          <div className="experience-copy"><small>{String(i+1).padStart(2,'0')}</small><h3>{title}</h3><p>{desc}</p><span>OPEN →</span></div>
+        </Link>)}
+      </div>
+      <div className="audience-split">
+        <Link to="/stream" className="audience-card listener-card">
+          <div><small>FOR LISTENERS</small><h3>Press play. Meet the world.</h3><p>Stream new releases, move between cultures, discover artists and listen to ALLEGRO Radio.</p><span>START LISTENING →</span></div>
+        </Link>
+        <Link to="/join-artists" className="audience-card artist-card">
+          <div><small>FOR ARTISTS</small><h3>Upload. Build. Earn.</h3><p>Your music, artist identity, rights, bookings and prosperity journey in one place.</p><span>JOIN ALLEGRO →</span></div>
+        </Link>
+      </div>
+    </section>
 
     <section className="future-section">
       <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets India, Korea, China and the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
