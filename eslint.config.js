@@ -7,7 +7,7 @@ export default [
   { ignores: ['dist', 'supabase/functions'] },
   js.configs.recommended,
   {
-    files: ['scripts/**/*.{js,mjs,cjs}'],
+    files: ['scripts/**/*.{js,mjs,cjs}', 'api/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       globals: globals.node,
@@ -16,7 +16,7 @@ export default [
   },
   {
     files: ['**/*.{js,jsx}'],
-    ignores: ['scripts/**/*.{js,mjs,cjs}'],
+    ignores: ['scripts/**/*.{js,mjs,cjs}', 'api/**/*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       globals: globals.browser,
