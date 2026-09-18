@@ -179,7 +179,7 @@ function RhythmLab(){
         const osc=ctx.createOscillator(),gain=ctx.createGain()
         osc.frequency.value=beat===0?880:660;gain.gain.value=.05
         osc.connect(gain).connect(ctx.destination);osc.start();osc.stop(ctx.currentTime+.045)
-      }catch{}
+      }catch{audioRef.current=null}
     },60000/bpm)
     return()=>clearInterval(id)
   },[running,bpm,beat])
