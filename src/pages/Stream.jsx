@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/stream.css'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const markets=[
   ['AFRICA','Amapiano · Afrobeats · Gospel · Kwaito · Gqom · Jazz'],
@@ -66,6 +67,7 @@ export default function Stream(){
   }
 
   return <main className="stream-page">
+    <StudioLaunchPromo source="stream"/>
     <section className="stream-hero">
       <div>
         <span className="stream-kicker">ALLEGRO STREAM · POWERED BY IZAKHONO</span>
