@@ -237,17 +237,27 @@ export default function MusicAcademy(){
   const visible=instrumentGroups.map(group=>({...group,instruments:group.instruments.filter(i=>i.toLowerCase().includes(query.toLowerCase()))})).filter(g=>g.instruments.length)
 
   return <main className="music-academy">
-    <section className="ma-hero">
-      <div className="ma-hero-copy">
+    <section className="ma-cinematic-hero">
+      <div className="ma-stage-haze" aria-hidden="true"/>
+      <div className="ma-floating-score" aria-hidden="true">
+        <span>♪</span><span>♫</span><span>♩</span><span>♬</span><span>𝄞</span><span>♪</span><span>♫</span>
+      </div>
+      <div className="ma-title-lockup">
         <span className="ma-kicker">ALLEGRO MUSIC ACADEMY</span>
-        <h1>Learn to play.<br/><em>Learn to read.</em></h1>
-        <p>A complete digital music school for instruments, voice, theory, rhythm, ear training and sight reading — from your first note to confident performance.</p>
+        <h1><span>ALLEGRO</span><small>MUSIC ACADEMY</small></h1>
+        <p className="ma-stage-tagline">Learn <i>•</i> Read <i>•</i> Play <i>•</i> Perform</p>
+        <p className="ma-stage-intro">A complete digital music school for instruments, voice, theory, rhythm, ear training and sight reading — from your first note to confident performance.</p>
         <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Start Free</a><a className="ma-secondary" href="#instruments">Choose an Instrument</a><Link className="ma-secondary" to="/music-academy/my-learning">My Learning</Link></div>
         <div className="ma-trust"><span>✓ Free practice tools</span><span>✓ Learn on phone</span><span>✓ MIDI + microphone</span><span>✓ African + global instruments</span></div>
       </div>
-      <div className="ma-hero-visual" aria-hidden="true">
-        <div className="ma-orbit orbit-one">♩</div><div className="ma-orbit orbit-two">♫</div><div className="ma-orbit orbit-three">♬</div>
-        <div className="ma-disc"><span>ALLEGRO</span><b>MUSIC</b><small>ACADEMY</small></div>
+      <div className="ma-stage-instruments" aria-hidden="true">
+        <div className="ma-stage-piece ma-piano"><span>🎹</span><b>PIANO</b></div>
+        <div className="ma-stage-piece ma-guitar"><span>🎸</span><b>GUITAR</b></div>
+        <div className="ma-stage-piece ma-drums"><span>🥁</span><b>DRUMS</b></div>
+        <div className="ma-stage-piece ma-violin"><span>🎻</span><b>STRINGS</b></div>
+        <div className="ma-stage-piece ma-sax"><span>🎷</span><b>SAX</b></div>
+        <div className="ma-stage-piece ma-trumpet"><span>🎺</span><b>BRASS</b></div>
+        <div className="ma-stage-piece ma-mic"><span>🎙️</span><b>VOICE</b></div>
       </div>
     </section>
 
@@ -257,6 +267,16 @@ export default function MusicAcademy(){
       <article><strong>03</strong><h3>Play</h3><p>Use screen answers, microphone pitch detection or a MIDI instrument.</p></article>
       <article><strong>04</strong><h3>Perform</h3><p>Build toward repertoire, recording, live performance and the Allegro creator ecosystem.</p></article>
     </section>
+
+    <section className="ma-instrument-showcase" aria-label="Music Academy instruments">
+      <div className="ma-showcase-copy"><span className="ma-kicker">A SCHOOL THAT LOOKS LIKE MUSIC</span><h2>Pick up an instrument. Follow the notes. Find your sound.</h2></div>
+      <div className="ma-showcase-orchestra" aria-hidden="true">
+        <span className="show-piano">🎹</span><span className="show-guitar">🎸</span><span className="show-violin">🎻</span><span className="show-drums">🥁</span><span className="show-sax">🎷</span><span className="show-trumpet">🎺</span><span className="show-mic">🎙️</span>
+      </div>
+      <div className="ma-note-stream" aria-hidden="true"><span>𝄞</span><i>♩</i><i>♪</i><i>♫</i><i>♬</i><i>♪</i><i>♩</i></div>
+    </section>
+
+    <div className="ma-keyboard-divider" aria-hidden="true"><span className=""></span><span className="black"></span><span className=""></span><span className="black"></span><span className=""></span><span className=""></span><span className="black"></span><span className=""></span><span className="black"></span><span className=""></span><span className="black"></span><span className=""></span><span className=""></span><span className="black"></span><span className=""></span><span className="black"></span><span className=""></span><span className=""></span></div>
 
     <SightReadingGym/>
     <RhythmLab/>
@@ -270,6 +290,12 @@ export default function MusicAcademy(){
         <div className="ma-instrument-icon">{group.icon}</div><span className="ma-mini">{group.accent}</span><h3>{group.title}</h3><p>{group.instruments.join(' · ')}</p>
         {selected===group.title?<div className="ma-focus">{group.focus.map(item=><span key={item}>✓ {item}</span>)}</div>:<button type="button">Explore pathway <span>→</span></button>}
       </article>)}</div>
+    </section>
+
+    <section className="ma-score-ribbon" aria-label="Music notation">
+      <div className="ma-score-lines" aria-hidden="true"><span/><span/><span/><span/><span/></div>
+      <div className="ma-score-notes" aria-hidden="true"><b>𝄞</b><i>♩</i><i>♪</i><i>♫</i><i>♬</i><i>♩</i><i>♪</i></div>
+      <div className="ma-score-copy"><span className="ma-kicker">READ THE LANGUAGE OF MUSIC</span><h2>Notes stop looking like symbols. They start sounding like music.</h2><p>Treble clef, bass clef, rhythm, time signatures, key signatures, rests, intervals, chords and eventually complete scores.</p></div>
     </section>
 
     <Teacher/>
