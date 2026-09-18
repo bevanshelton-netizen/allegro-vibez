@@ -31,6 +31,7 @@ export default function MusicAcademyLearner(){
       <div><span className="ma-kicker">MY LEARNING</span><h1>Practice with purpose.</h1><p>Your lightweight learning dashboard works immediately on this device. Account-synced progress can be added after the academy subscription backend is activated.</p></div>
       <Link className="ma-secondary" to="/music-academy">Back to Academy</Link>
     </section>
+    <div className="ma-learning-stage" aria-hidden="true"><span>🎹</span><i>♪</i><span>🎸</span><i>♫</i><span>🎻</span><i>♩</i><span>🥁</span><i>♬</i><span>🎷</span><i>♪</i><span>🎺</span><i>𝄞</i><span>🎙️</span></div>
     <section className="ma-dashboard-grid">
       <article className="ma-progress-card"><span>Today’s progress</span><strong>{progress}%</strong><div className="ma-progress-track"><i style={{width:`${progress}%`}}/></div><small>{completed}/{defaultPlan.length} activities · {totalMinutes} minutes</small></article>
       <article><span>Practice streak</span><strong>{streak}</strong><small>completed practice days</small></article>
