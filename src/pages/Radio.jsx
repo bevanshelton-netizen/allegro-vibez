@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { programForNow } from '../lib/radioAutopilot'
 import '../styles/radio.css'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const fallbackPrograms=[
   {id:'sunrise-africa',name:'Sunrise Africa',day:'daily',start:'05:00',end:'09:00',genre:'afropop',description:'Energy, headlines, inspiration, culture and uplifting African music.',priority:10},
@@ -38,6 +39,7 @@ export default function Radio(){
   const live=useMemo(()=>programForNow(programs,new Date()),[programs])
   const nowText=nowPlaying?.track_title?((nowPlaying.artist_name||'Artist')+' — '+nowPlaying.track_title):'24/7 programming engine ready'
   return <main className="radio-page">
+    <StudioLaunchPromo source="radio"/>
     <section className="radio-hero">
       <div className="radio-kicker">ALLEGRO RADIO • LIVE ONLINE • AFRICA TO THE WORLD</div>
       <h1>Music never sleeps.<br/><em>Neither does ALLEGRO.</em></h1>
