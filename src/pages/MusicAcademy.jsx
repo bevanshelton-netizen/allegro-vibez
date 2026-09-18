@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const instrumentGroups = [
   { icon:'♬', title:'Keys', accent:'Piano · Keyboard · Organ', instruments:['Piano','Keyboard','Organ','Accordion'], focus:['Posture & fingering','Scales & chords','Sight reading','Repertoire'] },
@@ -237,6 +238,7 @@ export default function MusicAcademy(){
   const visible=instrumentGroups.map(group=>({...group,instruments:group.instruments.filter(i=>i.toLowerCase().includes(query.toLowerCase()))})).filter(g=>g.instruments.length)
 
   return <main className="music-academy">
+    <StudioLaunchPromo source="music-academy"/>
     <section className="ma-cinematic-hero">
       <div className="ma-stage-haze" aria-hidden="true"/>
       <div className="ma-floating-score" aria-hidden="true">

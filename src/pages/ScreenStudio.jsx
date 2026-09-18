@@ -1,6 +1,7 @@
 import { useMemo,useState } from 'react'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/future.css'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const types=[
   ['music_video','Music video'],
@@ -55,7 +56,8 @@ export default function ScreenStudio({session}){
     setResult(data);setMessage('KORA draft created. Upload and publication remain subject to KORA rights review and moderation.')
   }
 
-  if(!session)return <main className="page"><div className="eyebrow">ALLEGRO × KORA</div><h2>Screen Studio</h2><p>Log in to connect your creator identity and send screen content to KORA.</p></main>
+  if(!session)return <main className="page">
+    <StudioLaunchPromo source="screen-studio"/><div className="eyebrow">ALLEGRO × KORA</div><h2>Screen Studio</h2><p>Log in to connect your creator identity and send screen content to KORA.</p></main>
 
   return <main className="future-home">
     <section className="future-section">

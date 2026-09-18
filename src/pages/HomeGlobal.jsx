@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/future.css'
 import '../styles/home-showcase.css'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const regions=[
   ['AFRICA','🌍','Johannesburg · Lagos · Accra · Nairobi · Cape Town'],
@@ -40,6 +41,7 @@ export default function HomeGlobal(){
   })();return()=>{active=false}},[])
 
   return <main className="future-home product-first-home showcase-home">
+    <StudioLaunchPromo source="home"/>
     <section className="showcase-hero">
       <div className="showcase-copy">
         <div className="showcase-kicker"><span/> GLOBAL MUSIC · RADIO · CREATOR ECONOMY</div>
