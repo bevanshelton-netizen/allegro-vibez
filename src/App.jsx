@@ -24,9 +24,44 @@ const releaseTypes=['Single','EP','Album','DJ Mix']
 function Page({title,children,eyebrow='ALLEGRO-VIBEZ'}){return <main className="page"><div className="eyebrow">{eyebrow}</div><h2>{title}</h2>{children}</main>}
 function RequireLogin(){return <Navigate to="/login" replace/>}
 
+function ShareButton(){
+  const[label,setLabel]=useState('Share')
+  async function share(){
+    const url=window.location.href
+    const data={title:'ALLEGRO-VIBEZ',text:'Discover ALLEGRO-VIBEZ — music, artists, live radio and creator opportunities.',url}
+    try{
+      if(navigator.share){
+        await navigator.share(data)
+        return
+      }
+      if(navigator.clipboard?.writeText){
+        await navigator.clipboard.writeText(url)
+      }else{
+        const input=document.createElement('textarea')
+        input.value=url
+        input.setAttribute('readonly','')
+        input.style.position='fixed'
+        input.style.opacity='0'
+        document.body.appendChild(input)
+        input.select()
+        document.execCommand('copy')
+        input.remove()
+      }
+      setLabel('Link copied')
+      window.setTimeout(()=>setLabel('Share'),1800)
+    }catch(error){
+      if(error?.name!=='AbortError'){
+        setLabel('Try again')
+        window.setTimeout(()=>setLabel('Share'),1800)
+      }
+    }
+  }
+  return <button className="share-button" type="button" onClick={share} aria-label="Share ALLEGRO-VIBEZ" title="Share this ALLEGRO-VIBEZ page"><span aria-hidden="true">↗</span>{label}</button>
+}
+
 function Shell({session,children}){
   async function signOut(){if(supabase)await supabase.auth.signOut();window.location.assign('/')}
-  return <><header className="site-header"><Link className="brand" to="/"><span>ALLEGRO</span><b>VIBEZ</b></Link><nav>{nav.map(([label,to])=><NavLink key={to} to={to}>{label}</NavLink>)}</nav><div className="account-links">{session?<><Link to="/dashboard">Dashboard</Link><Link to="/profile">Profile</Link><button className="text-button" onClick={signOut}>Log out</button></>:<><Link to="/login">Log in</Link><Link className="pill" to="/register">Join</Link></>}</div></header>{children}<footer><span>ALLEGRO-VIBEZ · More Than Music. A Movement.</span><span className="footer-links"><a href="./terms.html">Terms</a><a href="./privacy.html">Privacy</a></span></footer></>
+  return <><header className="site-header"><Link className="brand" to="/"><span>ALLEGRO</span><b>VIBEZ</b></Link><nav>{nav.map(([label,to])=><NavLink key={to} to={to}>{label}</NavLink>)}</nav><div className="account-links"><ShareButton/>{session?<><Link to="/dashboard">Dashboard</Link><Link to="/profile">Profile</Link><button className="text-button" onClick={signOut}>Log out</button></>:<><Link to="/login">Log in</Link><Link className="pill" to="/register">Join</Link></>}</div></header>{children}<footer><span>ALLEGRO-VIBEZ · More Than Music. A Movement.</span><span className="footer-links"><a href="./terms.html">Terms</a><a href="./privacy.html">Privacy</a></span></footer></>
 }
 
 function Home(){return <main><section className="hero"><div className="eyebrow">AFRICAN-BORN · GLOBAL BY DESIGN</div><h1>Own your sound.<br/><em>Build your legacy.</em></h1><p>One trusted creator ecosystem to upload, protect, discover, distribute and monetise music.</p><div className="actions"><Link className="primary" to="/join-artists">Artists: Join ALLEGRO</Link><Link className="secondary" to="/revenue">Advertise / Get Featured</Link><Link className="secondary" to="/radio">Listen / Radio</Link></div></section><section className="cards"><article><span>01</span><h3>Create</h3><p>Build your artist identity, catalogue and release pipeline.</p></article><article><span>02</span><h3>Protect</h3><p>Rights declarations, controlled media and auditable workflows.</p></article><article><span>03</span><h3>Prosper</h3><p>Royalty visibility, wallet controls and creator growth.</p></article></section></main>}
