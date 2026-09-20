@@ -31,7 +31,11 @@ export function origin() {
 }
 
 function jsStringEscape(str) {
-  return String(str).replace(/[\\"']/g, '\\return String(str).replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0')').replaceAll(String.fromCharCode(0), '\\0')
+  return String(str)
+    .replaceAll('\\', '\\\\')
+    .replaceAll('"', '\\"')
+    .replaceAll("'", "\\'")
+    .replaceAll(String.fromCharCode(0), '\\0')
 }
 
 function pathWithQuery(urlValue) {
