@@ -219,15 +219,49 @@ function Teacher(){
   </section>
 }
 
+function AcademyCheckoutButton(){
+  const [state,setState]=useState('idle')
+  const [message,setMessage]=useState('')
+
+  async function checkout(){
+    setState('loading')
+    setMessage('')
+    try{
+      const response=await fetch('/api/academy/checkout',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({productId:'academy_30d'})
+      })
+      const data=await response.json()
+      if(!response.ok)throw new Error(data.error||'Checkout is temporarily unavailable.')
+      if(!data.checkoutUrl)throw new Error('iKhokha did not return a checkout link.')
+      window.location.assign(data.checkoutUrl)
+    }catch(error){
+      setState('error')
+      setMessage(error?.message||'Checkout is temporarily unavailable.')
+      return
+    }
+    setState('redirecting')
+  }
+
+  return <div className="ma-checkout">
+    <button type="button" className="ma-primary" onClick={checkout} disabled={state==='loading'||state==='redirecting'}>
+      {state==='loading'?'Connecting to iKhokha…':state==='redirecting'?'Opening secure checkout…':'Get 30 Days for R99'}
+    </button>
+    {message&&<p className="ma-checkout-message" role="status">{message}</p>}
+    <small>Secure payment by iKhokha. One 30-day access pass; renew manually when it expires.</small>
+  </div>
+}
+
 function Pricing(){
   return <section className="ma-pricing" id="pricing">
     <div className="ma-section-heading">
       <div><span className="ma-kicker">SIMPLE LAUNCH PRICING</span><h2>Start free. Upgrade when you’re ready.</h2></div>
-      <p>No paywall on the basics. The R99 launch plan is for learners who want the complete school experience.</p>
+      <p>No paywall on the basics. R99 unlocks the complete school experience for 30 days.</p>
     </div>
     <div className="ma-price-grid">
       <article><span className="ma-plan">FREE</span><strong>R0</strong><small>forever</small><ul><li>✓ Sight Reading Gym</li><li>✓ Treble & bass clef drills</li><li>✓ Rhythm Lab</li><li>✓ Instrument previews</li><li>✓ Basic Music Teacher</li></ul><a href="#sight-reading" className="ma-secondary">Start practising</a></article>
-      <article className="featured"><span className="ma-badge">LAUNCH PLAN</span><span className="ma-plan">ALL ACCESS</span><strong>R99</strong><small>/ month</small><ul><li>✓ All instrument pathways</li><li>✓ Full sight-reading programme</li><li>✓ Theory + ear training</li><li>✓ Guided practice plans</li><li>✓ Progress & learning dashboard</li><li>✓ Advanced coaching features as released</li></ul><Link to="/register?plan=music-academy-r99" className="ma-primary">Join for R99/month</Link><em>Checkout activation follows Allegro’s production payment-acceptance gate.</em></article>
+      <article className="featured"><span className="ma-badge">LAUNCH PASS</span><span className="ma-plan">ALL ACCESS</span><strong>R99</strong><small>/ 30 days</small><ul><li>✓ All instrument pathways</li><li>✓ Full sight-reading programme</li><li>✓ Theory + ear training</li><li>✓ Guided practice plans</li><li>✓ Progress & learning dashboard</li><li>✓ Advanced coaching features as released</li></ul><AcademyCheckoutButton/><em>Legal merchant: IZAKHONO AFRICA (PTY) LTD. <a href="/refunds.html">Refund & cancellation policy</a>.</em></article>
     </div>
   </section>
 }
@@ -310,7 +344,7 @@ export default function MusicAcademy(){
     <Pricing/>
 
     <section className="ma-final">
-      <div><span className="ma-kicker">LEARN → PRACTISE → PERFORM → CREATE</span><h2>Your music journey starts with one note.</h2><p>Use the free trainers now, then move into the complete R99/month academy when you want the full curriculum and learner dashboard.</p></div>
+      <div><span className="ma-kicker">LEARN → PRACTISE → PERFORM → CREATE</span><h2>Your music journey starts with one note.</h2><p>Use the free trainers now, then move into the complete R99 / 30-day academy when you want the full curriculum and learner dashboard.</p></div>
       <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Train Now</a><a className="ma-secondary" href="#pricing">See Plans</a></div>
     </section>
   </main>

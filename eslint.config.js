@@ -15,6 +15,14 @@ export default [
     },
   },
   {
+    files: ['netlify/functions/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: { ...globals.node, fetch: 'readonly', URL: 'readonly' },
+      parserOptions: { ecmaVersion: 'latest', sourceType: 'module' },
+    },
+  },
+  {
     files: ['**/*.{js,jsx}'],
     ignores: ['scripts/**/*.{js,mjs,cjs}'],
     languageOptions: {
