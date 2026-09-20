@@ -52,7 +52,7 @@ export default function MusicAcademyLearner(){
 
   return <main className="ma-learner">
     <section className="ma-learner-hero">
-      <div><span className="ma-kicker">MY LEARNING</span><h1>Practice with purpose.</h1><p>Your All Access dashboard keeps practice progress on this device. Your 30-day pass is active${access.expiresAt?` until ${new Date(access.expiresAt).toLocaleDateString()}`:'.'}</p></div>
+      <div><span className="ma-kicker">MY LEARNING</span><h1>Practice with purpose.</h1><p>Your All Access dashboard keeps practice progress on this device. Your 30-day pass is active{access.expiresAt?` until ${new Date(access.expiresAt).toLocaleDateString()}.`: '.'}</p></div>
       <Link className="ma-secondary" to="/music-academy">Back to Academy</Link>
     </section>
     <div className="ma-learning-stage" aria-hidden="true"><span>🎹</span><i>♪</i><span>🎸</span><i>♫</i><span>🎻</span><i>♩</i><span>🥁</span><i>♬</i><span>🎷</span><i>♪</i><span>🎺</span><i>𝄞</i><span>🎙️</span></div>
