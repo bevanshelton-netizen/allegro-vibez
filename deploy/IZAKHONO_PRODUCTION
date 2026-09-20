@@ -1,7 +1,8 @@
 ALLEGRO-VIBEZ
 owner_host=true
 core_project=allegro-vibez
-requested_at=2026-09-12
-launch_attempt=3
+requested_at=2026-09-20
+launch_attempt=4
 migration_mode=IZAKHONO_PRIMARY
 fallback_hosts=TEMPORARY_ONLY
+release=music-academy-cinematic
