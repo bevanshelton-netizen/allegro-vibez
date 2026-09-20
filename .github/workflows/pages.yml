@@ -33,7 +33,7 @@ jobs:
       - name: Prepare SPA routes
         run: |
           set -euo pipefail
-          routes=(stream radio revenue join-artists login register reset-password update-password discover artists creator-hub dashboard upload my-music profile prosperity billing wallet admin/review admin/commercial sa/protocol)
+          routes=(stream radio revenue join-artists login register reset-password update-password discover artists creator-hub dashboard upload my-music profile prosperity billing wallet admin/review admin/commercial sa/protocol music-academy music-academy/my-learning)
           for route in "${routes[@]}"; do
             mkdir -p "dist/$route"
             cp dist/index.html "dist/$route/index.html"
