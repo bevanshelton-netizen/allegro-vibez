@@ -1,12 +1,34 @@
 {
-  "version": 2,
+  "version": 3,
   "name": "ALLEGRO VIBEZ",
   "slug": "allegro-vibez",
+  "operator": "IZAKHONO AFRICA (PTY) LTD",
+  "trading_name": "ALLEGRO VIBEZ",
   "build_context": ".",
   "dockerfile_path": "Dockerfile",
   "container_port": 8080,
   "health_path": "/healthz",
   "branch": "main",
+  "infrastructure": {
+    "policy": "owned-first-externally-reversible",
+    "authoritative_source": "IZAKHONO CODE / Forge; GitHub mirror bevanshelton-netizen/allegro-vibez",
+    "owned_target": "NODE01 via IZAKHONO EDGE/TLS",
+    "current_public_route": "https://allegro-vibez-g5c7s8xj3-bevan2.vercel.app",
+    "external_fallback": "https://allegro-vibez-79622wjli-bevan2.vercel.app",
+    "status_label": "EXTERNAL LIVE VERIFIED",
+    "data_dependencies": [
+      "REQUIRES_CURRENT_VERIFICATION"
+    ],
+    "auth_dependencies": [
+      "REQUIRES_CURRENT_VERIFICATION"
+    ],
+    "payment_dependencies": [
+      "REQUIRES_CURRENT_VERIFICATION"
+    ],
+    "backup_evidence": "PENDING",
+    "restore_evidence": "PENDING",
+    "rollback_evidence": "Vercel rollback candidate available"
+  },
   "alpha": {
     "preflight": true,
     "rehearsal": false,
