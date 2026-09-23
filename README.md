@@ -63,3 +63,8 @@ npm run smoke:production
 ```
 
 The smoke probe checks the production origin, important routes, security headers and whether a browser-safe Supabase key is actually embedded in the deployed frontend. It reports only pass/fail state; it never prints the key.
+
+
+## Official IZAKHONO Africa public apps
+
+Customer-facing production platforms are listed in [PUBLIC_APPS.md](./PUBLIC_APPS.md), including KORA, WorkNow, FAISReady, AUTO AI, YenzaNow, SoundLab AI, ProofForge AI, IZAKHONO Growth OS, The Chancellor and Allegro-Vibez.
