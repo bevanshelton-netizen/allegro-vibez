@@ -222,7 +222,7 @@ function Teacher(){
 function AcademyShareButton(){
   const [label,setLabel]=useState('Share Academy')
   async function share(){
-    const url=`${window.location.origin}/music-academy`
+    const url=`${window.location.origin}/music-academy?utm_source=learner_share&utm_medium=referral&utm_campaign=academy_launch`
     const data={title:'ALLEGRO Music Academy',text:'Learn instruments, sight reading, rhythm and more with ALLEGRO Music Academy.',url}
     try{
       if(navigator.share){await navigator.share(data);return}
