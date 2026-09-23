@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://allegro-vibez.netlify.app/sitemap.xml
+Sitemap: https://allegro-vibez.vercel.app/sitemap.xml
