@@ -51,14 +51,20 @@ Deno.serve(async req=>{
   }
   if(action==="owner_pipeline"){
     await ownerAccess(b.owner_token);
-    const [leads,refs,redemptions]=await Promise.all([
+    const [leads,refs,redemptions,clicks,bookings]=await Promise.all([
       db("allegro_studio_growth_leads?select=*&order=created_at.desc&limit=100"),
       db("allegro_studio_referrals?select=*&order=created_at.desc&limit=100"),
-      db("allegro_studio_offer_redemptions?select=*&order=created_at.desc&limit=100")
+      db("allegro_studio_offer_redemptions?select=*&order=created_at.desc&limit=100"),
+      db("allegro_studio_campaign_clicks?select=id,source,created_at&order=created_at.desc&limit=5000"),
+      db("allegro_studio_bookings?select=id,status,payment_status,created_at&order=created_at.desc&limit=1000")
     ]);
     const newLeads=(leads||[]).filter(x=>x.status==="new").length;
     const booked=(leads||[]).filter(x=>["booked","won"].includes(x.status)).length;
-    return json({ok:true,summary:{leads:(leads||[]).length,new_leads:newLeads,booked_or_won:booked,referrers:(refs||[]).length,redemptions:(redemptions||[]).length},leads:leads||[],referrals:refs||[],redemptions:redemptions||[]});
+    const paid=(bookings||[]).filter(x=>x.payment_status==="paid").length;
+    const clickCount=(clicks||[]).length,leadCount=(leads||[]).length;
+    const clickToLead=clickCount?Math.round((leadCount/clickCount)*1000)/10:0;
+    const leadToBooked=leadCount?Math.round((booked/leadCount)*1000)/10:0;
+    return json({ok:true,summary:{clicks:clickCount,leads:leadCount,new_leads:newLeads,booked_or_won:booked,paid_bookings:paid,referrers:(refs||[]).length,redemptions:(redemptions||[]).length,click_to_lead_pct:clickToLead,lead_to_booked_pct:leadToBooked},leads:leads||[],referrals:refs||[],redemptions:redemptions||[]});
   }
   if(action==="owner_update_lead"){
     await ownerAccess(b.owner_token);
