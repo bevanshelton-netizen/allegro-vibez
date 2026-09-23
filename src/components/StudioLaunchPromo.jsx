@@ -8,10 +8,10 @@ export default function StudioLaunchPromo({source='allegro',compact=false}){
     <div className="studio-launch-copy">
       <span>NOW OPEN · ALLEGRO STUDIOS</span>
       <strong>Record. Mix. Master. Podcast. Film.</strong>
-      <p>Professional studio sessions with a built-in Studio Tutor, client project portal and secure booking workflow.</p>
+      <p>Founding creator offers now open: vocal sessions from R999, podcast launch sessions from R1,650, plus referrals and partner codes.</p>
     </div>
     <div className="studio-launch-actions">
-      <a href={href} target="_blank" rel="noreferrer">BOOK / EXPLORE STUDIO →</a>
+      <a href={href} target="_blank" rel="noreferrer">CLAIM FOUNDING OFFER →</a>
       <small>Johannesburg · session requests confirmed before payment</small>
     </div>
   </aside>
