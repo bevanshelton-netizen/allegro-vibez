@@ -22,7 +22,12 @@ const offers={
  "VOCAL999":{label:"Founding Vocal Starter",audience:"artist"},
  "POD1650":{label:"Podcast Launch Session",audience:"podcaster"},
  "CREATOR4200":{label:"Creator Half-Day",audience:"creator"},
- "PARTNER":{label:"Partner / Organisation",audience:"partner"}
+ "PARTNER":{label:"Partner / Organisation",audience:"partner"},
+ "FOUNDING100":{label:"Founding Creator Club",audience:"creator"},
+ "PODMONTHLY":{label:"Podcast Monthly",audience:"podcaster"},
+ "SCHOOLPARTNER":{label:"School / Academy Partner",audience:"school"},
+ "CHOIRPARTNER":{label:"Choir / Church Partner",audience:"choir"},
+ "BRANDMEDIA":{label:"Brand Media Partner",audience:"business"}
 };
 Deno.serve(async req=>{
  if(req.method==="OPTIONS")return new Response("ok",{headers:cors});
@@ -35,6 +40,10 @@ Deno.serve(async req=>{
     const name=clean(b.name,180),mobile=clean(b.mobile,60),email=clean(b.email,180).toLowerCase(),audience=clean(b.audience,60),source=clean(b.source||"studio-growth",120),offer=clean(b.offer_code,40).toUpperCase(),message=clean(b.message,1500),referral=clean(b.referral_code,40).toUpperCase();
     if(!name||(!mobile&&!email)||!emailOk(email)||!audience)return json({error:"Add your name, audience and at least one contact method."},400);
     if(offer&&!(offer in offers))return json({error:"Unknown offer code."},400);
+    if(offer==="FOUNDING100"){
+      const existing=await db("allegro_studio_offer_redemptions?select=id&offer_code=eq.FOUNDING100&status=in.(reserved,applied)&limit=100");
+      if((existing||[]).length>=100)return json({error:"The first 100 Founding Creator Club places have been reserved. Join the general creator list instead."},409);
+    }
     if(referral){const refs=await db("allegro_studio_referrals?select=id,referral_code&referral_code=eq."+encodeURIComponent(referral)+"&status=eq.active&limit=1");if(!refs?.[0])return json({error:"Referral code not found."},400)}
     const rows=await db("allegro_studio_growth_leads","POST",{name,mobile:mobile||null,email:email||null,audience,source,offer_code:offer||null,message:message||null,status:"new"});
     const lead=rows?.[0];
