@@ -219,6 +219,24 @@ function Teacher(){
   </section>
 }
 
+function AcademyShareButton(){
+  const [label,setLabel]=useState('Share Academy')
+  async function share(){
+    const url=`${window.location.origin}/music-academy`
+    const data={title:'ALLEGRO Music Academy',text:'Learn instruments, sight reading, rhythm and more with ALLEGRO Music Academy.',url}
+    try{
+      if(navigator.share){await navigator.share(data);return}
+      await navigator.clipboard.writeText(url)
+      setLabel('Link copied')
+      window.setTimeout(()=>setLabel('Share Academy'),1800)
+    }catch{
+      setLabel('Share cancelled')
+      window.setTimeout(()=>setLabel('Share Academy'),1800)
+    }
+  }
+  return <button type="button" className="ma-secondary ma-share" onClick={share}>↗ {label}</button>
+}
+
 function AcademyCheckoutButton(){
   const [state,setState]=useState('idle')
   const [message,setMessage]=useState('')
@@ -283,7 +301,7 @@ export default function MusicAcademy(){
         <h1><span>ALLEGRO</span><small>MUSIC ACADEMY</small></h1>
         <p className="ma-stage-tagline">Learn <i>•</i> Read <i>•</i> Play <i>•</i> Perform</p>
         <p className="ma-stage-intro">A complete digital music school for instruments, voice, theory, rhythm, ear training and sight reading — from your first note to confident performance.</p>
-        <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Start Free</a><a className="ma-secondary" href="#instruments">Choose an Instrument</a><Link className="ma-secondary" to="/music-academy/my-learning">My Learning</Link></div>
+        <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Start Free</a><a className="ma-secondary" href="#instruments">Choose an Instrument</a><Link className="ma-secondary" to="/music-academy/my-learning">My Learning</Link><AcademyShareButton/></div>
         <div className="ma-trust"><span>✓ Free practice tools</span><span>✓ Learn on phone</span><span>✓ MIDI + microphone</span><span>✓ African + global instruments</span></div>
       </div>
       <div className="ma-stage-instruments" aria-hidden="true">
@@ -341,11 +359,26 @@ export default function MusicAcademy(){
       <div className="ma-levels">{['Foundation','Beginner','Intermediate','Advanced','Performance'].map((level,i)=><article key={level}><span>0{i+1}</span><h3>{level}</h3><p>{i===0?'Music basics, pulse, note names and instrument setup.':i===1?'Technique, simple repertoire, reading and ear training.':i===2?'Scales, chords, ensemble skills and fluent reading.':i===3?'Advanced technique, interpretation and improvisation.':'Auditions, recording preparation and live performance.'}</p></article>)}</div>
     </section>
 
+    <section className="ma-partners" id="partners">
+      <div className="ma-partner-copy">
+        <span className="ma-kicker">FOUNDING PARTNERS</span>
+        <h2>Retailers, schools, choirs and music programmes — grow with us.</h2>
+        <p>ALLEGRO can sit beside instrument sales, lessons, youth programmes and ensemble training. We are opening a limited founding-partner pilot for organisations that want to connect learners with affordable digital practice.</p>
+        <div className="ma-partner-tags"><span>Instrument retailers</span><span>Schools</span><span>Choirs & ensembles</span><span>Music teachers</span><span>Youth programmes</span><span>Recording studios</span></div>
+      </div>
+      <div className="ma-partner-card">
+        <strong>Partner pilot</strong>
+        <p>Start small. Give your learners or customers a direct route into ALLEGRO. Measure engagement first, then scale only if it creates value.</p>
+        <a className="ma-primary" href="mailto:info@izakhonoafrica.co.za?subject=ALLEGRO%20Music%20Academy%20Founding%20Partner&body=Hello%20ALLEGRO%2C%0A%0AWe%20would%20like%20to%20discuss%20a%20Music%20Academy%20partnership.%0A%0AOrganisation%3A%0AContact%20person%3A%0AType%20of%20organisation%3A%0AApprox.%20learners%20or%20customers%3A%0A%0ARegards%2C">Become a Founding Partner</a>
+        <small>IZAKHONO AFRICA (PTY) LTD · ALLEGRO Music Academy</small>
+      </div>
+    </section>
+
     <Pricing/>
 
     <section className="ma-final">
       <div><span className="ma-kicker">LEARN → PRACTISE → PERFORM → CREATE</span><h2>Your music journey starts with one note.</h2><p>Use the free trainers now, then move into the complete R99 / 30-day academy when you want the full curriculum and learner dashboard.</p></div>
-      <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Train Now</a><a className="ma-secondary" href="#pricing">See Plans</a></div>
+      <div className="ma-actions"><a className="ma-primary" href="#sight-reading">Train Now</a><a className="ma-secondary" href="#pricing">See Plans</a><AcademyShareButton/></div>
     </section>
   </main>
 }
