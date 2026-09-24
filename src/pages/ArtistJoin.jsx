@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import '../styles/artist-launch.css'
 import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
+import { emitAppFabricLead } from '../lib/appFabric'
 
 const benefits=[
   ['Protect your work','Rights declarations, contributor splits, clearance checks and a documented release trail.'],
@@ -23,6 +24,19 @@ export default function ArtistJoin(){
       for(const[k,v]of data.entries())body.append(k,String(v))
       const r=await fetch(ALLEGRO_LEAD_ENDPOINT,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:body.toString()})
       if(!r.ok)throw new Error('Could not reserve your artist place.')
+      await emitAppFabricLead({
+        subjectRef:'artist:'+String(data.get('email')||'').toLowerCase(),
+        contact:{
+          name:String(data.get('contact_name')||''),
+          email:String(data.get('email')||''),
+          phone:String(data.get('phone')||''),
+          company:String(data.get('artist_name')||''),
+          role:String(data.get('creator_type')||'creator'),
+          source:'allegro-artist-interest'
+        },
+        opportunity:{title:String(data.get('artist_name')||'ALLEGRO creator')+' onboarding',value:0,currency:'ZAR',source:'allegro-artist-interest'},
+        note:'Creator interest · '+String(data.get('country')||'')+' · '+String(data.get('genres')||'')
+      })
       setState('done');setMessage('You are on the ALLEGRO artist onboarding list. We will contact you with the next step.');e.currentTarget.reset()
     }catch(err){setState('error');setMessage(err.message||'Please try again.')}
   }
