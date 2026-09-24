@@ -12,6 +12,7 @@ import {
 import { bookingSettlementGate, creatorBookingQuotePreview } from '../lib/creatorOsBridge'
 import '../styles/artist-launch.css'
 import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
+import { emitAppFabricLead } from '../lib/appFabric'
 
 const yesNo=[['','Select an option'],['true','Yes'],['false','No']]
 const defaultTypes=['Live performance','Festival','Corporate event','Private event','Club / venue','Livestream']
@@ -68,6 +69,12 @@ export function ArtistBookingRequest(){
       }else{
         await netlifyFallback({artist_id:artistId,artist_name:profile?.stage_name||profile?.display_name||'',...payload})
       }
+      await emitAppFabricLead({
+        subjectRef:'booking:'+(requestCode||artistId+':'+form.contact_email+':'+form.event_date),
+        contact:{name:form.contact_name,email:form.contact_email,phone:form.contact_phone,company:form.company_name,role:'booking client',source:'allegro-artist-booking'},
+        opportunity:{title:(form.company_name||form.contact_name)+' · '+(profile?.stage_name||profile?.display_name||'artist')+' booking',value:Number(form.proposed_budget||0),currency:form.budget_currency||'ZAR',source:'allegro-artist-booking'},
+        note:'Booking enquiry · '+form.performance_type+' · '+form.event_date+' · '+(form.city||form.country)
+      })
       setState('done')
       setMessage('Your request has been received. This is an enquiry, not a confirmed booking. No payment has been taken.')
     }catch(error){
