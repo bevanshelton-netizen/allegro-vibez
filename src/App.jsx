@@ -1,93 +1,98 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { isSupabaseConfigured, supabase } from './lib/supabaseClient'
-import Rights from './pages/Rights.jsx'
-import { AdminReviewPage, ProfilePage, ProsperityPage, SubmitReleaseButton } from './pages/CreatorTools.jsx'
-import { AdminCommercialPage, BillingPage, WalletPage } from './pages/Commercial.jsx'
-import Radio from './pages/Radio.jsx'
-import RadioAcademy from './pages/RadioAcademy.jsx'
-import RadioAcademyLearner from './pages/RadioAcademyLearner.jsx'
-import Revenue from './pages/Revenue.jsx'
-import ArtistJoin from './pages/ArtistJoin.jsx'
-import ArtistSpace from './pages/ArtistSpace.jsx'
-import HomeGlobal from './pages/HomeGlobal.jsx'
-import Stream from './pages/Stream.jsx'
-import CareerEngine from './pages/CareerEngine.jsx'
-import ScreenStudio from './pages/ScreenStudio.jsx'
-import { ArtistBookingDesk, ArtistBookingRequest } from './pages/ArtistBooking.jsx'
-import BookingContractShield from './pages/BookingContractShield.jsx'
-import SheltonProtocol from './pages/SheltonProtocol.jsx'
-import MusicAcademy from './pages/MusicAcademy.jsx'
-import MusicAcademyLearner from './pages/MusicAcademyLearner.jsx'
-import { MusicAcademyPaymentSuccess, MusicAcademyPaymentFailed, MusicAcademyPaymentCancelled } from './pages/MusicAcademyPayment.jsx'
+import { Route, Routes } from 'react-router-dom'
+import Shell from './components/Shell'
+import ProtectedRoute from './components/ProtectedRoute'
+import Home from './pages/Home'
+import Discover from './pages/Discover'
+import Artists from './pages/Artists'
+import PublicCreator from './pages/PublicCreator'
+import Login from './pages/Login'
+import Register from './pages/Register'
+import { AccessDenied, ForgotPassword, ResetPassword, VerifyEmail } from './pages/AuthUtility'
+import Onboarding from './pages/Onboarding'
+import Dashboard from './pages/Dashboard'
+import CreatorHub from './pages/CreatorHub'
+import Upload from './pages/Upload'
+import MyMusic from './pages/MyMusic'
+import ReleaseManager from './pages/ReleaseManager'
+import Prosperity from './pages/Prosperity'
+import Protect from './pages/Protect'
+import RightsGuide from './pages/RightsGuide'
+import Payments from './pages/Payments'
+import Wallet from './pages/Wallet'
+import Billing from './pages/Billing'
+import Distribution from './pages/Distribution'
+import DistributionOps from './pages/DistributionOps'
+import AICreatorSuite from './pages/AICreatorSuite'
+import FanConnect from './pages/FanConnect'
+import FanDashboard from './pages/FanDashboard'
+import PlaylistLibrary from './pages/PlaylistLibrary'
+import PublicPlaylist from './pages/PublicPlaylist'
+import PrivacySettings from './pages/PrivacySettings'
+import SupportCentre from './pages/SupportCentre'
+import AdminSupport from './pages/AdminSupport'
+import AdminAudit from './pages/AdminAudit'
+import AdminDashboard from './pages/AdminDashboard'
+import AdminReview from './pages/AdminReview'
+import SearchResults from './pages/SearchResults'
+import ReleasePage from './pages/ReleasePage'
+import Notifications from './pages/Notifications'
+import Royalties from './pages/Royalties'
+import CopyrightCentre from './pages/CopyrightCentre'
+import AdminCopyright from './pages/AdminCopyright'
+import AdminRisk from './pages/AdminRisk'
+import SystemHealth from './pages/SystemHealth'
 
-const nav=[['Home','/'],['Stream','/stream'],['Live Radio','/radio'],['Global Artists','/artists'],['Career Engine','/career'],['Join Artists','/join-artists'],['Advertise','/revenue'],['Music School','/music-academy'],['Radio Academy','/radio-academy'],['SA Protocol','/sa/protocol'],['Creator Hub','/creator-hub']]
-const releaseTypes=['Single','EP','Album','DJ Mix']
+const guard = (element, opts = {}) => <ProtectedRoute {...opts}>{element}</ProtectedRoute>
 
-function Page({title,children,eyebrow='ALLEGRO-VIBEZ'}){return <main className="page"><div className="eyebrow">{eyebrow}</div><h2>{title}</h2>{children}</main>}
-function RequireLogin(){return <Navigate to="/login" replace/>}
-
-function ShareButton(){
-  const[label,setLabel]=useState('Share')
-  async function share(){
-    const url=window.location.href
-    const data={title:'ALLEGRO-VIBEZ',text:'Discover ALLEGRO-VIBEZ — music, artists, live radio and creator opportunities.',url}
-    try{
-      if(navigator.share){
-        await navigator.share(data)
-        return
-      }
-      if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(url)
-      }else{
-        const input=document.createElement('textarea')
-        input.value=url
-        input.setAttribute('readonly','')
-        input.style.position='fixed'
-        input.style.opacity='0'
-        document.body.appendChild(input)
-        input.select()
-        document.execCommand('copy')
-        input.remove()
-      }
-      setLabel('Link copied')
-      window.setTimeout(()=>setLabel('Share'),1800)
-    }catch(error){
-      if(error?.name!=='AbortError'){
-        setLabel('Try again')
-        window.setTimeout(()=>setLabel('Share'),1800)
-      }
-    }
-  }
-  return <button className="share-button" type="button" onClick={share} aria-label="Share ALLEGRO-VIBEZ" title="Share this ALLEGRO-VIBEZ page"><span aria-hidden="true">↗</span>{label}</button>
+export default function App() {
+  return (
+    <Routes>
+      <Route element={<Shell />}>
+        <Route path="/" element={<Home />} />
+        <Route path="/discover" element={<Discover />} />
+        <Route path="/artists" element={<Artists />} />
+        <Route path="/search" element={<SearchResults />} />
+        <Route path="/release/:slug" element={<ReleasePage />} />
+        <Route path="/artist/:slug" element={<PublicCreator />} />
+        <Route path="/playlist/:slug" element={<PublicPlaylist />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
+        <Route path="/access-denied" element={<AccessDenied />} />
+        <Route path="/onboarding" element={guard(<Onboarding />)} />
+        <Route path="/dashboard" element={guard(<Dashboard />)} />
+        <Route path="/creator-hub" element={guard(<CreatorHub />)} />
+        <Route path="/upload" element={guard(<Upload />)} />
+        <Route path="/my-music" element={guard(<MyMusic />)} />
+        <Route path="/release-manager/:id" element={guard(<ReleaseManager />)} />
+        <Route path="/prosperity" element={guard(<Prosperity />)} />
+        <Route path="/royalties" element={guard(<Royalties />)} />
+        <Route path="/notifications" element={guard(<Notifications />)} />
+        <Route path="/protect" element={<Protect />} />
+        <Route path="/rights-guide" element={<RightsGuide />} />
+        <Route path="/wallet" element={guard(<Wallet />)} />
+        <Route path="/billing" element={guard(<Billing />)} />
+        <Route path="/payments" element={guard(<Payments />)} />
+        <Route path="/distribution" element={guard(<Distribution />)} />
+        <Route path="/ai-studio" element={guard(<AICreatorSuite />)} />
+        <Route path="/fan-connect" element={guard(<FanConnect />)} />
+        <Route path="/me" element={guard(<FanDashboard />)} />
+        <Route path="/me/playlists" element={guard(<PlaylistLibrary />)} />
+        <Route path="/settings/privacy" element={guard(<PrivacySettings />)} />
+        <Route path="/support" element={guard(<SupportCentre />)} />
+        <Route path="/copyright" element={guard(<CopyrightCentre />)} />
+        <Route path="/admin" element={guard(<AdminDashboard />, { allowedRoles: ['admin', 'super_admin', 'moderator'] })} />
+        <Route path="/admin/releases" element={guard(<AdminReview />, { allowedRoles: ['admin', 'super_admin', 'moderator'] })} />
+        <Route path="/admin/distribution" element={guard(<DistributionOps />, { allowedRoles: ['admin', 'super_admin', 'moderator'] })} />
+        <Route path="/admin/support" element={guard(<AdminSupport />, { allowedRoles: ['admin', 'super_admin', 'support'] })} />
+        <Route path="/admin/audit" element={guard(<AdminAudit />, { allowedRoles: ['admin', 'super_admin'] })} />
+        <Route path="/admin/copyright" element={guard(<AdminCopyright />, { allowedRoles: ['admin', 'super_admin', 'moderator'] })} />
+        <Route path="/admin/risk" element={guard(<AdminRisk />, { allowedRoles: ['admin', 'super_admin', 'moderator'] })} />
+        <Route path="/admin/health" element={guard(<SystemHealth />, { allowedRoles: ['admin', 'super_admin'] })} />
+        <Route path="*" element={<main className="container page-pad"><h1>Page not found</h1></main>} />
+      </Route>
+    </Routes>
+  )
 }
-
-function Shell({session,children}){
-  async function signOut(){if(supabase)await supabase.auth.signOut();window.location.assign('/')}
-  return <><header className="site-header"><Link className="brand" to="/"><span>ALLEGRO</span><b>VIBEZ</b></Link><nav><a href="https://ai.izakhono.co.za/?utm_source=allegro&utm_medium=portfolio&utm_campaign=ai-core-launch">IZAKHONO AI</a><a href="/studio/index.html">Studio</a>{nav.map(([label,to])=><NavLink key={to} to={to}>{label}</NavLink>)}</nav><div className="account-links"><ShareButton/>{session?<><Link to="/dashboard">Dashboard</Link><Link to="/profile">Profile</Link><button className="text-button" onClick={signOut}>Log out</button></>:<><Link to="/login">Log in</Link><Link className="pill" to="/register">Join</Link></>}</div></header>{children}<footer><span>ALLEGRO-VIBEZ · More Than Music. A Movement.</span><span className="footer-links"><a href="https://ai.izakhono.co.za/?utm_source=allegro&utm_medium=footer&utm_campaign=ai-core-launch">IZAKHONO AI</a><a href="./terms.html">Terms</a><a href="./privacy.html">Privacy</a></span></footer></>
-}
-
-function Home(){return <main><section className="hero"><div className="eyebrow">AFRICAN-BORN · GLOBAL BY DESIGN</div><h1>Own your sound.<br/><em>Build your legacy.</em></h1><p>One trusted creator ecosystem to upload, protect, discover, distribute and monetise music.</p><div className="actions"><Link className="primary" to="/join-artists">Artists: Join ALLEGRO</Link><Link className="secondary" to="/revenue">Advertise / Get Featured</Link><Link className="secondary" to="/radio">Listen / Radio</Link></div></section><section className="cards"><article><span>01</span><h3>Create</h3><p>Build your artist identity, catalogue and release pipeline.</p></article><article><span>02</span><h3>Protect</h3><p>Rights declarations, controlled media and auditable workflows.</p></article><article><span>03</span><h3>Prosper</h3><p>Royalty visibility, wallet controls and creator growth.</p></article></section></main>}
-
-function Discover(){const[releases,setReleases]=useState([]);const[loading,setLoading]=useState(true);useEffect(()=>{let active=true;(async()=>{if(!supabase){setLoading(false);return}const{data}=await supabase.from('releases').select('id,title,release_type,created_at').eq('status','published').order('created_at',{ascending:false}).limit(24);if(active){setReleases(data||[]);setLoading(false)}})();return()=>{active=false}},[]);return <Page title="Discover"><p>Approved releases from the ALLEGRO-VIBEZ catalogue.</p>{loading?<div className="empty">Loading catalogue…</div>:releases.length?<div className="release-grid">{releases.map(r=><article key={r.id}><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleDateString()}</small></article>)}</div>:<div className="empty">The global discovery engine is ready for the first published release.</div>}</Page>}
-
-function Artists(){const[profiles,setProfiles]=useState([]);useEffect(()=>{let active=true;(async()=>{if(!supabase)return;const{data}=await supabase.from('profiles').select('id,display_name,stage_name,account_type,country,home_region,primary_genres,available_for_international_bookings').order('created_at',{ascending:false}).limit(24);if(active)setProfiles(data||[])})();return()=>{active=false}},[]);return <Page title="Artists"><p>Meet the creators shaping the next generation of music.</p>{profiles.length?<div className="release-grid">{profiles.map(p=><Link key={p.id} to={`/artist/${p.id}`}><article><div className="eyebrow">{p.home_region||p.account_type||'GLOBAL'}</div><h3>{p.stage_name||p.display_name||'ALLEGRO-VIBEZ Creator'}</h3><small>{p.country||'Global creator'}{p.primary_genres?.length?' · '+p.primary_genres.slice(0,2).join(' / '):''}</small>{p.available_for_international_bookings&&<span className="global-booking-badge">GLOBAL BOOKINGS OPEN</span>}</article></Link>)}</div>:<div className="empty">Verified artist profiles will appear here. <Link to="/join-artists">Become a founding creator.</Link></div>}</Page>}
-
-function CreatorHub({session}){return session?<Page title="Creator Hub"><div className="cards hub-cards"><article><h3>Upload music</h3><p>Create Singles, EPs, Albums and DJ Mixes.</p><Link to="/upload">Open upload</Link></article><article><h3>My Music</h3><p>Manage your private and published catalogue.</p><Link to="/my-music">View catalogue</Link></article><article><h3>Rights</h3><p>Keep ownership and contributor records attached to releases.</p><Link to="/my-music">Choose a release</Link></article><article><h3>Career Engine</h3><p>Choose Launch, Grow, Revive or Relaunch and align ALLEGRO + KORA around the next chapter.</p><Link to="/career">Build career path</Link></article><article><h3>Screen Studio</h3><p>Send rights-cleared music videos, documentaries, movies, concert films and tour stories to KORA.</p><Link to="/screen">Open Screen Studio</Link></article><article><h3>Marketing Space</h3><p>Manage your public artist story, booking contact and marketing links.</p><Link to="/profile">Build marketing space</Link></article><article><h3>Booking Desk</h3><p>Receive performance enquiries, qualify promoters, issue transparent quotes and manage confirmed engagements.</p><Link to="/bookings">Manage bookings</Link></article><article><h3>Prosperity</h3><p>Track transparent royalties and platform fees.</p><Link to="/prosperity">View earnings</Link></article><article><h3>Wallet</h3><p>See available funds and request auditable payouts.</p><Link to="/wallet">Open wallet</Link></article><article><h3>Plans</h3><p>Manage your creator operating plan and fee level.</p><Link to="/billing">Plans & billing</Link></article><article><h3>Moderation</h3><p>Admin-only release review and publishing controls.</p><Link to="/admin/review">Release moderation</Link></article><article><h3>Commercial Ops</h3><p>Admin-only payout operations and controls.</p><Link to="/admin/commercial">Payout operations</Link></article><article><h3>SHELTON PROTOCOL™ SA</h3><p>Build your South African governance, rights, protection and commercial-readiness passport.</p><Link to="/sa/protocol">Open Protocol Passport</Link></article><article><h3>Music Academy</h3><p>Learn instruments, voice, theory and sight reading from foundation to performance.</p><Link to="/music-academy">Open Music Academy</Link> · <Link to="/music-academy/my-learning">My Learning</Link></article><article><h3>Radio Academy</h3><p>Train for presenting, production, technical operations, advertising, rights and station management.</p><Link to="/radio-academy">Open Radio Academy</Link> · <Link to="/radio-academy/my-learning">My Learning</Link></article></div></Page>:<RequireLogin/>}
-
-function Dashboard({session}){const[count,setCount]=useState(null);useEffect(()=>{let active=true;(async()=>{if(!supabase||!session)return;const{count:total}=await supabase.from('releases').select('*',{count:'exact',head:true}).eq('owner_id',session.user.id);if(active)setCount(total||0)})();return()=>{active=false}},[session]);return session?<Page title="Dashboard"><p>Welcome back, {session.user.email}.</p><div className="cards"><article><h3>Release pipeline</h3><strong>{count===null?'—':count}</strong><p>Total releases in your catalogue.</p><Link to="/my-music">Manage releases</Link></article><article><h3>Prosperity</h3><strong>Royalty ledger</strong><p>See gross, fees and net creator earnings.</p><Link to="/prosperity">View earnings</Link></article><article><h3>Creator wallet</h3><strong>Payout ready</strong><p>Track available funds and payout requests.</p><Link to="/wallet">Open wallet</Link></article><article><h3>SHELTON PROTOCOL™ SA</h3><strong>Governance passport</strong><p>Move from registered to verified, protected and commercial-ready.</p><Link to="/sa/protocol">Open Protocol</Link></article></div></Page>:<RequireLogin/>}
-
-function Upload({session}){const nav=useNavigate();const[title,setTitle]=useState('');const[releaseType,setReleaseType]=useState('Single');const[audio,setAudio]=useState(null);const[artwork,setArtwork]=useState(null);const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function uploadAsset(file,folder){if(!file)return null;const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=`${session.user.id}/${folder}/${crypto.randomUUID()}-${safe}`;const{error}=await supabase.storage.from('release-assets').upload(path,file,{upsert:false});if(error)throw error;return path}async function submit(e){e.preventDefault();if(!supabase){setMessage('Supabase is not configured.');return}setSaving(true);setMessage('');try{const audioPath=await uploadAsset(audio,'audio');const artworkPath=await uploadAsset(artwork,'artwork');const{error}=await supabase.from('releases').insert({owner_id:session.user.id,title:title.trim(),release_type:releaseType,status:'draft',audio_path:audioPath,artwork_path:artworkPath});if(error)throw error;setMessage('Draft saved successfully.');setTimeout(()=>nav('/my-music'),450)}catch(error){setMessage(error.message||'Could not save this release.')}finally{setSaving(false)}}return session?<Page title="Upload"><p>Create a secure draft release. Audio and artwork are stored privately under your account.</p><form className="panel" onSubmit={submit}><label>Release title<input value={title} onChange={e=>setTitle(e.target.value)} maxLength="180" required/></label><label>Release type<select value={releaseType} onChange={e=>setReleaseType(e.target.value)}>{releaseTypes.map(type=><option key={type}>{type}</option>)}</select></label><label>Audio master<input type="file" accept="audio/*" onChange={e=>setAudio(e.target.files?.[0]||null)}/></label><label>Artwork<input type="file" accept="image/*" onChange={e=>setArtwork(e.target.files?.[0]||null)}/></label>{message&&<div className="notice">{message}</div>}<button className="primary" disabled={saving}>{saving?'Saving…':'Save draft release'}</button></form></Page>:<RequireLogin/>}
-
-function MyMusic({session}){const[releases,setReleases]=useState([]);const[loading,setLoading]=useState(true);const load=useCallback(async()=>{if(!supabase||!session){setLoading(false);return}setLoading(true);const{data}=await supabase.from('releases').select('id,title,release_type,status,created_at,review_note').eq('owner_id',session.user.id).order('created_at',{ascending:false});setReleases(data||[]);setLoading(false)},[session]);useEffect(()=>{load()},[load]);return session?<Page title="My Music"><p>Your private release catalogue, submission status and rights records.</p>{loading?<div className="empty">Loading your catalogue…</div>:releases.length?<div className="release-list">{releases.map(r=><article key={r.id}><div><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleString()}</small>{r.review_note&&<p className="review-note">Review note: {r.review_note}</p>}<div className="release-links"><Link to={`/rights/${r.id}`}>Rights & contributors</Link></div><SubmitReleaseButton release={r} onSubmitted={load}/></div><span className={`status status-${r.status}`}>{r.status}</span></article>)}</div>:<div className="empty">No releases yet. <Link to="/upload">Create your first release.</Link></div>}</Page>:<RequireLogin/>}
-
-function Login({onSession}){const nav=useNavigate();const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);const{data,error}=await supabase.auth.signInWithPassword({email,password});setSaving(false);if(error){setMessage(error.message);return}onSession(data.session);nav('/dashboard')}return <Auth title="Log in" message={message}><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Logging in…':'Log in'}</button></form><p><Link to="/reset-password">Forgot password?</Link></p><p>New here? <Link to="/register">Create account</Link></p></Auth>}
-
-function ResetPassword(){const[email,setEmail]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${window.location.origin}/update-password`});setSaving(false);setMessage(error?error.message:'Password-reset instructions have been sent if this account exists.')}return <Auth title="Reset password" message={message}><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Sending…':'Send reset link'}</button></form><p><Link to="/login">Back to log in</Link></p></Auth>}
-
-function UpdatePassword(){const nav=useNavigate();const[password,setPassword]=useState('');const[confirmPassword,setConfirmPassword]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);const[ready,setReady]=useState(false);useEffect(()=>{if(!supabase)return;let active=true;supabase.auth.getSession().then(({data})=>{if(active&&data.session)setReady(true)});const{data}=supabase.auth.onAuthStateChange((event,session)=>{if(active&&session&&(event==='PASSWORD_RECOVERY'||event==='SIGNED_IN'))setReady(true)});return()=>{active=false;data.subscription.unsubscribe()}},[]);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}if(password.length<8){setMessage('Use at least 8 characters for your new password.');return}if(password!==confirmPassword){setMessage('The passwords do not match.');return}setSaving(true);const{error}=await supabase.auth.updateUser({password});setSaving(false);if(error){setMessage(error.message);return}setMessage('Password updated successfully. Taking you to your dashboard…');setTimeout(()=>nav('/dashboard'),800)}return <Auth title="Choose a new password" message={message}>{ready?<form onSubmit={submit}><label>New password<input type="password" minLength="8" value={password} onChange={e=>setPassword(e.target.value)} required/></label><label>Confirm new password<input type="password" minLength="8" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Updating…':'Update password'}</button></form>:<div className="notice">Open the password-reset link sent to your email. If the link has expired, request a new one.</div>}<p><Link to="/reset-password">Request another reset link</Link></p></Auth>}
-
-function Register(){const nav=useNavigate();const[displayName,setDisplayName]=useState('');const[stageName,setStageName]=useState('');const[accountType,setAccountType]=useState('artist');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[accepted,setAccepted]=useState(false);const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);const[verificationEmail,setVerificationEmail]=useState('');const[resending,setResending]=useState(false);async function submit(e){e.preventDefault();if(!accepted){setMessage('Please accept the Terms of Use and Privacy Notice to create an account.');return}if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);setMessage('');const normalizedEmail=email.trim().toLowerCase();const{data,error}=await supabase.auth.signUp({email:normalizedEmail,password,options:{emailRedirectTo:`${window.location.origin}/login`,data:{display_name:displayName.trim(),stage_name:stageName.trim(),account_type:accountType,terms_accepted_at:new Date().toISOString()}}});setSaving(false);if(error){setMessage(error.message);return}if(data.session){nav('/dashboard');return}setVerificationEmail(normalizedEmail)}async function resend(){if(!supabase||!verificationEmail)return;setResending(true);setMessage('');const{error}=await supabase.auth.resend({type:'signup',email:verificationEmail,options:{emailRedirectTo:`${window.location.origin}/login`}});setResending(false);setMessage(error?error.message:'Verification email sent again. Check your inbox and spam folder.')}if(verificationEmail)return <Auth title="Verify your email" message={message}><p>We created your ALLEGRO-VIBEZ account for <strong>{verificationEmail}</strong>.</p><p>Open the verification email and confirm your address. After confirmation, return here and log in.</p><div className="actions"><button className="secondary" onClick={resend} disabled={resending}>{resending?'Sending…':'Resend verification email'}</button><Link className="primary inline" to="/login">Go to login</Link></div></Auth>;return <Auth title="Join ALLEGRO-VIBEZ" message={message}><form onSubmit={submit}><label>Your name<input value={displayName} onChange={e=>setDisplayName(e.target.value)} required/></label><label>Stage / creator name<input value={stageName} onChange={e=>setStageName(e.target.value)} placeholder="Optional"/></label><label>Account type<select value={accountType} onChange={e=>setAccountType(e.target.value)}><option value="artist">Artist</option><option value="dj">DJ</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option><option value="band">Band</option><option value="choir">Choir</option><option value="label">Record Label</option></select></label><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label><label>Password<input type="password" minLength="8" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" required/></label><label className="consent"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} required/><span>I agree to the <a href="./terms.html" target="_blank" rel="noreferrer">Terms of Use</a> and acknowledge the <a href="./privacy.html" target="_blank" rel="noreferrer">Privacy Notice</a>.</span></label><button className="primary" disabled={saving||!accepted}>{saving?'Creating account…':'Create account'}</button></form></Auth>}
-function Auth({title,message,children}){return <main className="auth"><section><div className="eyebrow">SECURE CREATOR ACCESS</div><h2>{title}</h2>{!isSupabaseConfigured&&<div className="notice">Supabase environment variables are required for live authentication.</div>}{message&&<div className="notice">{message}</div>}{children}</section></main>}
-
-export default function App(){const[session,setSession]=useState(null);useEffect(()=>{if(!supabase)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const{data}=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return()=>data.subscription.unsubscribe()},[]);return <Shell session={session}><Routes><Route path="/" element={<HomeGlobal/>}/><Route path="/stream" element={<Stream/>}/><Route path="/radio" element={<Radio/>}/><Route path="/revenue" element={<Revenue/>}/><Route path="/join-artists" element={<ArtistJoin/>}/><Route path="/career" element={<CareerEngine session={session}/>}/><Route path="/screen" element={<ScreenStudio session={session}/>}/><Route path="/artist/:artistId" element={<ArtistSpace/>}/><Route path="/artist/:artistId/book" element={<ArtistBookingRequest/>}/><Route path="/music-academy" element={<MusicAcademy/>}/><Route path="/music-academy/my-learning" element={<MusicAcademyLearner/>}/><Route path="/music-academy/payment-success" element={<MusicAcademyPaymentSuccess/>}/><Route path="/music-academy/payment-failed" element={<MusicAcademyPaymentFailed/>}/><Route path="/music-academy/payment-cancelled" element={<MusicAcademyPaymentCancelled/>}/><Route path="/radio-academy" element={<RadioAcademy session={session}/>}/><Route path="/radio-academy/my-learning" element={<RadioAcademyLearner session={session}/>}/><Route path="/discover" element={<Discover/>}/><Route path="/artists" element={<Artists/>}/><Route path="/login" element={<Login onSession={setSession}/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/update-password" element={<UpdatePassword/>}/><Route path="/register" element={<Register/>}/><Route path="/dashboard" element={<Dashboard session={session}/>}/><Route path="/creator-hub" element={<CreatorHub session={session}/>}/><Route path="/sa/protocol" element={<SheltonProtocol session={session}/>}/><Route path="/bookings" element={<ArtistBookingDesk session={session}/>}/><Route path="/bookings/:bookingId/contract" element={<BookingContractShield session={session}/>}/><Route path="/upload" element={<Upload session={session}/>}/><Route path="/my-music" element={<MyMusic session={session}/>}/><Route path="/rights/:releaseId" element={<Rights session={session}/>}/><Route path="/profile" element={<ProfilePage session={session}/>}/><Route path="/prosperity" element={<ProsperityPage session={session}/>}/><Route path="/billing" element={<BillingPage session={session}/>}/><Route path="/wallet" element={<WalletPage session={session}/>}/><Route path="/admin/review" element={<AdminReviewPage session={session}/>}/><Route path="/admin/commercial" element={<AdminCommercialPage session={session}/>}/><Route path="*" element={<Page title="Page not found"><Link to="/">Return home</Link></Page>}/></Routes></Shell>}
