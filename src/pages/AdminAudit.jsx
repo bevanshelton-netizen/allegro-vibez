@@ -1,0 +1,3 @@
+import { useEffect, useState } from 'react'
+import { getAuditLog } from '../services/supportService'
+export default function AdminAudit(){const[items,setItems]=useState([]);const[error,setError]=useState('');useEffect(()=>{getAuditLog().then(setItems).catch(e=>setError(e.message))},[]);return <main className="container page-pad"><p className="eyebrow">ADMIN · AUDIT</p><h1>Audit trail.</h1>{error&&<div className="notice error">{error}</div>}<section className="stack-list">{items.map(a=><article className="list-row" key={a.id}><div><strong>{a.action}</strong><p>{a.entity_type || 'system'} · {a.entity_id || ''}</p></div><time>{new Date(a.created_at).toLocaleString()}</time></article>)}</section></main>}
