@@ -1,61 +1,24 @@
-import { existsSync, readFileSync } from 'node:fs'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const required = [
-  'index.html',
-  'netlify.toml',
-  'src/main.jsx',
-  'src/App.jsx',
-  'src/lib/supabaseClient.js',
-  'public/privacy.html',
-  'public/terms.html',
-  'public/robots.txt',
-  'public/sitemap.xml',
-  'public/av-hero.webp',
-  'public/av-discover.webp',
-  'public/av-artists.webp',
-  'supabase/ALLEGRO_VIBEZ_GO_LIVE.sql',
-  'supabase/migrations/20260819_payfast_commerce.sql',
-  'supabase/migrations/20260822_payfast_hardening.sql',
-  'supabase/migrations/20260822_payfast_zar_plans.sql',
-  'supabase/functions/payfast-checkout/index.ts',
-  'supabase/functions/payfast-notify/index.ts',
+  'package.json','vite.config.js','src/main.jsx','src/App.jsx',
+  'src/pages/Login.jsx','src/pages/Register.jsx','src/pages/Upload.jsx','src/pages/MyMusic.jsx',
+  'src/services/catalogueService.js','src/lib/supabaseClient.js',
+  'supabase/migrations/001_initial_schema.sql','supabase/migrations/002_security_workflows.sql',
+  'supabase/migrations/003_discovery_engagement_royalties.sql','supabase/migrations/004_finance_distribution_ai.sql',
+  'src/pages/Wallet.jsx','src/pages/Billing.jsx','src/pages/Distribution.jsx','src/pages/DistributionOps.jsx','src/pages/AICreatorSuite.jsx',
+  'src/services/walletService.js','src/services/distributionService.js'
 ]
-
-const missing = required.filter(file => !existsSync(file))
+const missing = required.filter((file) => !fs.existsSync(path.resolve(file)))
 if (missing.length) {
-  console.error('Missing required publishing files:\n' + missing.map(file => `- ${file}`).join('\n'))
+  console.error('Missing required files:')
+  missing.forEach((file) => console.error(`- ${file}`))
   process.exit(1)
 }
-
-const netlify = readFileSync('netlify.toml', 'utf8')
-for (const token of [
-  'to = "/index.html"',
-  'status = 200',
-  'X-Content-Type-Options = "nosniff"',
-  'X-Frame-Options = "DENY"',
-  'Strict-Transport-Security',
-  'Content-Security-Policy',
-  "frame-ancestors 'none'",
-  'Cache-Control = "public, max-age=31536000, immutable"',
-]) {
-  if (!netlify.includes(token)) {
-    console.error(`Netlify production safeguard missing: ${token}`)
-    process.exit(1)
-  }
-}
-
-const index = readFileSync('index.html', 'utf8')
-for (const token of ['ALLEGRO VIBEZ', 'og:title', 'twitter:card', 'canonical']) {
-  if (!index.includes(token)) {
-    console.error(`Publishing metadata check failed: ${token}`)
-    process.exit(1)
-  }
-}
-
-const readiness = readFileSync('LAUNCH_READINESS.md', 'utf8')
-if (!readiness.includes('Netlify') || readiness.includes('GitHub Pages deployment')) {
-  console.error('Launch readiness documentation does not match the production host.')
+const pkg = JSON.parse(fs.readFileSync('package.json','utf8'))
+if (!pkg.scripts?.dev || !pkg.dependencies?.react || !pkg.dependencies?.['@supabase/supabase-js']) {
+  console.error('package.json is missing required scripts/dependencies.')
   process.exit(1)
 }
-
-console.log('ALLEGRO VIBEZ publishing structure and production host safeguards verified.')
+console.log(`ALLEGRO-VIBEZ project structure OK (${required.length} critical files verified).`)

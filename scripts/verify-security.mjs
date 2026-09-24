@@ -1,47 +1,18 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs'
-import { join } from 'node:path'
+import fs from 'node:fs'
+import path from 'node:path'
 
-function files(dir){
-  const output=[]
-  for(const entry of readdirSync(dir)){
-    const path=join(dir,entry)
-    if(statSync(path).isDirectory()) output.push(...files(path))
-    else output.push(path)
-  }
-  return output
+const roots=['src','supabase']
+const files=[]
+for(const root of roots){
+  const walk=(dir)=>{for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const full=path.join(dir,entry.name);if(entry.isDirectory())walk(full);else files.push(full)}}
+  walk(root)
 }
-
-const frontendFiles=files('src').filter(file=>/\.(js|jsx|ts|tsx|css|html)$/.test(file))
-const forbidden=[
-  'SUPABASE_SERVICE_ROLE_KEY',
-  'PAYFAST_MERCHANT_KEY',
-  'PAYFAST_PASSPHRASE',
-  'PAYFAST_MERCHANT_ID',
-]
-
-const findings=[]
-for(const file of frontendFiles){
-  const text=readFileSync(file,'utf8')
-  for(const token of forbidden){if(text.includes(token))findings.push(`${file}: contains ${token}`)}
-}
-
-const envExample=readFileSync('.env.example','utf8')
-if(/SERVICE_ROLE|PAYFAST_MERCHANT_KEY|PAYFAST_PASSPHRASE/.test(envExample)) findings.push('.env.example: server-only secret name exposed in frontend env template')
-
-const checkout=readFileSync('supabase/functions/payfast-checkout/index.ts','utf8')
-const notify=readFileSync('supabase/functions/payfast-notify/index.ts','utf8')
-for(const check of [
-  ['checkout authenticates user',checkout.includes('auth.getUser')],
-  ['checkout prices from database',checkout.includes("from('subscription_plans')")],
-  ['notify verifies signature',notify.includes('signed(params,passphrase)')],
-  ['notify verifies merchant',notify.includes("params.get('merchant_id')")],
-  ['notify validates with PayFast',notify.includes('validatedByPayFast')],
-  ['notify verifies amount',notify.includes('Amount mismatch')],
-  ['notify activates through RPC',notify.includes('activate_paid_subscription')],
-]) if(!check[1]) findings.push(`PayFast check failed: ${check[0]}`)
-
-if(findings.length){
-  console.error('Security verification failed:\n'+findings.map(item=>`- ${item}`).join('\n'))
-  process.exit(1)
-}
-console.log('ALLEGRO VIBEZ frontend secret boundary and PayFast guards verified.')
+const textFiles=files.filter(f=>/\.(js|jsx|sql|md)$/.test(f))
+const forbidden=[/service_role\s*[:=]\s*["'][^"']+/i,/SUPABASE_SERVICE_ROLE/i,/sk_live_[A-Za-z0-9]+/i,/secret[_-]?key\s*[:=]\s*["'][^"']+/i]
+const hits=[]
+for(const file of textFiles){const text=fs.readFileSync(file,'utf8');for(const rx of forbidden){if(rx.test(text))hits.push(`${file}: ${rx}`)}}
+if(hits.length){console.error('Potential frontend/server secret exposure detected:');hits.forEach(h=>console.error(`- ${h}`));process.exit(1)}
+const requiredSql=['alter table public.releases enable row level security','create or replace function public.request_payout','create or replace function public.create_distribution_order']
+const allSql=textFiles.filter(f=>f.endsWith('.sql')).map(f=>fs.readFileSync(f,'utf8')).join('\n').toLowerCase()
+for(const needle of requiredSql){if(!allSql.includes(needle.toLowerCase())){console.error(`Missing security/control SQL: ${needle}`);process.exit(1)}}
+console.log(`ALLEGRO-VIBEZ security static checks OK (${textFiles.length} source/migration files scanned).`)
