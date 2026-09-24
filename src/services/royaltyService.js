@@ -1,0 +1,2 @@
+import { supabase } from '../lib/supabaseClient'
+export async function getRoyaltyOverview(userId){if(!supabase||!userId)return{entries:[],wallet:null};const[{data:entries,error:entryError},{data:wallet,error:walletError}]=await Promise.all([supabase.from('royalty_entries').select('*,track:tracks(title,primary_artist)').eq('user_id',userId).order('period_end',{ascending:false}).limit(100),supabase.from('wallets').select('*').eq('user_id',userId).maybeSingle()]);if(entryError)throw entryError;if(walletError)throw walletError;return{entries:entries||[],wallet}}

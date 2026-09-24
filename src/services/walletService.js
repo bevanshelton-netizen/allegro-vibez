@@ -1,0 +1,6 @@
+import { supabase } from '../lib/supabaseClient'
+function requireClient(){if(!supabase)throw new Error('Supabase is not configured.');return supabase}
+export async function getWallet(userId){const client=requireClient();const{data,error}=await client.from('wallets').select('*').eq('user_id',userId).maybeSingle();if(error)throw error;return data||{user_id:userId,currency:'ZAR',pending_balance:0,available_balance:0,on_hold_balance:0,paid_lifetime:0}}
+export async function getWalletTransactions(walletId){if(!walletId)return[];const client=requireClient();const{data,error}=await client.from('wallet_transactions').select('*').eq('wallet_id',walletId).order('created_at',{ascending:false}).limit(50);if(error)throw error;return data||[]}
+export async function getPayoutRequests(userId){const client=requireClient();const{data,error}=await client.from('payout_requests').select('*').eq('user_id',userId).order('created_at',{ascending:false}).limit(25);if(error)throw error;return data||[]}
+export async function requestPayout({amount,idempotencyKey}){const client=requireClient();const{data,error}=await client.rpc('request_payout',{p_amount:Number(amount),p_idempotency_key:idempotencyKey});if(error)throw error;return data}
