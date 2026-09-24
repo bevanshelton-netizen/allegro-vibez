@@ -1,0 +1,6 @@
+import { supabase } from '../lib/supabaseClient'
+function requireClient(){if(!supabase)throw new Error('Supabase is not configured.');return supabase}
+export async function getArtistDistribution(userId){const client=requireClient();const{data,error}=await client.from('distribution_orders').select('*, release:releases(title,creator_name,status,release_date), targets:distribution_targets(*)').eq('user_id',userId).order('created_at',{ascending:false});if(error)throw error;return data||[]}
+export async function getDistributionQueue(){const client=requireClient();const{data,error}=await client.from('distribution_orders').select('*, release:releases(title,creator_name,status,release_date), targets:distribution_targets(*)').order('created_at',{ascending:false});if(error)throw error;return data||[]}
+export async function createDistributionOrder(releaseId){const client=requireClient();const{data,error}=await client.rpc('create_distribution_order',{p_release_id:releaseId});if(error)throw error;return data}
+export async function updateDistributionTarget({targetId,status,externalReference=null,errorMessage=null}){const client=requireClient();const{data,error}=await client.rpc('update_distribution_target',{p_target_id:targetId,p_status:status,p_external_reference:externalReference,p_error_message:errorMessage});if(error)throw error;return data}
