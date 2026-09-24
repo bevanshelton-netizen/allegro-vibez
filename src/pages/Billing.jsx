@@ -1,0 +1,6 @@
+const plans = [
+  { name: 'Free', price: 'R0', description: 'Build your creator identity and private catalogue.', features: ['Creator profile', 'Private drafts', 'Basic catalogue'] },
+  { name: 'Pro', price: 'Provider pricing required', description: 'For active independent creators.', features: ['Advanced analytics', 'Distribution eligibility tools', 'Priority support'] },
+  { name: 'Label', price: 'Provider pricing required', description: 'For labels, managers and rosters.', features: ['Organisation workflows', 'Roster permissions', 'Consolidated reporting'] },
+]
+export default function Billing(){return <main className="container page-pad"><p className="eyebrow">BILLING</p><h1>Plans without fake checkout.</h1><p className="lede">Plan structure is ready, but paid checkout is intentionally disabled until a payment provider, server-side webhook verification and subscription source-of-truth are configured.</p><section className="quick-grid">{plans.map(plan=><article key={plan.name}><span>{plan.name.toUpperCase()}</span><h2>{plan.price}</h2><p>{plan.description}</p><ul>{plan.features.map(feature=><li key={feature}>{feature}</li>)}</ul></article>)}</section><div className="notice">No card or bank details are collected by this frontend.</div></main>}
