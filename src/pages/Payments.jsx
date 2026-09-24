@@ -1,0 +1,1 @@
+export default function Payments(){return <main className="container page-pad"><p className="eyebrow">WALLET & BILLING</p><h1>Money movement without shortcuts.</h1><div className="notice">Payment-provider secrets are intentionally not stored in this frontend. Connect hosted checkout and verified webhooks server-side before enabling live billing or payouts.</div></main>}
