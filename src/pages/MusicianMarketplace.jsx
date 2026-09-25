@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, backendProvider } from '../lib/supabaseClient'
 import '../styles/musician-marketplace.css'
 
 const GENRES=['Amapiano','Afrobeats','Afro House','Afro Pop','Blues','Choral','Classical','Country','Electronic','Folk','Gospel','Gqom','Hip-Hop','House','Isicathamiya','Jazz','Kwaito','Maskandi','Pop','R&B','Reggae','Rock','Soul','Traditional','World','Other']
@@ -27,7 +27,7 @@ export default function MusicianMarketplace({session}){
   async function load(){
     if(!supabase){setLoading(false);return}
     setLoading(true);setError('')
-    const{data,error:e}=await supabase.from('musician_ads').select('id,owner_id,title,description,poster_role,looking_for,genres,country,city,remote_ok,engagement_type,compensation,budget_amount,budget_currency,audition_required,created_at,expires_at').eq('status','published').gt('expires_at',new Date().toISOString()).order('created_at',{ascending:false}).limit(100)
+    const{data,error:e}=await supabase.from('musician_ads').select('id,owner_id,title,description,poster_role,looking_for,genres,country,city,remote_ok,engagement_type,compensation,budget_amount,budget_currency,audition_required,created_at,expires_at').eq('status','published').order('created_at',{ascending:false}).limit(100)
     if(e)setError(e.message)
     setAds(data||[])
     if(session?.user?.id){
@@ -40,6 +40,7 @@ export default function MusicianMarketplace({session}){
   useEffect(()=>{load()},[session?.user?.id])
   const vetted=vetting?.status==='approved'&&(!vetting.expires_at||new Date(vetting.expires_at)>new Date())
   const filtered=useMemo(()=>ads.filter(ad=>{
+    if(ad.expires_at&&new Date(ad.expires_at)<=new Date())return false
     if(genre&&!(ad.genres||[]).includes(genre))return false
     if(role&&!(ad.looking_for||[]).includes(role))return false
     if(place&&!((ad.city||'')+' '+(ad.country||'')).toLowerCase().includes(place.toLowerCase()))return false
@@ -52,9 +53,12 @@ export default function MusicianMarketplace({session}){
   async function requestVetting(){
     if(!session){setMessage('Log in or create an ALLEGRO account first.');return}
     setSaving(true);setMessage('')
-    const{error:e}=await supabase.from('musician_vetting').insert({user_id:session.user.id,status:'pending',verification_level:'basic',safety_declaration_accepted:true})
+    const vettingResult=backendProvider==='izakhono-core'
+      ?await supabase.rpc('request_marketplace_vetting')
+      :await supabase.from('musician_vetting').insert({user_id:session.user.id,status:'pending',verification_level:'basic',safety_declaration_accepted:true})
+    const e=vettingResult.error
     setSaving(false)
-    if(e){setMessage(e.code==='23505'?'A verification request already exists for this account.':e.message);return}
+    if(e){setMessage(e.code==='23505'||String(e.message||'').toLowerCase().includes('already exists')?'A verification request already exists for this account.':e.message);return}
     setMessage('Verification request received. ALLEGRO will complete identity, contact and creator-profile checks through the secure review process.')
     load()
   }
@@ -64,13 +68,17 @@ export default function MusicianMarketplace({session}){
     if(!vetted){setMessage('Only approved, vetted accounts can publish musician adverts.');return}
     if(!form.lookingFor.length||!form.genres.length){setMessage('Choose at least one role and one genre.');return}
     setSaving(true);setMessage('')
-    const{error:e2}=await supabase.from('musician_ads').insert({
+    const adPayload={
       owner_id:session.user.id,title:form.title.trim(),description:form.description.trim(),poster_role:form.posterRole,
       looking_for:form.lookingFor,genres:form.genres,country:form.country.trim()||null,city:form.city.trim()||null,
       remote_ok:form.remoteOk,engagement_type:form.engagementType,compensation:form.compensation,
       budget_amount:form.budgetAmount?Number(form.budgetAmount):null,budget_currency:form.budgetCurrency,
       audition_required:form.auditionRequired,status:'published'
-    })
+    }
+    const adResult=backendProvider==='izakhono-core'
+      ?await supabase.rpc('create_musician_ad',adPayload)
+      :await supabase.from('musician_ads').insert(adPayload)
+    const e2=adResult.error
     setSaving(false)
     if(e2){setMessage(e2.message);return}
     setMessage('Advert published. Personal contact details remain private; responses stay inside ALLEGRO.')
@@ -85,8 +93,12 @@ export default function MusicianMarketplace({session}){
     if(intro.trim().length<20){setMessage('Your introduction must be at least 20 characters.');return}
     const portfolio=window.prompt('Optional: add a public portfolio or music link. Leave blank if none.')||''
     const amount=window.prompt('Optional: proposed fee in '+(ad.budget_currency||'ZAR')+'. Leave blank to discuss later.')||''
-    const{error:e}=await supabase.from('musician_ad_responses').insert({ad_id:ad.id,applicant_id:session.user.id,message:intro.trim(),portfolio_url:portfolio.trim()||null,proposed_amount:amount?Number(amount):null,proposed_currency:ad.budget_currency||'ZAR'})
-    setMessage(e?(e.code==='23505'?'You have already responded to this advert.':e.message):'Response sent privately through ALLEGRO.')
+    const responsePayload={ad_id:ad.id,applicant_id:session.user.id,message:intro.trim(),portfolio_url:portfolio.trim()||null,proposed_amount:amount?Number(amount):null,proposed_currency:ad.budget_currency||'ZAR'}
+    const responseResult=backendProvider==='izakhono-core'
+      ?await supabase.rpc('create_musician_ad_response',responsePayload)
+      :await supabase.from('musician_ad_responses').insert(responsePayload)
+    const e=responseResult.error
+    setMessage(e?(e.code==='23505'||String(e.message||'').toLowerCase().includes('already responded')?'You have already responded to this advert.':e.message):'Response sent privately through ALLEGRO.')
   }
 
   async function report(ad){

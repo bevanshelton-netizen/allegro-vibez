@@ -440,6 +440,87 @@ class IzakhonoCoreClient {
       }
     }
 
+    if (name === 'request_marketplace_vetting') {
+      try {
+        const response = await this.request(`/v3/actions/${this.project}/allegro-request-vetting`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        })
+        return { data: response?.vetting || null, error: null }
+      } catch (error) {
+        return { data: null, error: asError(error) }
+      }
+    }
+
+    if (name === 'create_creator_merch_product') {
+      try {
+        const response = await this.request(`/v3/actions/${this.project}/allegro-create-merch-product`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: params.title,
+            description: params.description ?? '',
+            product_type: params.product_type,
+            price: params.price,
+            currency: params.currency ?? 'ZAR',
+            image_url: params.image_url ?? null,
+            sizes: params.sizes ?? [],
+            colours: params.colours ?? [],
+            stock_quantity: params.stock_quantity ?? null,
+            made_to_order: params.made_to_order === true,
+          }),
+        })
+        return { data: response?.product || null, error: null }
+      } catch (error) {
+        return { data: null, error: asError(error) }
+      }
+    }
+
+    if (name === 'create_musician_ad') {
+      try {
+        const response = await this.request(`/v3/actions/${this.project}/allegro-create-musician-ad`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        })
+        return { data: response?.ad || null, error: null }
+      } catch (error) {
+        return { data: null, error: asError(error) }
+      }
+    }
+
+    if (name === 'create_musician_ad_response') {
+      try {
+        const response = await this.request(`/v3/actions/${this.project}/allegro-create-ad-response`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(params),
+        })
+        return { data: response?.response || null, error: null }
+      } catch (error) {
+        return { data: null, error: asError(error) }
+      }
+    }
+
+    if (name === 'create_merch_order') {
+      try {
+        const response = await this.request(`/v3/actions/${this.project}/allegro-create-merch-order`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            product_id: params.p_product_id,
+            quantity: params.p_quantity,
+            size: params.p_size ?? null,
+            colour: params.p_colour ?? null,
+          }),
+        })
+        return { data: response?.order_id || null, error: null }
+      } catch (error) {
+        return { data: null, error: asError(error) }
+      }
+    }
+
     if (name === 'submit_release') {
       const id = params.p_release_id
       const { data: release, error } = await this.from('releases').select('*').eq('id', id).maybeSingle()

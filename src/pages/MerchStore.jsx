@@ -1,6 +1,6 @@
 import { useEffect,useMemo,useState } from 'react'
 import { Link } from 'react-router-dom'
-import { supabase } from '../lib/supabaseClient'
+import { supabase, backendProvider } from '../lib/supabaseClient'
 import { getOfficialMerchCheckoutUrl } from '../lib/merchCheckout'
 import MovementSizzle from '../components/MovementSizzle'
 import '../styles/movement-sizzle.css'
@@ -133,7 +133,10 @@ export default function MerchStore({session}){
       made_to_order:Boolean(creatorForm.made_to_order),
       active:true
     }
-    const{data,error}=await supabase.from('merch_products').insert(payload).select().single()
+    const result=backendProvider==='izakhono-core'
+      ?await supabase.rpc('create_creator_merch_product',payload)
+      :await supabase.from('merch_products').insert(payload).select().single()
+    const{data,error}=result
     setSavingMerch(false)
     if(error){setMessage(error.message);return}
     setMyMerch(current=>[data,...current])
