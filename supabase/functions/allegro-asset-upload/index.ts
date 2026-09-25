@@ -17,7 +17,7 @@ const BASE = SUPABASE_URL + "/functions/v1";
 
 const ALLEGRO_AUTH_URL = "https://zoolsumifdtanycjryje.supabase.co";
 const ALLEGRO_PUBLIC_KEY = "sb_publishable_8LBaWtgMxlewODl4STQ9YA_jMMEt5Gt";
-const TARGET = "https://deploy-preview-119--allegro-vibez.netlify.app/merch";
+const TARGET = "https://deploy-preview-120--allegro-vibez.netlify.app/merch";
 const MERCH_GATEWAY = BASE + "/allegro-vibez-live/merch";
 const EXPECTED_RELEASE_ID = "ALLEGRO-DROP01-R100K-20260925";
 
