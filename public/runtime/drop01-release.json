@@ -12,9 +12,14 @@
   "reservation_endpoint": "/functions/v1/allegro-asset-upload?mode=merch-reserve",
   "reservation_counts_as_sale": false,
   "reservation_reserves_production": false,
-  "sales_status": "PREORDER_RESERVATIONS_OPEN_PAYMENT_GATE_CLOSED",
+  "sales_status": "PREORDER_RESERVATIONS_OPEN_CONVERSION_READY_PAYMENT_GATE_CLOSED",
   "owned_infrastructure_primary": true,
   "external_route_role": "reversible-resilience",
   "public_sales_counter": "verified-paid-sales-only",
-  "refunds_reduce_progress": true
+  "refunds_reduce_progress": true,
+  "reservation_list_endpoint": "/functions/v1/allegro-asset-upload?mode=merch-reservations",
+  "reservation_conversion_endpoint": "/functions/v1/allegro-asset-upload?mode=merch-reservation-checkout",
+  "reservation_conversion_idempotent": true,
+  "payment_webhook_finalizes_reservation": true,
+  "payment_webhook_min_contract_version": 3
 }

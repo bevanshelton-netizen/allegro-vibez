@@ -60,6 +60,8 @@ export default function MerchStore({session}){
   const[quantity,setQuantity]=useState(1)
   const[checkoutBusy,setCheckoutBusy]=useState(false)
   const[reservationBusy,setReservationBusy]=useState(false)
+  const[reservations,setReservations]=useState([])
+  const[activeReservationRef,setActiveReservationRef]=useState(null)
   const[checkoutHealth,setCheckoutHealth]=useState({loading:true,configured:false,live:false,mode:'unknown',reservationAvailable:false})
   const[delivery,setDelivery]=useState({customer_name:'',mobile:'',delivery_address:'',delivery_city:'',delivery_province:'',delivery_postal_code:''})
   const[selectedMerchCategory,setSelectedMerchCategory]=useState('All')
@@ -104,6 +106,18 @@ export default function MerchStore({session}){
       setCheckoutHealth({loading:false,configured:false,live:false,mode:'unavailable',reservationAvailable:false})
     }
   })()},[])
+
+  useEffect(()=>{(async()=>{
+    if(!session?.access_token){setReservations([]);return}
+    try{
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-reservations',{
+        cache:'no-store',
+        headers:{Authorization:'Bearer '+session.access_token,Accept:'application/json'}
+      })
+      const data=await response.json().catch(()=>({}))
+      if(response.ok&&Array.isArray(data.reservations))setReservations(data.reservations)
+    }catch{setReservations([])}
+  })()},[session?.access_token])
 
   useEffect(()=>{
     if(!session?.user)return
@@ -166,6 +180,7 @@ export default function MerchStore({session}){
   const filteredComingProducts=useMemo(()=>selectedMerchCategory==='All'?comingProducts:comingProducts.filter(item=>item.category===selectedMerchCategory),[selectedMerchCategory])
 
   function orderOfficial(item){
+    setActiveReservationRef(null)
     setSelected(item)
     setSelectedSize('L')
     setQuantity(1)
@@ -222,11 +237,102 @@ export default function MerchStore({session}){
         }
         return
       }
+      setActiveReservationRef(data.reservation_ref)
+      setReservations(current=>{
+        const next={
+          reservation_ref:data.reservation_ref,
+          product_id:selected.id,
+          sku:selected.sku,
+          product_name:selected.name,
+          colour:selected.colour,
+          size:selectedSize,
+          quantity,
+          unit_amount_cents:selected.price*100,
+          intended_amount_cents:selected.price*100*quantity,
+          currency:'ZAR',
+          campaign_code:PREORDER_CAMPAIGN.code,
+          status:'awaiting_payment',
+          created_at:new Date().toISOString(),
+          updated_at:new Date().toISOString()
+        }
+        return [next,...current.filter(item=>item.reservation_ref!==data.reservation_ref)]
+      })
       setMessage('Reservation '+data.reservation_ref+' saved for '+selected.name+', size '+selectedSize+', quantity '+quantity+'. No payment has been taken and production is not reserved until verified payment succeeds.')
     }catch{
       setMessage('The reservation service is temporarily unavailable. No payment has been taken.')
     }finally{
       setReservationBusy(false)
+    }
+  }
+
+  function resumeReservation(reservation){
+    const item=officialTees.find(product=>product.id===reservation.product_id)
+    if(!item){setMessage('This reserved product is no longer available in DROP 01.');return}
+    setActiveReservationRef(reservation.reservation_ref)
+    setSelected(item)
+    setSelectedSize(reservation.size)
+    setQuantity(Number(reservation.quantity)||1)
+    setMessage('Reservation '+reservation.reservation_ref+' loaded. Add delivery details to continue when secure checkout is live.')
+    window.setTimeout(()=>document.getElementById('merch-order-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),50)
+  }
+
+  async function continueReservationCheckout(){
+    if(!activeReservationRef||!selected)return
+    if(!session?.access_token){setMessage('Log in before continuing your reservation.');return}
+    if(!checkoutHealth.live){setMessage('Your reservation is safe. Verified iKhokha checkout is not live yet, so no payment can be taken.');return}
+    const required=['delivery_address','delivery_city','delivery_province','delivery_postal_code']
+    if(required.some(field=>!String(delivery[field]||'').trim())){
+      setMessage('Add your delivery address, city, province and postal code before secure payment.')
+      return
+    }
+    setCheckoutBusy(true)
+    setMessage('Opening secure iKhokha checkout for reservation '+activeReservationRef+'…')
+    try{
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-reservation-checkout',{
+        method:'POST',
+        headers:{
+          Authorization:'Bearer '+session.access_token,
+          'Content-Type':'application/json',
+          Accept:'application/json'
+        },
+        body:JSON.stringify({
+          reservation_ref:activeReservationRef,
+          delivery_address:delivery.delivery_address,
+          delivery_city:delivery.delivery_city,
+          delivery_province:delivery.delivery_province,
+          delivery_postal_code:delivery.delivery_postal_code
+        })
+      })
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok){
+        if(data.error==='payment_gateway_not_live'||data.error==='payment_gateway_not_configured'){
+          setCheckoutHealth(current=>({...current,live:false,mode:data.mode||current.mode}))
+          setMessage('Your reservation remains saved. Secure iKhokha checkout is still not live and no payment has been taken.')
+        }else if(data.error==='reservation_already_paid'){
+          setMessage('This reservation is already paid. Order '+(data.order_ref||'')+' is on the paid order ledger.')
+        }else if(data.error==='delivery_details_required'){
+          setMessage('Complete your delivery details before secure payment.')
+        }else{
+          setMessage('Secure reservation checkout could not start. Your reservation remains saved and no payment has been taken.')
+        }
+        return
+      }
+      let checkoutUrl=null
+      try{
+        const parsed=new URL(data.checkout_url)
+        if(parsed.protocol==='https:')checkoutUrl=parsed.toString()
+      }catch{checkoutUrl=null}
+      if(!checkoutUrl){
+        setMessage('The payment provider did not return a valid secure checkout URL. Your reservation remains saved.')
+        return
+      }
+      setReservations(current=>current.map(item=>item.reservation_ref===activeReservationRef?{...item,status:'payment_started'}:item))
+      setMessage((data.reused_checkout?'Reopening':'Opening')+' secure checkout for '+activeReservationRef+'…')
+      window.location.assign(checkoutUrl)
+    }catch{
+      setMessage('Secure reservation checkout is temporarily unavailable. Your reservation remains saved.')
+    }finally{
+      setCheckoutBusy(false)
     }
   }
 
@@ -496,7 +602,7 @@ export default function MerchStore({session}){
           <label>Province<input value={delivery.delivery_province} onChange={e=>updateDelivery('delivery_province',e.target.value)} autoComplete="address-level1" placeholder="Province"/></label>
           <label>Postal code<input value={delivery.delivery_postal_code} onChange={e=>updateDelivery('delivery_postal_code',e.target.value)} autoComplete="postal-code" inputMode="numeric" placeholder="Postal code"/></label>
         </div>}
-        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" disabled={checkoutBusy||reservationBusy||checkoutHealth.loading||(!checkoutHealth.live&&!checkoutHealth.reservationAvailable)} onClick={checkoutHealth.live?continueOfficialCheckout:reserveOfficialPreorder}>{checkoutBusy?'Preparing secure checkout…':reservationBusy?'Saving reservation…':checkoutHealth.live?'Continue to secure iKhokha checkout':checkoutHealth.loading?'Checking payment gateway…':checkoutHealth.reservationAvailable?'Reserve pre-order · no payment now':'Secure checkout preparing'}</button>}
+        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" disabled={checkoutBusy||reservationBusy||checkoutHealth.loading||(!checkoutHealth.live&&!checkoutHealth.reservationAvailable)} onClick={activeReservationRef?(checkoutHealth.live?continueReservationCheckout:reserveOfficialPreorder):(checkoutHealth.live?continueOfficialCheckout:reserveOfficialPreorder)}>{checkoutBusy?'Preparing secure checkout…':reservationBusy?'Saving reservation…':activeReservationRef&&checkoutHealth.live?'Pay saved reservation securely':checkoutHealth.live?'Continue to secure iKhokha checkout':checkoutHealth.loading?'Checking payment gateway…':activeReservationRef?'Reservation saved · update if needed':checkoutHealth.reservationAvailable?'Reserve pre-order · no payment now':'Secure checkout preparing'}</button>}
         <div className={"checkout-readiness "+(checkoutHealth.live?'is-live':'is-preparing')}>
           <strong>{checkoutHealth.live?'Secure checkout ready':checkoutHealth.reservationAvailable?'Pre-order reservations open':'Payment protection active'}</strong>
           <span>{checkoutHealth.live?'Server-priced order + verified iKhokha handoff.':checkoutHealth.reservationAvailable?'Choose your item, size and quantity now. This records demand only; no payment is taken and no production slot is reserved until verified payment succeeds.':checkoutHealth.mode==='test'?'iKhokha API is currently in test mode, so ALLEGRO will not take payment.':'Checkout remains blocked until the verified gateway is live.'}</span>
@@ -506,6 +612,19 @@ export default function MerchStore({session}){
     </section>}
 
     {message&&<div className="notice">{message}</div>}
+
+    {session&&<section className="merch-section reservation-vault">
+      <div className="merch-heading"><div><div className="eyebrow">MY DROP 01 RESERVATIONS</div><h3>Your saved pre-orders</h3></div><p>Reservations are demand only until a signed iKhokha payment confirms the order.</p></div>
+      <div className="reservation-grid">
+        {reservations.map(item=><article className="reservation-card" key={item.reservation_ref}>
+          <div><span>{item.status==='paid'?'PAID':item.status==='payment_started'?'PAYMENT STARTED':'AWAITING PAYMENT'}</span><h4>{item.product_name}</h4><p>{item.colour} · Size {item.size} · Qty {item.quantity}</p></div>
+          <strong>{money(Number(item.intended_amount_cents||0)/100,item.currency||'ZAR')}</strong>
+          <small>{item.reservation_ref}</small>
+          {item.status!=='paid'&&item.status!=='converted'&&<button className="secondary" onClick={()=>resumeReservation(item)}>{checkoutHealth.live?'Continue to secure payment':'Open reservation'}</button>}
+        </article>)}
+        {!reservations.length&&<div className="empty">You have no DROP 01 reservations yet.</div>}
+      </div>
+    </section>}
 
     <section className="merch-trust">
       <div><strong>Official ALLEGRO-VIBEZ</strong><span>Original platform merchandise</span></div>

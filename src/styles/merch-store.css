@@ -837,3 +837,55 @@
 .checkout-readiness.is-preparing strong{color:#e9c878}
 .official-checkout-form button:disabled{opacity:.58;cursor:not-allowed}
 @media(max-width:650px){.official-order-options,.delivery-fields{grid-template-columns:1fr}.delivery-wide{grid-column:auto}}
+
+
+/* DROP 01 reservation conversion vault */
+.reservation-vault{
+  margin-top:48px;
+  padding-top:8px;
+}
+.reservation-grid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:14px;
+}
+.reservation-card{
+  display:grid;
+  gap:14px;
+  min-height:220px;
+  padding:22px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:20px;
+  background:linear-gradient(160deg,rgba(255,255,255,.045),rgba(255,255,255,.015));
+}
+.reservation-card span{
+  display:inline-block;
+  margin-bottom:8px;
+  color:#d7b46a;
+  font-size:.65rem;
+  font-weight:900;
+  letter-spacing:.1em;
+}
+.reservation-card h4{
+  margin:0 0 8px;
+  font-size:1.15rem;
+}
+.reservation-card p,
+.reservation-card small{
+  margin:0;
+  color:#929ba8;
+}
+.reservation-card>strong{
+  align-self:end;
+  color:#f3eee4;
+  font-size:1.35rem;
+}
+.reservation-card .secondary{
+  width:100%;
+}
+@media(max-width:900px){
+  .reservation-grid{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .reservation-grid{grid-template-columns:1fr}
+}

@@ -22,7 +22,7 @@ jobs:
     timeout-minutes: 8
     env:
       GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
-      PREVIEW_URL: https://deploy-preview-118--allegro-vibez.netlify.app/merch
+      PREVIEW_URL: https://deploy-preview-119--allegro-vibez.netlify.app/merch
       BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
     steps:
       - uses: actions/checkout@v4
@@ -54,6 +54,8 @@ jobs:
             if (Number(manifest.sales_target_zar) !== 100000) throw new Error('R100k target mismatch');
             if (manifest.production_mode !== 'preorder-made-to-order' || manifest.inventory_policy !== 'zero-speculative-stock') throw new Error('Preorder inventory contract mismatch');
             if (manifest.payment_gate !== 'fail-closed-until-verified-live') throw new Error('Payment safety contract mismatch');
+            if (manifest.reservation_conversion_idempotent !== true) throw new Error('Reservation conversion contract mismatch');
+            if (manifest.payment_webhook_finalizes_reservation !== true) throw new Error('Reservation webhook finalization contract mismatch');
             if (manifest.owned_infrastructure_primary !== true) throw new Error('Owned-primary contract mismatch');
             return { manifest, checkout };
           }

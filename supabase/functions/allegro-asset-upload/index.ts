@@ -17,7 +17,7 @@ const BASE = SUPABASE_URL + "/functions/v1";
 
 const ALLEGRO_AUTH_URL = "https://zoolsumifdtanycjryje.supabase.co";
 const ALLEGRO_PUBLIC_KEY = "sb_publishable_8LBaWtgMxlewODl4STQ9YA_jMMEt5Gt";
-const TARGET = "https://deploy-preview-118--allegro-vibez.netlify.app/merch";
+const TARGET = "https://deploy-preview-119--allegro-vibez.netlify.app/merch";
 const MERCH_GATEWAY = BASE + "/allegro-vibez-live/merch";
 const EXPECTED_RELEASE_ID = "ALLEGRO-DROP01-R100K-20260925";
 
@@ -221,6 +221,267 @@ async function probe(): Promise<Probe> {
       error: error instanceof Error ? error.message : "Probe failed",
     };
   }
+}
+
+
+async function listReservations(req: Request) {
+  const user = await verifyAllegroUser(req);
+  if (!user) return json({ error: "authentication_required" }, 401);
+  try {
+    const rows = await service(
+      "allegro_merch_reservations?select=reservation_ref,product_id,sku,product_name,colour,size,quantity,unit_amount_cents,intended_amount_cents,currency,campaign_code,status,created_at,updated_at" +
+      "&buyer_user_id=eq." + encodeURIComponent(user.id) +
+      "&campaign_code=eq.AV-DROP-01&order=created_at.desc&limit=25",
+    );
+    return json({ ok: true, reservations: Array.isArray(rows) ? rows : [] });
+  } catch (error) {
+    console.error("reservation list failed", error);
+    return json({ error: "reservation_list_unavailable" }, 503);
+  }
+}
+
+async function checkoutReservation(req: Request) {
+  if (IK_MODE !== "live") {
+    return json({ error: "payment_gateway_not_live", provider: "ikhokha", mode: IK_MODE }, 503);
+  }
+  if (!APP_ID || !APP_SECRET || !ENTITY_ID || !SERVICE_KEY) {
+    return json({ error: "payment_gateway_not_configured" }, 503);
+  }
+
+  const user = await verifyAllegroUser(req);
+  if (!user) return json({ error: "authentication_required" }, 401);
+
+  const body = await req.json().catch(() => null);
+  if (!body || typeof body !== "object") return json({ error: "invalid_json" }, 400);
+
+  const reservationRef = safe(body.reservation_ref, 80);
+  if (!reservationRef) return json({ error: "reservation_required" }, 400);
+
+  const reservationRows = await service(
+    "allegro_merch_reservations?select=id,reservation_ref,buyer_user_id,buyer_email,customer_name,mobile,product_id,sku,product_name,colour,size,quantity,unit_amount_cents,intended_amount_cents,currency,campaign_code,status,utm_source,utm_medium,utm_campaign" +
+      "&reservation_ref=eq." + encodeURIComponent(reservationRef) +
+      "&buyer_user_id=eq." + encodeURIComponent(user.id) +
+      "&limit=1",
+  );
+  const reservation = Array.isArray(reservationRows) ? reservationRows[0] ?? null : null;
+  if (!reservation) return json({ error: "reservation_not_found" }, 404);
+  if (["paid","converted"].includes(String(reservation.status))) {
+    return json({ error: "reservation_already_paid", reservation_ref: reservationRef }, 409);
+  }
+  if (!["awaiting_payment","payment_started"].includes(String(reservation.status))) {
+    return json({ error: "reservation_not_payable", status: reservation.status }, 409);
+  }
+
+  const product = PRODUCTS[String(reservation.product_id)];
+  if (!product || product.sku !== reservation.sku) return json({ error: "reservation_product_invalid" }, 409);
+
+  const quantity = Number(reservation.quantity);
+  const unitAmount = Number(reservation.unit_amount_cents);
+  const amount = Number(reservation.intended_amount_cents);
+  if (!Number.isInteger(quantity) || quantity < 1 || quantity > 4 || unitAmount <= 0 || amount !== unitAmount * quantity) {
+    return json({ error: "reservation_amount_invalid" }, 409);
+  }
+
+  const deliveryAddress = safe(body.delivery_address, 300);
+  const deliveryCity = safe(body.delivery_city, 120);
+  const deliveryProvince = safe(body.delivery_province, 120);
+  const deliveryPostalCode = safe(body.delivery_postal_code, 20);
+  if (!deliveryAddress || !deliveryCity || !deliveryProvince || !deliveryPostalCode) {
+    return json({ error: "delivery_details_required" }, 400);
+  }
+
+  const existingRows = await service(
+    "allegro_merch_orders?select=id,order_ref,checkout_url,payment_status,status,external_transaction_id" +
+      "&reservation_ref=eq." + encodeURIComponent(reservationRef) +
+      "&buyer_user_id=eq." + encodeURIComponent(user.id) +
+      "&limit=1",
+  );
+  let order = Array.isArray(existingRows) ? existingRows[0] ?? null : null;
+
+  if (order?.payment_status === "paid") {
+    return json({ error: "reservation_already_paid", reservation_ref: reservationRef, order_ref: order.order_ref }, 409);
+  }
+  if (order?.checkout_url && order?.payment_status === "not_paid" && order?.status === "payment_link_created") {
+    return json({
+      ok: true,
+      reservation_ref: reservationRef,
+      order_ref: order.order_ref,
+      checkout_url: order.checkout_url,
+      amount_cents: amount,
+      currency: "ZAR",
+      provider: "ikhokha",
+      mode: "live",
+      reused_checkout: true,
+      delivery_fee_included: false,
+    });
+  }
+
+  const orderRef = order?.order_ref || ("AV-" + Date.now().toString(36).toUpperCase() + "-" + crypto.randomUUID().slice(0, 8).toUpperCase());
+  const externalTransactionID = "allegro-merch-" + crypto.randomUUID();
+  const now = new Date().toISOString();
+
+  const orderPayload = {
+    order_ref: orderRef,
+    buyer_user_id: user.id,
+    buyer_email: user.email,
+    customer_name: String(reservation.customer_name),
+    mobile: String(reservation.mobile),
+    delivery_address: deliveryAddress,
+    delivery_city: deliveryCity,
+    delivery_province: deliveryProvince,
+    delivery_postal_code: deliveryPostalCode,
+    product_id: reservation.product_id,
+    sku: reservation.sku,
+    product_name: reservation.product_name,
+    colour: reservation.colour,
+    size: reservation.size,
+    quantity,
+    unit_amount_cents: unitAmount,
+    amount_cents: amount,
+    currency: "ZAR",
+    campaign_code: "AV-DROP-01",
+    provider: "ikhokha",
+    external_transaction_id: externalTransactionID,
+    reservation_ref: reservationRef,
+    paylink_id: null,
+    checkout_url: null,
+    provider_response_code: null,
+    provider_payload: null,
+    status: "checkout_pending",
+    payment_status: "not_paid",
+    source: "allegro-merch-reservation",
+    utm_source: reservation.utm_source || "allegro",
+    utm_medium: reservation.utm_medium || "merch-reservation",
+    utm_campaign: reservation.utm_campaign || "drop01-r100k",
+    updated_at: now,
+  };
+
+  if (order?.id) {
+    const updated = await service("allegro_merch_orders?id=eq." + encodeURIComponent(order.id), {
+      method: "PATCH",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(orderPayload),
+    });
+    order = Array.isArray(updated) ? updated[0] ?? null : null;
+  } else {
+    const created = await service("allegro_merch_orders", {
+      method: "POST",
+      headers: { Prefer: "return=representation" },
+      body: JSON.stringify(orderPayload),
+    });
+    order = Array.isArray(created) ? created[0] ?? null : null;
+  }
+  if (!order?.id) return json({ error: "order_creation_failed" }, 500);
+
+  const returnUrl = (state: string) =>
+    MERCH_GATEWAY + "?payment=" + encodeURIComponent(state) + "&order=" + encodeURIComponent(orderRef);
+
+  const requestBody = {
+    entityID: ENTITY_ID,
+    externalEntityID: "izakhono-africa",
+    amount,
+    currency: "ZAR",
+    requesterUrl: MERCH_GATEWAY,
+    mode: "live",
+    description: (String(reservation.product_name) + " · " + String(reservation.size) + " · qty " + quantity).slice(0, 120),
+    paymentReference: externalTransactionID.slice(0, 60),
+    externalTransactionID,
+    urls: {
+      callbackUrl: BASE + "/izakhono-ikhokha-webhook",
+      successPageUrl: returnUrl("processing"),
+      failurePageUrl: returnUrl("failed"),
+      cancelUrl: returnUrl("cancelled"),
+    },
+  };
+
+  const payloadText = JSON.stringify(requestBody);
+  const signature = await sign(escapeSign(new URL(API).pathname + payloadText));
+  const payResponse = await fetch(API, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      "ik-appid": APP_ID,
+      "ik-sign": signature,
+    },
+    body: payloadText,
+  });
+  const payment = await payResponse.json().catch(() => ({}));
+
+  if (!payResponse.ok || payment?.responseCode !== "00" || !payment?.paylinkUrl) {
+    await service("allegro_merch_orders?id=eq." + encodeURIComponent(order.id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({
+        status: "payment_link_failed",
+        payment_status: "not_paid",
+        provider_response_code: String(payment?.responseCode || payResponse.status),
+        provider_payload: payment,
+        updated_at: new Date().toISOString(),
+      }),
+    }).catch(() => {});
+    await service("allegro_merch_reservations?id=eq." + encodeURIComponent(reservation.id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ status: "awaiting_payment", updated_at: new Date().toISOString() }),
+    }).catch(() => {});
+    return json({ error: "checkout_unavailable", reservation_ref: reservationRef, order_ref: orderRef }, 502);
+  }
+
+  await Promise.all([
+    service("allegro_merch_orders?id=eq." + encodeURIComponent(order.id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({
+        paylink_id: payment.paylinkID ?? null,
+        checkout_url: String(payment.paylinkUrl),
+        provider_response_code: String(payment.responseCode ?? ""),
+        provider_payload: payment,
+        status: "payment_link_created",
+        updated_at: new Date().toISOString(),
+      }),
+    }),
+    service("allegro_merch_reservations?id=eq." + encodeURIComponent(reservation.id), {
+      method: "PATCH",
+      headers: { Prefer: "return=minimal" },
+      body: JSON.stringify({ status: "payment_started", updated_at: new Date().toISOString() }),
+    }),
+  ]);
+
+  await recordGrowth({
+    platform_slug: "allegro-vibez",
+    event_name: "reservation_checkout_start",
+    amount_cents: amount,
+    currency: "ZAR",
+    payment_ref: externalTransactionID,
+    trust_level: "server",
+    utm_source: reservation.utm_source || "allegro",
+    utm_medium: reservation.utm_medium || "merch-reservation",
+    utm_campaign: reservation.utm_campaign || "drop01-r100k",
+    metadata: {
+      provider: "ikhokha",
+      reservation_ref: reservationRef,
+      order_id: order.id,
+      order_ref: orderRef,
+      sku: reservation.sku,
+      size: reservation.size,
+      quantity,
+      paylink_id: payment.paylinkID ?? null,
+    },
+  });
+
+  return json({
+    ok: true,
+    reservation_ref: reservationRef,
+    order_ref: orderRef,
+    checkout_url: String(payment.paylinkUrl),
+    amount_cents: amount,
+    currency: "ZAR",
+    provider: "ikhokha",
+    mode: "live",
+    reused_checkout: false,
+    delivery_fee_included: false,
+  });
 }
 
 async function orderStatus(req: Request, url: URL) {
@@ -569,12 +830,24 @@ Deno.serve(async (req: Request) => {
       reservation_mode_available: true,
       reservation_requires_payment: false,
       reservation_reserves_production: false,
+      reservation_conversion_ready: true,
+      reservation_conversion_idempotent: true,
     });
   }
 
   if (mode === "merch-reserve") {
     if (req.method !== "POST") return json({ error: "POST only" }, 405);
     return await reservePreorder(req);
+  }
+
+  if (mode === "merch-reservations") {
+    if (req.method !== "GET" && req.method !== "HEAD") return json({ error: "GET only" }, 405);
+    return await listReservations(req);
+  }
+
+  if (mode === "merch-reservation-checkout") {
+    if (req.method !== "POST") return json({ error: "POST only" }, 405);
+    return await checkoutReservation(req);
   }
 
   if (mode === "merch-order-status") {
