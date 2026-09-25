@@ -126,7 +126,6 @@ export async function updateCreatorProfile(userId, values) {
 export async function createArtistBookingRequest(artistId, payload) {
   const client = requireSupabase()
   if (backendProvider === 'izakhono-core') {
-    const now = new Date().toISOString()
     const requestCode = 'AB-' + crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase()
     const { data, error } = await client
       .from('artist_booking_intake')
@@ -134,8 +133,7 @@ export async function createArtistBookingRequest(artistId, payload) {
         artist_id: artistId,
         request_code: requestCode,
         ...payload,
-        created_at: now,
-        updated_at: now,
+        source: payload.source || 'artist_space',
       })
       .select('id,request_code')
       .single()
