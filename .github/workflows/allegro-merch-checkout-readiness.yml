@@ -33,8 +33,9 @@ jobs:
             const health=await jsonFetch(base+'/allegro-asset-upload?mode=merch-checkout-health');
             if(health.r.status!==200||health.body.ok!==true)throw new Error('Checkout health failed: '+health.text.slice(0,500));
             const ids=['movement-black','african-born-cream','creators-burgundy','creator-economy-white'];
+            console.log('checkout health',JSON.stringify(health.body));
             if(health.body.provider!=='ikhokha')throw new Error('Provider mismatch');
-            if(!health.body.configured)throw new Error('Payment credentials/service role are not configured');
+            if(!health.body.configured)throw new Error('Payment credentials/service role are not configured: '+JSON.stringify({app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,service_role:health.body.service_role_configured,mode:health.body.mode}));
             for(const id of ids)if(!health.body.products?.includes(id))throw new Error('Missing server product '+id);
             if(health.body.delivery_fee_included!==false)throw new Error('Delivery fee contract changed unexpectedly');
 
