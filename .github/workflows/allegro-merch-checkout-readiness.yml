@@ -72,7 +72,7 @@ jobs:
               configured:health.body.configured,
               live:health.body.live,
               safe_fail_closed:!health.body.live,
-              credential_flags:{app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,service_role:health.body.service_role_configured},
+              credential_flags:{app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,server_access:health.body.service_role_configured},
               products:health.body.products,
               delivery_fee_included:health.body.delivery_fee_included,
               webhook_version:webhook.body.version,
