@@ -89,10 +89,11 @@ export default function MerchStore({session}){
     <section className="merch-hero">
       <img src="/merch/merch-hero.jpg" alt="ALLEGRO-VIBEZ official 300gsm oversized tee collection"/>
       <div className="merch-hero-copy">
-        <div className="eyebrow">OFFICIAL ALLEGRO-VIBEZ MERCH</div>
+        <div className="eyebrow">THE ALLEGRO-VIBEZ ATELIER · OFFICIAL MERCH</div>
         <h2>Wear the movement.</h2>
-        <p>Premium streetwear for creators, artists, fans and people who live music.</p>
-        <div className="merch-specs"><span>300gsm tees</span><span>Oversized fit</span><span>Dropped shoulders</span><span>Official designs</span></div>
+        <p>Quiet luxury meets creator culture — a refined streetwear collection for artists, fans and people who live music.</p>
+        <div className="merch-specs"><span>300gsm tees</span><span>Oversized fit</span><span>Dropped shoulders</span><span>Original ALLEGRO design</span></div>
+        <div className="merch-hero-actions"><a className="primary" href="#tees">Shop the first drop</a><a className="merch-text-link" href="#lookbook">View lookbook</a></div>
         <strong>Launch tees from {money(launchPrice)}</strong>
       </div>
     </section>
@@ -102,7 +103,7 @@ export default function MerchStore({session}){
     </nav>
 
     <section id="lookbook" className="merch-section">
-      <div className="merch-heading"><div><div className="eyebrow">ALLEGRO-VIBEZ 2026 LOOKBOOK</div><h3>Music. People. Culture. On the street.</h3></div><p>Oversized tees · golf shirts · hoodies · jackets · bucket hats · caps</p></div>
+      <div className="merch-heading"><div><div className="eyebrow">ALLEGRO-VIBEZ 2026 LOOKBOOK</div><h3>Designed like fashion. Worn like identity.</h3></div><p>Oversized tees · golf shirts · hoodies · jackets · bucket hats · caps</p></div>
       <img className="outerwear-lookbook allegro-lookbook" src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ fashion lookbook with oversized T-shirts, golf shirts, hoodies, jackets, bucket hats and caps"/>
     </section>
 
@@ -123,7 +124,7 @@ export default function MerchStore({session}){
     </section>
 
     <section id="tees" className="merch-section">
-      <div className="merch-heading"><div><div className="eyebrow">CONFIRMED 300GSM</div><h3>Oversized Tee Collection</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
+      <div className="merch-heading"><div><div className="eyebrow">THE FIRST DROP · CONFIRMED 300GSM</div><h3>Signature Oversized Tees</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
       <div className="merch-product-grid">
         {officialTees.map(item=><article className={"official-product tone-"+item.tone} key={item.id}>
           <div className="tee-mockup" aria-label={item.name+' product mockup'}>
@@ -143,7 +144,7 @@ export default function MerchStore({session}){
     </section>
 
     <section id="outerwear" className="merch-section">
-      <div className="merch-heading"><div><div className="eyebrow">OFFICIAL RANGE PREVIEW</div><h3>Hoodies, jackets, caps, bucket hats & accessories</h3></div><p>Populated now for discovery and advertising. Price and garment specification will be added only when confirmed.</p></div>
+      <div className="merch-heading"><div><div className="eyebrow">THE NEXT DROP · OFFICIAL RANGE PREVIEW</div><h3>Hoodies, jackets, caps, bucket hats & accessories</h3></div><p>Preview the wider collection now. Final product details and pricing will follow as each piece is approved.</p></div>
       <img className="outerwear-lookbook" src="/merch/outerwear-hats.jpg" alt="ALLEGRO-VIBEZ hoodie, jacket, caps, bucket hats and accessories"/>
       <div className="coming-merch-grid">
         {comingProducts.map(item=><article className={"coming-product tone-"+item.tone} key={item.id}>
@@ -152,9 +153,9 @@ export default function MerchStore({session}){
             <strong>{item.tag}</strong>
             <small>ALLEGRO-VIBEZ</small>
           </div>
-          <div className="product-copy"><div><span>{item.colour}</span><h4>{item.name}</h4></div><strong className="merch-tba">PRICE TBA</strong></div>
+          <div className="product-copy"><div><span>{item.colour}</span><h4>{item.name}</h4></div><strong className="merch-tba">COMING SOON</strong></div>
           <p>{item.note}</p>
-          <div className="merch-preview-labels"><span>Official merch</span><span>Specs TBA</span><span>Price TBA</span></div>
+          <div className="merch-preview-labels"><span>Official merch</span><span>Collection preview</span><span>Details to follow</span></div>
           <button className="secondary" onClick={()=>setMessage(item.name+' is now listed in the ALLEGRO shop. Final price and garment specification will be added once confirmed.')}>Register interest</button>
         </article>)}
       </div>
