@@ -38,12 +38,21 @@ jobs:
           [[ "$expected_allegro" =~ ^[0-9a-f]{40}$ ]]
           [[ "$expected_chancellor" =~ ^[0-9a-f]{40}$ ]]
 
-          test -r /opt/izakhono/wave1/BUILDER_REF
-          actual_builder="$(tr -d '\r\n' < /opt/izakhono/wave1/BUILDER_REF)"
-          if [ "$actual_builder" != "$expected_builder" ]; then
-            echo "[SAFE STOP] Installed NODE01 Wave 1 bundle is stale."
-            echo "Expected Builder: $expected_builder"
-            echo "Installed Builder: $actual_builder"
+          workdir="$RUNNER_TEMP/izakhono-builder-contract"
+          rm -rf "$workdir"
+          git init -q "$workdir"
+          git -C "$workdir" remote add origin https://github.com/bevanshelton-netizen/izakhono-builder.git
+          git -C "$workdir" fetch -q --depth=1 origin "$expected_builder"
+          git -C "$workdir" checkout -q --detach FETCH_HEAD
+
+          expected_bundle="$(bash "$workdir/scripts/launch-stack/compute-wave1-bundle-id.sh" "$workdir")"
+          [[ "$expected_bundle" =~ ^[0-9a-f]{64}$ ]]
+          test -r /opt/izakhono/wave1/BUNDLE_SHA256
+          actual_bundle="$(tr -d '\r\n' < /opt/izakhono/wave1/BUNDLE_SHA256)"
+          if [ "$actual_bundle" != "$expected_bundle" ]; then
+            echo "[SAFE STOP] Installed NODE01 Wave 1 bundle digest is stale."
+            echo "Expected bundle: $expected_bundle"
+            echo "Installed bundle: $actual_bundle"
             exit 78
           fi
 
@@ -112,8 +121,16 @@ jobs:
           if report.get("overall") != "PASS_LOCAL_OWNED":
               raise SystemExit(f"[SAFE STOP] Local proof did not pass: {report.get('overall')}")
 
-          if report.get("builder_bundle_ref") != contract.get("BUILDER_REF"):
-              raise SystemExit("[SAFE STOP] Proof report Builder bundle does not match trigger.")
+          builder_ref = contract.get("BUILDER_REF")
+          if report.get("builder_bundle_ref") not in {builder_ref, "UNATTESTED"}:
+              raise SystemExit("[SAFE STOP] Proof report Builder provenance is inconsistent.")
+
+          expected_bundle_path = pathlib.Path("/opt/izakhono/wave1/BUNDLE_SHA256")
+          if not expected_bundle_path.is_file():
+              raise SystemExit("[SAFE STOP] Installed Wave 1 bundle digest is missing.")
+          expected_bundle = expected_bundle_path.read_text(encoding="utf-8").strip()
+          if report.get("wave1_bundle_sha256") != expected_bundle:
+              raise SystemExit("[SAFE STOP] Proof report Wave 1 digest does not match installed bundle.")
 
           refs = {entry.get("slug"): entry.get("immutable_ref") for entry in report.get("apps", [])}
           expected = {
