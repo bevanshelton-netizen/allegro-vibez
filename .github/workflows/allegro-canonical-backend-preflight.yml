@@ -1,0 +1,57 @@
+name: Verify Canonical ALLEGRO Backend
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify canonical project identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq "zoolsumifdtanycjryje.supabase.co" src/lib/supabaseClient.js
+          echo "[PASS] ALLEGRO source points to canonical fallback project zoolsumifdtanycjryje"
+
+      - name: Verify canonical Supabase project is online
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://zoolsumifdtanycjryje.supabase.co"
+          curl --fail --silent --show-error --location "$origin/auth/v1/health" >/tmp/allegro-auth-health.json
+          echo "[PASS] Canonical ALLEGRO Supabase auth endpoint is online"
+
+      - name: Verify required marketplace and merch schema
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://zoolsumifdtanycjryje.supabase.co"
+          public_key="$(python3 - <<'PY'
+          import re
+          text=open('src/lib/supabaseClient.js',encoding='utf-8').read()
+          m=re.search(r"FALLBACK_SUPABASE_PUBLISHABLE_KEY\s*=\s*'([^']+)'",text)
+          if not m:
+              raise SystemExit('Browser-safe ALLEGRO Supabase publishable key not found')
+          print(m.group(1))
+          PY
+          )"
+          for table in profiles musician_vetting musician_ads merch_products; do
+            code="$(curl --silent --show-error --location --output /tmp/allegro-rest.json --write-out '%{http_code}'               -H "apikey: $public_key"               -H "Authorization: Bearer $public_key"               "$origin/rest/v1/$table?select=*&limit=1")"
+            if [ "$code" != "200" ]; then
+              echo "[FAIL] $table -> HTTP $code"
+              cat /tmp/allegro-rest.json
+              exit 1
+            fi
+            echo "[PASS] $table exists and is reachable through PostgREST"
+          done
+
+      - name: Report rollout readiness
+        run: |
+          echo "[PASS] Canonical ALLEGRO backend is online and contains the marketplace/merch schema."
+          echo "Next: verify authenticated owner/admin access and payment-provider handoff before enabling provider-gated settlement."
