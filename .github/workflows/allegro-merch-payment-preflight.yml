@@ -1,0 +1,49 @@
+name: ALLEGRO Merch Payment Preflight
+
+on:
+  push:
+    branches:
+      - feature/allegro-merch-dynamic-checkout-2026-09-25
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Verify central IZAKHONO iKhokha health without creating a payment
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const base='https://yfawrenhudjomhnglfhq.supabase.co/functions/v1';
+          async function get(path){
+            const r=await fetch(base+path,{headers:{'user-agent':'ALLEGRO-PAYMENT-PREFLIGHT/1.0'}});
+            const text=await r.text();
+            let body={};
+            try{body=JSON.parse(text)}catch{}
+            if(r.status!==200)throw new Error(path+' status '+r.status+': '+text.slice(0,500));
+            return body;
+          }
+          async function run(){
+            const health=await get('/izakhono-payment-health');
+            const checkout=await get('/izakhono-ikhokha-checkout?health=1');
+            if(health.ok!==true||health.provider!=='ikhokha')throw new Error('Payment health invalid');
+            if(health.mode!=='live')throw new Error('iKhokha is not in live mode: '+health.mode);
+            if(!health.app_id_configured||!health.secret_configured)throw new Error('iKhokha credentials incomplete');
+            if(checkout.ok!==true||checkout.configured!==true)throw new Error('Dynamic checkout is not configured');
+            console.log(JSON.stringify({
+              ok:true,
+              provider:health.provider,
+              mode:health.mode,
+              app_id_configured:health.app_id_configured,
+              secret_configured:health.secret_configured,
+              dynamic_checkout_configured:checkout.configured,
+              existing_offers:checkout.offers
+            },null,2));
+          }
+          run().catch(e=>{console.error(e.stack||e.message);process.exit(1)});
+          NODE
