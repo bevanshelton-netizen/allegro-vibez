@@ -1,8 +1,10 @@
 ALLEGRO_VERCEL_RESILIENCE=REQUESTED
-requested_at=2026-09-25T04:22:00+02:00
+requested_at=2026-09-25T10:15:00+02:00
 source_branch=main
-purpose=WEAR_THE_MOVEMENT_MERCH_REVENUE_BRIDGE
+source_ref=bbb8aa32b8e2367eff54a057d68c15b94236d8b9
+purpose=DROP01_R100K_PREORDER_ROLLOUT
 project_id=prj_TIYmHEDp2SLqb4EDm8iC52RH0uSS
 team_id=team_XSHdQaQxmXGD1HlK2E4nehif
 owned_route_remains_primary=true
+checkout_fail_closed_until_verified_ikhokha=true
 public_live_requires_https_verify=true
