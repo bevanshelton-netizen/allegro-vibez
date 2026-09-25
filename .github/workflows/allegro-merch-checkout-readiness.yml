@@ -51,6 +51,13 @@ jobs:
             if(health.body.reservation_conversion_ready!==true)throw new Error('Reservation conversion is not ready');
             if(health.body.reservation_conversion_idempotent!==true)throw new Error('Reservation conversion is not idempotent');
 
+            const demand=await jsonFetch(base+'/allegro-asset-upload?mode=merch-demand');
+            if(demand.r.status!==200||demand.body.ok!==true)throw new Error('Founding 100 demand endpoint unavailable');
+            if(demand.body.metric_type!=='reservation_demand_not_sales')throw new Error('Demand metric type is unsafe');
+            if(demand.body.counts_as_verified_sales!==false)throw new Error('Reservation demand must not count as verified sales');
+            if(demand.body.reserves_production!==false)throw new Error('Reservation demand must not reserve production');
+            if(Number(demand.body.founding_goal_buyers)!==100)throw new Error('Founding 100 goal mismatch');
+
             const webhook=await jsonFetch(base+'/izakhono-ikhokha-webhook');
             if(webhook.r.status!==200||webhook.body.version<3)throw new Error('Webhook v3+ reservation finalizer unavailable');
             if(!webhook.body.supported_platforms?.includes('allegro-vibez'))throw new Error('Webhook does not advertise ALLEGRO support');
@@ -118,6 +125,13 @@ jobs:
               reservation_reserves_production:health.body.reservation_reserves_production,
               reservation_conversion_ready:health.body.reservation_conversion_ready,
               reservation_conversion_idempotent:health.body.reservation_conversion_idempotent,
+              founding100:{
+                buyers:Number(demand.body.unique_buyers||0),
+                reservations:Number(demand.body.reservation_count||0),
+                unpaid_intended_value_cents:Number(demand.body.unpaid_intended_value_cents||0),
+                metric_type:demand.body.metric_type,
+                counts_as_verified_sales:demand.body.counts_as_verified_sales
+              },
               unauthenticated_reservation_status:reserveUnauth.r.status,
               unauthenticated_reservation_list_status:listUnauth.r.status,
               unauthenticated_conversion_status:conversionUnauth.r.status,

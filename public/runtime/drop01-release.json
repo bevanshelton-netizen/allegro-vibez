@@ -21,5 +21,16 @@
   "reservation_conversion_endpoint": "/functions/v1/allegro-asset-upload?mode=merch-reservation-checkout",
   "reservation_conversion_idempotent": true,
   "payment_webhook_finalizes_reservation": true,
-  "payment_webhook_min_contract_version": 3
+  "payment_webhook_min_contract_version": 3,
+  "demand_campaign": "FOUNDING100",
+  "founding_goal_buyers": 100,
+  "demand_endpoint": "/functions/v1/allegro-asset-upload?mode=merch-demand",
+  "demand_metric_type": "reservation_demand_not_sales",
+  "demand_counts_as_verified_sales": false,
+  "organic_share_ref": "FOUNDING100",
+  "organic_share_channels": [
+    "web-share",
+    "whatsapp",
+    "copy-link"
+  ]
 }
