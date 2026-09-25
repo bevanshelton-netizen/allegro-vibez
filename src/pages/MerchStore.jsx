@@ -67,8 +67,13 @@ export default function MerchStore({session}){
     </section>
 
     <nav className="merch-categories" aria-label="Merchandise categories">
-      <a href="#tees">T-Shirts</a><a href="#outerwear">Hoodies</a><a href="#outerwear">Jackets</a><a href="#outerwear">Caps & Hats</a><a href="#creator-merch">Creator Merch</a>
+      <a href="#lookbook">2026 Lookbook</a><a href="#tees">T-Shirts</a><a href="#outerwear">Hoodies</a><a href="#outerwear">Jackets</a><a href="#outerwear">Caps & Hats</a><a href="#creator-merch">Creator Merch</a>
     </nav>
+
+    <section id="lookbook" className="merch-section">
+      <div className="merch-heading"><div><div className="eyebrow">ALLEGRO-VIBEZ 2026 LOOKBOOK</div><h3>Music. People. Culture. On the street.</h3></div><p>Oversized tees · golf shirts · hoodies · jackets · bucket hats · caps</p></div>
+      <img className="outerwear-lookbook allegro-lookbook" src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ fashion lookbook with oversized T-shirts, golf shirts, hoodies, jackets, bucket hats and caps"/>
+    </section>
 
     <section id="tees" className="merch-section">
       <div className="merch-heading"><div><div className="eyebrow">CONFIRMED 300GSM</div><h3>Oversized Tee Collection</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
