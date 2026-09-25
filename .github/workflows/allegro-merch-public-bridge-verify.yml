@@ -34,8 +34,11 @@ jobs:
           node <<'NODE'
           const required = [
             'WEAR THE MOVEMENT',
+            'DROP 01',
+            'R100,000',
             'allegro-vibez-merch-lookbook.webp',
-            '/runtime/merch-checkout.json',
+            'official-checkout-form',
+            'merch-checkout-health',
           ];
 
           async function markerCheck(page) {
