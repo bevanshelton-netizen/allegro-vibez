@@ -1,0 +1,120 @@
+name: ALLEGRO Merch Resilience Verify
+
+on:
+  push:
+    branches:
+      - resilience/allegro-merch-live-2026-09-25
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      PREVIEW_URL: https://deploy-preview-104--allegro-vibez.netlify.app/merch
+      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Wait for pinned Netlify preview and verify current ALLEGRO merch release
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in $(seq 1 36); do
+            if node <<'NODE'
+          const preview = process.env.PREVIEW_URL;
+          const required = [
+            'WEAR THE MOVEMENT',
+            'allegro-vibez-merch-lookbook.webp',
+            '/runtime/merch-checkout.json',
+          ];
+
+          async function run() {
+            const page = await fetch(preview, { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-GITHUB-VERIFY/1.0' } });
+            if (page.status !== 200) throw new Error('Preview status ' + page.status);
+            const html = await page.text();
+            if (!/id=["']root["']/.test(html)) throw new Error('Missing root marker');
+
+            const scripts = [...html.matchAll(/<script[^>]+src=["']([^"']+\.js[^"']*)["']/gi)]
+              .map(m => new URL(m[1], page.url).toString())
+              .slice(0, 12);
+
+            const bodies = await Promise.all(scripts.map(async (url) => {
+              const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-GITHUB-VERIFY/1.0' } });
+              return r.ok ? await r.text() : '';
+            }));
+
+            const searchable = html + '\n' + bodies.join('\n');
+            for (const marker of required) {
+              if (!searchable.includes(marker)) throw new Error('Missing release marker: ' + marker);
+            }
+
+            const configUrl = new URL('/runtime/merch-checkout.json', page.url).toString();
+            const cfgRes = await fetch(configUrl, { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-GITHUB-VERIFY/1.0' } });
+            if (cfgRes.status !== 200) throw new Error('Runtime checkout config status ' + cfgRes.status);
+            const cfg = await cfgRes.json();
+            if (cfg.provider !== 'iKhokha' || !cfg.products || typeof cfg.products !== 'object') {
+              throw new Error('Runtime checkout contract invalid');
+            }
+
+            const productIds = ['movement-black','african-born-cream','creators-burgundy','creator-economy-white'];
+            for (const id of productIds) {
+              if (!(id in cfg.products)) throw new Error('Missing checkout product mapping: ' + id);
+            }
+
+            console.log(JSON.stringify({
+              ok: true,
+              preview_url: page.url,
+              preview_status: page.status,
+              markers: required,
+              runtime_checkout_contract: true,
+              checkout_provider: cfg.provider,
+              checkout_urls_configured: productIds.filter(id => typeof cfg.products[id] === 'string' && cfg.products[id].startsWith('https://')).length,
+            }, null, 2));
+          }
+
+          run().catch((err) => {
+            console.error(err.message);
+            process.exit(1);
+          });
+          NODE
+            then
+              exit 0
+            fi
+            echo "Preview not ready/verified yet (attempt $attempt)."
+            sleep 10
+          done
+          echo "::error::Pinned Netlify preview did not reach verified state."
+          exit 1
+
+      - name: Verify Supabase fail-closed resilience bridge
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          async function run() {
+            const r = await fetch(process.env.BRIDGE_HEALTH_URL, {
+              redirect: 'follow',
+              headers: { 'user-agent': 'IZAKHONO-GITHUB-BRIDGE-VERIFY/1.0' },
+            });
+            const text = await r.text();
+            let body = {};
+            try { body = JSON.parse(text); } catch {}
+            if (r.status !== 200) throw new Error('Bridge health status ' + r.status + ': ' + text.slice(0, 500));
+            if (!body.ok) throw new Error('Bridge did not report ok=true');
+            if (body.route_role !== 'external_resilience_only') throw new Error('Bridge role mismatch');
+            if (body.owned_route_primary !== true) throw new Error('Owned route authority lost');
+            if (body.canonical_production_claim !== false) throw new Error('Bridge incorrectly claims canonical production');
+            for (const [marker, value] of Object.entries(body.markers || {})) {
+              if (value !== true) throw new Error('Bridge marker failed: ' + marker);
+            }
+            console.log(JSON.stringify(body, null, 2));
+          }
+          run().catch((err) => {
+            console.error(err.message);
+            process.exit(1);
+          });
+          NODE
