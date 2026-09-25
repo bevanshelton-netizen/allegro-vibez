@@ -79,7 +79,15 @@ Deno.serve(async req=>{
     await ownerAccess(b.owner_token);
     const id=clean(b.lead_id,80),status=clean(b.status,30);
     if(!["new","contacted","qualified","booked","won","lost"].includes(status))return json({error:"Invalid lead status."},400);
-    const rows=await db("allegro_studio_growth_leads?id=eq."+encodeURIComponent(id),"PATCH",{status});
+    const patch={status};
+    if(b.next_follow_up_at!==undefined)patch.next_follow_up_at=b.next_follow_up_at||null;
+    if(b.owner_note!==undefined)patch.owner_note=clean(b.owner_note,1500)||null;
+    if(status==="contacted"){
+      patch.last_contacted_at=new Date().toISOString();
+      const existing=await db("allegro_studio_growth_leads?select=follow_up_count&id=eq."+encodeURIComponent(id)+"&limit=1");
+      patch.follow_up_count=Number(existing?.[0]?.follow_up_count||0)+1;
+    }
+    const rows=await db("allegro_studio_growth_leads?id=eq."+encodeURIComponent(id),"PATCH",patch);
     if(!rows?.[0])return json({error:"Lead not found."},404);
     return json({ok:true,lead:rows[0]});
   }
