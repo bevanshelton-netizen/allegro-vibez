@@ -33,3 +33,322 @@
 .tone-black .tee-body,.tone-black .tee-sleeve{background:#090a0d;color:#f4ead7}.tone-cream .tee-body,.tone-cream .tee-sleeve{background:#eee5d2;color:#171717}.tone-burgundy .tee-body,.tone-burgundy .tee-sleeve{background:#55111d;color:#f7e8dc}.tone-white .tee-body,.tone-white .tee-sleeve{background:#f2f2ed;color:#111}
 .order-summary{display:block;color:#9da8ba;margin-top:8px}.checkout-note{grid-column:1/-1;color:#8995a6;line-height:1.45}.merch-order-panel h3{margin:.35em 0}
 @media(max-width:650px){.tee-mockup{height:240px}}
+
+/* Premium editorial refinement — ALLEGRO-VIBEZ Atelier */
+.merch-page{
+  --merch-ink:#090a0c;
+  --merch-panel:#0e1116;
+  --merch-panel-soft:#12161d;
+  --merch-line:rgba(255,255,255,.10);
+  --merch-gold:#d7b46a;
+  --merch-cream:#f4efe5;
+  --merch-muted:#aab1bd;
+  max-width:1320px;
+  padding-bottom:96px;
+}
+.merch-page .eyebrow{
+  letter-spacing:.19em;
+  font-size:.66rem;
+  color:var(--merch-gold);
+}
+.merch-hero{
+  min-height:580px;
+  border-radius:30px;
+  border-color:rgba(255,255,255,.08);
+  box-shadow:0 34px 90px rgba(0,0,0,.35);
+}
+.merch-hero img{
+  min-height:580px;
+  opacity:.88;
+  transform:scale(1.01);
+}
+.merch-hero:after{
+  background:
+    linear-gradient(90deg,rgba(4,5,7,.96) 0%,rgba(4,5,7,.78) 40%,rgba(4,5,7,.24) 67%,rgba(4,5,7,.02) 100%),
+    linear-gradient(0deg,rgba(4,5,7,.32),transparent 55%);
+}
+.merch-hero-copy{
+  left:clamp(28px,5vw,76px);
+  max-width:640px;
+}
+.merch-hero-copy h2{
+  max-width:8ch;
+  font-family:"Bodoni 72","Didot","Times New Roman",Georgia,serif;
+  font-weight:500;
+  font-size:clamp(3.8rem,7.2vw,7.4rem);
+  letter-spacing:-.055em;
+  line-height:.88;
+}
+.merch-hero-copy p{
+  max-width:560px;
+  color:#ddd8cf;
+  line-height:1.72;
+  font-size:1.05rem;
+}
+.merch-hero-copy>strong{
+  margin-top:20px;
+  color:var(--merch-cream);
+  font-size:.92rem;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+}
+.merch-hero-actions{
+  display:flex;
+  gap:20px;
+  align-items:center;
+  margin-top:26px;
+}
+.merch-text-link{
+  color:var(--merch-cream);
+  font-size:.82rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  border-bottom:1px solid rgba(244,239,229,.45);
+  padding-bottom:4px;
+}
+.merch-specs{
+  gap:7px;
+}
+.merch-specs span{
+  background:rgba(8,10,13,.44);
+  border-color:rgba(255,255,255,.14);
+  color:#ece7de;
+  backdrop-filter:blur(8px);
+  font-size:.68rem;
+  letter-spacing:.04em;
+}
+.merch-categories{
+  margin:22px 0 72px;
+  gap:0;
+  border:1px solid var(--merch-line);
+  border-radius:18px;
+  overflow:hidden;
+  background:#0b0e13;
+}
+.merch-categories a{
+  border:0;
+  border-right:1px solid var(--merch-line);
+  border-radius:0;
+  background:transparent;
+  padding:18px 12px;
+  font-size:.74rem;
+  letter-spacing:.07em;
+  text-transform:uppercase;
+  transition:background .2s ease,color .2s ease;
+}
+.merch-categories a:last-child{border-right:0}
+.merch-categories a:hover{
+  background:#171b22;
+  color:var(--merch-gold);
+}
+.merch-section{margin:96px 0}
+.merch-heading{
+  align-items:flex-start;
+  padding-bottom:20px;
+  margin-bottom:28px;
+  border-bottom:1px solid var(--merch-line);
+}
+.merch-heading h3,.founders-drop h3{
+  font-family:"Bodoni 72","Didot","Times New Roman",Georgia,serif;
+  font-weight:500;
+  letter-spacing:-.035em;
+  font-size:clamp(2.5rem,4.7vw,5rem);
+  line-height:.98;
+}
+.merch-heading p{
+  max-width:390px;
+  line-height:1.6;
+  text-align:right;
+}
+.allegro-lookbook,.outerwear-lookbook{
+  border-radius:26px;
+  border-color:rgba(255,255,255,.08);
+  box-shadow:0 30px 80px rgba(0,0,0,.28);
+}
+.merch-drop-nav{
+  gap:0;
+  border-top:1px solid var(--merch-line);
+  border-bottom:1px solid var(--merch-line);
+}
+.merch-drop-nav a{
+  border:0;
+  border-right:1px solid var(--merch-line);
+  border-radius:0;
+  background:transparent;
+  min-height:172px;
+  padding:26px 22px;
+  transition:background .22s ease,transform .22s ease;
+}
+.merch-drop-nav a:last-child{border-right:0}
+.merch-drop-nav a:hover{
+  background:#12161d;
+}
+.merch-drop-nav strong{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-weight:500;
+  font-size:1.4rem;
+}
+.merch-product-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:24px;
+}
+.official-product,.coming-product{
+  position:relative;
+  padding:24px;
+  border-color:rgba(255,255,255,.09);
+  border-radius:26px;
+  background:linear-gradient(180deg,#11151b,#0a0d12);
+  box-shadow:0 18px 46px rgba(0,0,0,.16);
+  transition:transform .24s ease,border-color .24s ease,box-shadow .24s ease;
+}
+.official-product:hover,.coming-product:hover{
+  transform:translateY(-4px);
+  border-color:rgba(215,180,106,.34);
+  box-shadow:0 26px 66px rgba(0,0,0,.28);
+}
+.tee-mockup{
+  height:410px;
+  margin:6px 0 12px;
+}
+.tee-body{
+  width:65%;
+  height:90%;
+}
+.tee-body strong{
+  font-size:1.35rem;
+  font-weight:500;
+}
+.product-copy{
+  margin-top:6px;
+  align-items:flex-start;
+}
+.product-copy h4{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-weight:500;
+  font-size:1.55rem;
+  line-height:1.05;
+}
+.merch-price{
+  color:var(--merch-cream);
+  font-size:1.1rem;
+  font-weight:700;
+  letter-spacing:.04em;
+}
+.official-product>p,.coming-product>p{
+  color:var(--merch-muted);
+  font-size:.9rem;
+  line-height:1.65;
+}
+.size-row{
+  padding-top:2px;
+}
+.size-row span{
+  border-color:rgba(255,255,255,.1);
+  background:#0a0d12;
+  color:#cfd4dd;
+}
+.official-product .primary,.coming-product .secondary{
+  width:100%;
+  margin-top:auto;
+  min-height:46px;
+  border-radius:999px;
+}
+.golf-preview-card{
+  grid-template-columns:1.12fr .88fr;
+  gap:0;
+  padding:0;
+  overflow:hidden;
+  border-radius:26px;
+  border-color:rgba(255,255,255,.09);
+  background:#0d1117;
+}
+.golf-preview-card img{
+  height:520px;
+  max-height:none;
+  border-radius:0;
+}
+.golf-preview-card>div{
+  padding:clamp(28px,5vw,64px);
+}
+.golf-preview-card h4{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-weight:500;
+  letter-spacing:-.035em;
+}
+.coming-merch-grid{
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:18px;
+}
+.coming-product-art{
+  aspect-ratio:4/3;
+  border-radius:20px;
+  padding:22px;
+}
+.coming-product-art strong{
+  font-size:1.9rem;
+  font-weight:500;
+}
+.merch-tba{
+  color:var(--merch-gold);
+  font-size:.68rem;
+  letter-spacing:.12em;
+}
+.merch-preview-labels span{
+  background:#0a0d12;
+  border-color:rgba(255,255,255,.09);
+  color:#9099a8;
+}
+.merch-order-panel{
+  padding:36px;
+  border-radius:26px;
+  border-color:rgba(215,180,106,.26);
+  background:linear-gradient(140deg,rgba(215,180,106,.08),#0b0f15 55%);
+}
+.merch-order-panel h3{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-size:2.5rem;
+  font-weight:500;
+}
+.merch-trust{
+  gap:0;
+  border-top:1px solid var(--merch-line);
+  border-bottom:1px solid var(--merch-line);
+}
+.merch-trust>div{
+  border:0;
+  border-right:1px solid var(--merch-line);
+  border-radius:0;
+  background:transparent;
+  padding:24px;
+}
+.merch-trust>div:last-child{border-right:0}
+.founders-drop{
+  padding:44px;
+  border-radius:28px;
+  border-color:rgba(215,180,106,.32);
+  background:radial-gradient(circle at 88% 15%,rgba(215,180,106,.16),transparent 28%),linear-gradient(135deg,#15120d,#090c11 64%);
+}
+.founders-drop p{max-width:720px;color:#b7bdc8;line-height:1.65}
+
+@media(max-width:1000px){
+  .merch-product-grid,.coming-merch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .merch-heading p{text-align:left}
+  .tee-mockup{height:340px}
+}
+@media(max-width:760px){
+  .merch-hero{min-height:620px}
+  .merch-hero img{min-height:620px}
+  .merch-hero-copy{left:24px;right:24px}
+  .merch-hero-actions{align-items:flex-start;flex-direction:column}
+  .merch-categories{grid-template-columns:repeat(2,1fr)}
+  .merch-categories a{border-bottom:1px solid var(--merch-line)}
+  .merch-product-grid,.coming-merch-grid{grid-template-columns:1fr}
+  .merch-drop-nav{grid-template-columns:1fr;border:0}
+  .merch-drop-nav a{border:1px solid var(--merch-line);border-radius:16px;margin-bottom:8px}
+  .golf-preview-card{grid-template-columns:1fr}
+  .golf-preview-card img{height:auto}
+  .merch-trust{grid-template-columns:1fr;border:0}
+  .merch-trust>div{border:1px solid var(--merch-line);border-radius:14px;margin-bottom:8px}
+  .founders-drop{padding:30px}
+}
