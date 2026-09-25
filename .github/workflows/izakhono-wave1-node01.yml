@@ -20,36 +20,36 @@ jobs:
     runs-on: [self-hosted, linux, x64, izakhono]
     timeout-minutes: 60
     steps:
-      - name: Check out reviewed Builder cutover controller
-        uses: actions/checkout@v4
-        with:
-          repository: bevanshelton-netizen/izakhono-builder
-          ref: dec336e0d56b21a7c1659a37287a077ae0185ddd
-          path: izakhono-builder
-
       - name: Verify NODE01 local services
         shell: bash
         run: |
           set -euo pipefail
           curl --fail --silent --show-error http://127.0.0.1:9191/readyz
           curl --fail --silent --show-error http://127.0.0.1:9292/healthz
+          test -x /opt/izakhono/bin/run-wave1-local-proof
+          sudo -n -l /opt/izakhono/bin/run-wave1-local-proof >/dev/null
 
-      - name: Run immutable Wave 1 local deployment
+      - name: Run fixed least-privilege Wave 1 local deployment
         shell: bash
-        env:
-          IZAKHONO_CONTROL_URL: http://127.0.0.1:9292
-          IZAKHONO_CONTROL_TOKEN_FILE: /etc/izakhono/control.owner-token
         run: |
           set -euo pipefail
-          python3 izakhono-builder/products/izakhono-node/wave1_deploy.py \
-            --report "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json"
+          sudo -n /opt/izakhono/bin/run-wave1-local-proof
+          test -r /opt/izakhono/evidence/IZAKHONO-NODE01-WAVE1-REPORT.json
+          cp /opt/izakhono/evidence/IZAKHONO-NODE01-WAVE1-REPORT.json \
+            "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json"
+          if [ -r /opt/izakhono/evidence/IZAKHONO-NODE01-WAVE1-REPORT.json.sha256 ]; then
+            cp /opt/izakhono/evidence/IZAKHONO-NODE01-WAVE1-REPORT.json.sha256 \
+              "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json.sha256"
+          fi
 
       - name: Preserve NODE01 report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: IZAKHONO-NODE01-WAVE1-REPORT
-          path: IZAKHONO-NODE01-WAVE1-REPORT.json
+          path: |
+            IZAKHONO-NODE01-WAVE1-REPORT.json
+            IZAKHONO-NODE01-WAVE1-REPORT.json.sha256
           if-no-files-found: warn
           retention-days: 30
 
