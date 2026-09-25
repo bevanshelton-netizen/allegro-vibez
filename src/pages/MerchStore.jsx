@@ -1,14 +1,15 @@
 import { useEffect,useMemo,useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
+import { getOfficialMerchCheckoutUrl } from '../lib/merchCheckout'
 import '../styles/merch-store.css'
 
 const TEE_SIZES=['XS','S','M','L','XL','2XL','3XL','4XL','5XL']
 const officialTees=[
-  {id:'movement-black',name:'The Movement Oversized Tee',colour:'Black',price:549,tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.'},
-  {id:'african-born-cream',name:'African-Born Oversized Tee',colour:'Cream',price:599,tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.'},
-  {id:'creators-burgundy',name:'Creators. Culture. Sound. Tee',colour:'Burgundy',price:599,tone:'burgundy',tag:'CREATORS. CULTURE. SOUND.'},
-  {id:'creator-economy-white',name:'Creator Economy Oversized Tee',colour:'White',price:549,tone:'white',tag:'ARTISTS · RADIO · CULTURE · LIVE'}
+  {id:'movement-black',sku:'AV-TEE-MOV-BLK',name:'The Movement Oversized Tee',colour:'Black',price:549,tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.'},
+  {id:'african-born-cream',sku:'AV-TEE-AFR-CRM',name:'African-Born Oversized Tee',colour:'Cream',price:599,tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.'},
+  {id:'creators-burgundy',sku:'AV-TEE-CCS-BRG',name:'Creators. Culture. Sound. Tee',colour:'Burgundy',price:599,tone:'burgundy',tag:'CREATORS. CULTURE. SOUND.'},
+  {id:'creator-economy-white',sku:'AV-TEE-ECO-WHT',name:'Creator Economy Oversized Tee',colour:'White',price:549,tone:'white',tag:'ARTISTS · RADIO · CULTURE · LIVE'}
 ]
 const dropCategories=[
   {name:'Oversized Tees',anchor:'#tees',note:'Heavyweight 300gsm statement tees.'},
@@ -35,6 +36,8 @@ export default function MerchStore({session}){
   const[message,setMessage]=useState('')
   const[loading,setLoading]=useState(true)
   const[selected,setSelected]=useState(null)
+  const[selectedSize,setSelectedSize]=useState('L')
+  const[quantity,setQuantity]=useState(1)
 
   useEffect(()=>{(async()=>{
     if(!supabase){setLoading(false);return}
@@ -47,8 +50,20 @@ export default function MerchStore({session}){
 
   function orderOfficial(item){
     setSelected(item)
+    setSelectedSize('L')
+    setQuantity(1)
     setMessage('')
     window.setTimeout(()=>document.getElementById('merch-order-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),50)
+  }
+
+  function continueOfficialCheckout(){
+    if(!selected)return
+    const checkoutUrl=getOfficialMerchCheckoutUrl(selected.id)
+    if(!checkoutUrl){
+      setMessage('This item is ready for checkout, but its verified iKhokha Buy Button URL has not been configured yet. No payment has been taken.')
+      return
+    }
+    window.location.assign(checkoutUrl)
   }
 
   async function buyCreator(item){
@@ -102,11 +117,18 @@ export default function MerchStore({session}){
       <div className="merch-heading"><div><div className="eyebrow">CONFIRMED 300GSM</div><h3>Oversized Tee Collection</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
       <div className="merch-product-grid">
         {officialTees.map(item=><article className={"official-product tone-"+item.tone} key={item.id}>
-          <div className="tee-art"><small>ALLEGRO-VIBEZ</small><strong>{item.tag}</strong><span>300GSM · OVERSIZED</span></div>
-          <div className="product-copy"><div><span>{item.colour}</span><h4>{item.name}</h4></div><strong className="merch-price">{money(item.price)}</strong></div>
+          <div className="tee-mockup" aria-label={item.name+' product mockup'}>
+            <div className="tee-sleeve tee-sleeve-left"/><div className="tee-sleeve tee-sleeve-right"/>
+            <div className="tee-body">
+              <small>ALLEGRO-VIBEZ</small>
+              <strong>{item.tag}</strong>
+              <span>300GSM · OVERSIZED</span>
+            </div>
+          </div>
+          <div className="product-copy"><div><span>{item.colour} · {item.sku}</span><h4>{item.name}</h4></div><strong className="merch-price">{money(item.price)}</strong></div>
           <p>Confirmed 300gsm heavyweight tee with premium oversized silhouette and dropped shoulders.</p>
           <div className="size-row">{TEE_SIZES.map(size=><span key={size}>{size}</span>)}</div>
-          <button className="primary" onClick={()=>orderOfficial(item)}>Order / Add to bag</button>
+          <button className="primary" onClick={()=>orderOfficial(item)}>Choose size & quantity</button>
         </article>)}
       </div>
     </section>
@@ -120,11 +142,18 @@ export default function MerchStore({session}){
     </section>
 
     {selected&&<section id="merch-order-panel" className="panel merch-order-panel">
-      <div><div className="eyebrow">YOUR ALLEGRO BAG</div><h3>{selected.name}</h3><p>{selected.colour} · 300gsm · Oversized fit</p><strong className="merch-price">{money(selected.price)}</strong></div>
       <div>
-        <label>Size<select defaultValue="L">{TEE_SIZES.map(size=><option key={size}>{size}</option>)}</select></label>
-        <label>Quantity<select defaultValue="1"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
-        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" onClick={()=>setMessage('Your ALLEGRO merch selection is saved for checkout. Payment will only be enabled through the verified secure gateway; no money has been taken yet.')}>Continue to secure checkout</button>}
+        <div className="eyebrow">YOUR ALLEGRO BAG</div>
+        <h3>{selected.name}</h3>
+        <p>{selected.colour} · 300gsm · Oversized fit · SKU {selected.sku}</p>
+        <strong className="merch-price">{money(selected.price*quantity)}</strong>
+        <small className="order-summary">{quantity} × {money(selected.price)} · Size {selectedSize}</small>
+      </div>
+      <div>
+        <label>Size<select value={selectedSize} onChange={e=>setSelectedSize(e.target.value)}>{TEE_SIZES.map(size=><option key={size}>{size}</option>)}</select></label>
+        <label>Quantity<select value={quantity} onChange={e=>setQuantity(Number(e.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" onClick={continueOfficialCheckout}>Continue to iKhokha checkout</button>}
+        <small className="checkout-note">The payment button only redirects when an exact verified iKhokha Buy Button URL is configured for this product. ALLEGRO does not construct or guess payment URLs.</small>
       </div>
     </section>}
 
