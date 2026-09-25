@@ -1,8 +1,8 @@
 ALLEGRO_VERCEL_RESILIENCE=REQUESTED
-requested_at=2026-09-25T10:15:00+02:00
+requested_at=2026-09-25T23:00:00+02:00
 source_branch=main
-source_ref=bbb8aa32b8e2367eff54a057d68c15b94236d8b9
-purpose=DROP01_R100K_PREORDER_ROLLOUT
+source_ref=f28b1425c7400c6832baee0725214cb2a8ec1dcf
+purpose=FOUNDING_ARTISTS_CREATOR_GROWTH_ROLLOUT
 project_id=prj_TIYmHEDp2SLqb4EDm8iC52RH0uSS
 team_id=team_XSHdQaQxmXGD1HlK2E4nehif
 owned_route_remains_primary=true
