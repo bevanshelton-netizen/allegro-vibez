@@ -15,7 +15,7 @@ jobs:
     timeout-minutes: 12
     env:
       PREVIEW_URL: https://deploy-preview-104--allegro-vibez.netlify.app/merch
-      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
+      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1\n      GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
     steps:
       - uses: actions/checkout@v4
 
@@ -113,6 +113,50 @@ jobs:
             }
             console.log(JSON.stringify(body, null, 2));
           }
+          run().catch((err) => {
+            console.error(err.message);
+            process.exit(1);
+          });
+          NODE
+
+
+      - name: Verify clean ALLEGRO gateway end-to-end
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          async function run() {
+            const first = await fetch(process.env.GATEWAY_URL, {
+              redirect: 'manual',
+              headers: { 'user-agent': 'IZAKHONO-GITHUB-GATEWAY-VERIFY/1.0' },
+            });
+            if (first.status !== 302) throw new Error('Gateway initial status ' + first.status);
+            const location = first.headers.get('location') || '';
+            if (!location.includes('allegro-asset-upload') || !location.includes('mode=merch-resilience')) {
+              throw new Error('Gateway did not route through fail-closed ALLEGRO verifier');
+            }
+
+            const final = await fetch(process.env.GATEWAY_URL, {
+              redirect: 'follow',
+              headers: { 'user-agent': 'IZAKHONO-GITHUB-GATEWAY-VERIFY/1.0' },
+            });
+            if (final.status !== 200) throw new Error('Gateway final status ' + final.status);
+            if (!final.url.includes('deploy-preview-104--allegro-vibez.netlify.app/merch')) {
+              throw new Error('Unexpected final gateway target: ' + final.url);
+            }
+            const html = await final.text();
+            if (!/id=["']root["']/.test(html)) throw new Error('Final ALLEGRO merch shell missing root marker');
+            console.log(JSON.stringify({
+              ok: true,
+              gateway_status: first.status,
+              verifier_route: location,
+              final_status: final.status,
+              final_url: final.url,
+              owned_route_primary: true,
+              canonical_production_claim: false,
+            }, null, 2));
+          }
+
           run().catch((err) => {
             console.error(err.message);
             process.exit(1);
