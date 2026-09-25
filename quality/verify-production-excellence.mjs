@@ -1,3 +1,4 @@
+/* global process, console, Buffer */
 import {readFile,access} from "node:fs/promises";
 import {resolve,dirname,extname} from "node:path";
 const ROOT=resolve(process.cwd());
@@ -46,7 +47,7 @@ for(const path of cfg.htmlFiles||[]){
       ? [resolve(ROOT,ref.slice(1)),resolve(ROOT,"public",ref.slice(1))]
       : [resolve(ROOT,base,ref)];
     let found=false;
-    for(const target of candidates){try{await access(target);found=true;break}catch{}}
+    for(const target of candidates){try{await access(target);found=true;break}catch{continue}}
     if(!found) fail(path+" broken local asset "+ref);
   }
 }
