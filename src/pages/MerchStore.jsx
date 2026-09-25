@@ -59,6 +59,10 @@ export default function MerchStore({session}){
   const[quantity,setQuantity]=useState(1)
   const[selectedMerchCategory,setSelectedMerchCategory]=useState('All')
   const[previewItem,setPreviewItem]=useState(null)
+  const[vettingStatus,setVettingStatus]=useState(null)
+  const[myMerch,setMyMerch]=useState([])
+  const[creatorForm,setCreatorForm]=useState({title:'',description:'',product_type:'tshirt',price:'',image_url:'',sizes:'',colours:'',stock_quantity:'',made_to_order:false})
+  const[savingMerch,setSavingMerch]=useState(false)
 
   useEffect(()=>{(async()=>{
     if(!supabase){setLoading(false);return}
@@ -66,6 +70,16 @@ export default function MerchStore({session}){
     if(!error)setCreatorItems(data||[])
     setLoading(false)
   })()},[])
+
+  useEffect(()=>{(async()=>{
+    if(!supabase||!session?.user?.id){setVettingStatus(null);setMyMerch([]);return}
+    const[{data:vetting},{data:mine}]=await Promise.all([
+      supabase.from('musician_vetting').select('status,verification_level,reviewed_at,expires_at').eq('user_id',session.user.id).maybeSingle(),
+      supabase.from('merch_products').select('*').eq('seller_id',session.user.id).order('created_at',{ascending:false})
+    ])
+    setVettingStatus(vetting?.status||'not_started')
+    setMyMerch(mine||[])
+  })()},[session?.user?.id])
 
   const launchPrice=useMemo(()=>Math.min(...officialTees.map(item=>item.price)),[])
   const filteredComingProducts=useMemo(()=>selectedMerchCategory==='All'?comingProducts:comingProducts.filter(item=>item.category===selectedMerchCategory),[selectedMerchCategory])
@@ -86,6 +100,45 @@ export default function MerchStore({session}){
       return
     }
     window.location.assign(checkoutUrl)
+  }
+
+  function updateCreatorForm(field,value){
+    setCreatorForm(current=>({...current,[field]:value}))
+  }
+
+  async function submitCreatorMerch(event){
+    event.preventDefault()
+    if(!supabase||!session?.user?.id){setMessage('Log in before creating a creator merch listing.');return}
+    if(vettingStatus!=='approved'){setMessage('Creator merchandise requires approved ALLEGRO marketplace vetting before publication.');return}
+    const price=Number(creatorForm.price)
+    if(!creatorForm.title.trim()||!Number.isFinite(price)||price<0){setMessage('Add a product name and valid selling price.');return}
+    setSavingMerch(true)
+    setMessage('')
+    const sizes=creatorForm.sizes.split(',').map(v=>v.trim()).filter(Boolean)
+    const colours=creatorForm.colours.split(',').map(v=>v.trim()).filter(Boolean)
+    const stock=creatorForm.stock_quantity===''?null:Number(creatorForm.stock_quantity)
+    const payload={
+      seller_id:session.user.id,
+      owner_kind:'creator',
+      title:creatorForm.title.trim(),
+      description:creatorForm.description.trim(),
+      product_type:creatorForm.product_type,
+      price,
+      currency:'ZAR',
+      image_url:creatorForm.image_url.trim()||null,
+      sizes,
+      colours,
+      stock_quantity:Number.isFinite(stock)?stock:null,
+      made_to_order:Boolean(creatorForm.made_to_order),
+      active:true
+    }
+    const{data,error}=await supabase.from('merch_products').insert(payload).select().single()
+    setSavingMerch(false)
+    if(error){setMessage(error.message);return}
+    setMyMerch(current=>[data,...current])
+    setCreatorItems(current=>[data,...current.filter(item=>item.id!==data.id)])
+    setCreatorForm({title:'',description:'',product_type:'tshirt',price:'',image_url:'',sizes:'',colours:'',stock_quantity:'',made_to_order:false})
+    setMessage('Your creator merchandise is now listed inside ALLEGRO.')
   }
 
   async function buyCreator(item){
@@ -216,6 +269,40 @@ export default function MerchStore({session}){
       <div><strong>Confirmed 300gsm tees</strong><span>Heavyweight oversized collection</span></div>
       <div><strong>Secure checkout</strong><span>Payment only through a verified gateway</span></div>
       <div><strong>Creator economy</strong><span>Creator merch supports the 10% marketplace model</span></div>
+    </section>
+
+    <section id="creator-studio" className="merch-section creator-merch-studio">
+      <div className="merch-heading"><div><div className="eyebrow">CREATOR MERCH STUDIO</div><h3>Turn your artist identity into a store.</h3></div><p>Approved creators can publish merchandise directly into the ALLEGRO marketplace. Creator sales retain the fixed 10% ALLEGRO platform share recorded in the marketplace order ledger.</p></div>
+      {!session?<div className="creator-studio-gate"><div><span>ARTIST ACCESS</span><h4>Log in to open your merch studio.</h4><p>Your artist identity and marketplace vetting stay attached to every listing.</p></div><Link className="primary" to="/login">Log in</Link></div>:
+      vettingStatus!=='approved'?<div className="creator-studio-gate"><div><span>VETTING REQUIRED</span><h4>{vettingStatus==='not_started'?'Complete marketplace vetting first.':'Marketplace vetting: '+String(vettingStatus).replace('_',' ')}</h4><p>Only approved creators can publish products or transact through creator commerce. This protects buyers, artists and the ALLEGRO marketplace.</p></div><Link className="primary" to="/marketplace">Open marketplace vetting</Link></div>:
+      <div className="creator-studio-layout">
+        <form className="creator-merch-form" onSubmit={submitCreatorMerch}>
+          <div className="creator-studio-status"><span>APPROVED CREATOR</span><strong>Publish a product</strong></div>
+          <label>Product name<input value={creatorForm.title} onChange={e=>updateCreatorForm('title',e.target.value)} maxLength="160" required placeholder="e.g. Tour Hoodie"/></label>
+          <div className="creator-form-row">
+            <label>Product type<select value={creatorForm.product_type} onChange={e=>updateCreatorForm('product_type',e.target.value)}><option value="tshirt">T-shirt</option><option value="hoodie">Hoodie</option><option value="cap">Cap</option><option value="jacket">Jacket</option><option value="poster">Poster</option><option value="vinyl">Vinyl</option><option value="cd">CD</option><option value="accessory">Accessory</option><option value="bundle">Bundle</option><option value="other">Other</option></select></label>
+            <label>Price (ZAR)<input type="number" min="0" step="0.01" value={creatorForm.price} onChange={e=>updateCreatorForm('price',e.target.value)} required placeholder="0.00"/></label>
+          </div>
+          <label>Description<textarea value={creatorForm.description} onChange={e=>updateCreatorForm('description',e.target.value)} rows="4" placeholder="Describe the piece, drop or artist story."/></label>
+          <label>Product image URL<input type="url" value={creatorForm.image_url} onChange={e=>updateCreatorForm('image_url',e.target.value)} placeholder="https://..."/></label>
+          <div className="creator-form-row">
+            <label>Sizes <small>comma separated</small><input value={creatorForm.sizes} onChange={e=>updateCreatorForm('sizes',e.target.value)} placeholder="S, M, L, XL"/></label>
+            <label>Colours <small>comma separated</small><input value={creatorForm.colours} onChange={e=>updateCreatorForm('colours',e.target.value)} placeholder="Black, Cream"/></label>
+          </div>
+          <div className="creator-form-row creator-form-stock">
+            <label>Stock quantity <small>leave empty if not tracked</small><input type="number" min="0" value={creatorForm.stock_quantity} onChange={e=>updateCreatorForm('stock_quantity',e.target.value)} placeholder="Optional"/></label>
+            <label className="creator-checkbox"><input type="checkbox" checked={creatorForm.made_to_order} onChange={e=>updateCreatorForm('made_to_order',e.target.checked)}/><span>Made to order</span></label>
+          </div>
+          <div className="creator-fee-preview"><span>CREATOR COMMERCE</span><strong>90% creator · 10% ALLEGRO</strong><small>Before shipping, tax and any verified payment-provider costs.</small></div>
+          <button className="primary" disabled={savingMerch}>{savingMerch?'Publishing…':'Publish to ALLEGRO'}</button>
+        </form>
+        <aside className="creator-studio-sidebar">
+          <span>YOUR MERCH</span>
+          <h4>{myMerch.length} product{myMerch.length===1?'':'s'}</h4>
+          <p>Products are tied to your authenticated creator account. Keep imagery accurate and only list merchandise you are authorised to sell.</p>
+          <div className="creator-studio-mini-list">{myMerch.slice(0,5).map(item=><div key={item.id}><strong>{item.title}</strong><span>{money(item.price,item.currency)} · {item.active?'Live':'Hidden'}</span></div>)}{!myMerch.length&&<small>No creator products published yet.</small>}</div>
+        </aside>
+      </div>}
     </section>
 
     <section id="creator-merch" className="merch-section">
