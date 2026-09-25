@@ -92,9 +92,10 @@ export default function MerchStore({session}){
     window.setTimeout(()=>document.getElementById('merch-order-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),50)
   }
 
-  function continueOfficialCheckout(){
+  async function continueOfficialCheckout(){
     if(!selected)return
-    const checkoutUrl=getOfficialMerchCheckoutUrl(selected.id)
+    setMessage('Checking the verified iKhokha checkout for this item…')
+    const checkoutUrl=await getOfficialMerchCheckoutUrl(selected.id)
     if(!checkoutUrl){
       setMessage('This item is ready for checkout, but its verified iKhokha Buy Button URL has not been configured yet. No payment has been taken.')
       return

@@ -1,6 +1,17 @@
 const URL_MAP_ENV='VITE_IKHOKHA_MERCH_CHECKOUT_URLS'
+const RUNTIME_CONFIG_URL='/runtime/merch-checkout.json'
 
-function configuredUrls(){
+function safeHttpsUrl(value){
+  if(typeof value!=='string'||!value.trim())return null
+  try{
+    const url=new URL(value)
+    return url.protocol==='https:'?url.toString():null
+  }catch{
+    return null
+  }
+}
+
+function configuredEnvUrls(){
   const raw=import.meta.env?.[URL_MAP_ENV]
   if(!raw)return {}
   try{
@@ -11,13 +22,23 @@ function configuredUrls(){
   }
 }
 
-export function getOfficialMerchCheckoutUrl(productId){
-  const value=configuredUrls()[productId]
-  if(typeof value!=='string')return null
+async function configuredRuntimeUrls(){
   try{
-    const url=new URL(value)
-    return url.protocol==='https:'?url.toString():null
+    const response=await fetch(RUNTIME_CONFIG_URL,{cache:'no-store',headers:{Accept:'application/json'}})
+    if(!response.ok)return {}
+    const payload=await response.json()
+    if(payload?.provider!=='iKhokha'||!payload?.products||typeof payload.products!=='object')return {}
+    return payload.products
   }catch{
-    return null
+    return {}
   }
 }
+
+export async function getOfficialMerchCheckoutUrl(productId){
+  const runtimeUrls=await configuredRuntimeUrls()
+  const runtimeValue=safeHttpsUrl(runtimeUrls[productId])
+  if(runtimeValue)return runtimeValue
+  return safeHttpsUrl(configuredEnvUrls()[productId])
+}
+
+export { RUNTIME_CONFIG_URL }
