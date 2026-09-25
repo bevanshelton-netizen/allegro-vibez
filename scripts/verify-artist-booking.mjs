@@ -30,3 +30,15 @@ const html=fs.readFileSync('index.html','utf8')
 if(!html.includes('allegro-artist-booking'))throw new Error('Netlify booking fallback missing')
 
 console.log('ALLEGRO_ARTIST_BOOKING_ENGINE=PASS')
+
+
+const coreWorkflow=fs.readFileSync('src/lib/creatorWorkflow.js','utf8')
+if(!coreWorkflow.includes("backendProvider === 'izakhono-core'"))throw new Error('IZAKHONO Core booking path missing')
+if(!coreWorkflow.includes(".from('artist_booking_intake')"))throw new Error('Owned Core booking intake table missing')
+const ownedInsert=coreWorkflow.match(/if \(backendProvider === 'izakhono-core'\) \{[\s\S]*?return data\n  \}/)?.[0]||''
+if(!ownedInsert.includes("source: payload.source || 'artist_space'"))throw new Error('Owned booking intake source marker missing')
+if(ownedInsert.includes('created_at: now')||ownedInsert.includes('updated_at: now'))throw new Error('Browser must not forge Core-owned booking timestamps')
+
+const bookingPage=fs.readFileSync('src/pages/ArtistBooking.jsx','utf8')
+if(!bookingPage.includes("Legacy Netlify booking fallback is not active on the IZAKHONO owner host."))throw new Error('External fallback must stay host-gated')
+console.log('ALLEGRO_OWNED_BOOKING_PATH=PASS')
