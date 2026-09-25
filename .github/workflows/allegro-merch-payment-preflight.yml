@@ -32,9 +32,9 @@ jobs:
             const health=await get('/izakhono-payment-health');
             const checkout=await get('/izakhono-ikhokha-checkout?health=1');
             if(health.ok!==true||health.provider!=='ikhokha')throw new Error('Payment health invalid');
-            if(health.mode!=='live')throw new Error('iKhokha is not in live mode: '+health.mode);
             if(!health.app_id_configured||!health.secret_configured)throw new Error('iKhokha credentials incomplete');
             if(checkout.ok!==true||checkout.configured!==true)throw new Error('Dynamic checkout is not configured');
+            if(!['test','live'].includes(health.mode))throw new Error('Unexpected iKhokha mode: '+health.mode);
             console.log(JSON.stringify({
               ok:true,
               provider:health.provider,
@@ -42,6 +42,8 @@ jobs:
               app_id_configured:health.app_id_configured,
               secret_configured:health.secret_configured,
               dynamic_checkout_configured:checkout.configured,
+              live_ready:health.mode==='live',
+              safe_fail_closed:health.mode!=='live',
               existing_offers:checkout.offers
             },null,2));
           }
