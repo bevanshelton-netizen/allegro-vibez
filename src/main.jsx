@@ -5,6 +5,7 @@ import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { supabase } from './lib/supabaseClient'
 import './styles/app.css'
+import './styles/premium-v1.css'
 import './styles/landing-upgrade.css'
 import './styles/artist-magnet.css'
 import './styles/home-live.css'
@@ -18,6 +19,8 @@ import './homeArtistExperience.js'
 import './platformExperience.js'
 import './authExperience.js'
 import { startIzakhonoAnalytics } from './lib/analytics'
+
+document.body.dataset.qualityProfile = 'izakhono-premium-v1'
 
 startIzakhonoAnalytics()
 
