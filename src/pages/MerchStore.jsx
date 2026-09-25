@@ -110,6 +110,43 @@ export default function MerchStore({session}){
     if(customerName)setDelivery(current=>current.customer_name?current:{...current,customer_name:customerName})
   },[session?.user?.id])
 
+  useEffect(()=>{
+    if(!session?.access_token)return
+    const params=new URLSearchParams(window.location.search)
+    const payment=params.get('payment')
+    const orderRef=params.get('order')
+    if(!payment||!orderRef)return
+    if(payment==='cancelled'){setMessage('Payment was cancelled. No production slot has been reserved.');return}
+    if(payment==='failed'){setMessage('Payment was not completed. No production slot has been reserved.');return}
+
+    let cancelled=false
+    ;(async()=>{
+      setMessage('Payment returned. Waiting for the signed iKhokha confirmation…')
+      for(let attempt=0;attempt<8&&!cancelled;attempt+=1){
+        try{
+          const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-order-status&order='+encodeURIComponent(orderRef),{
+            cache:'no-store',
+            headers:{Authorization:'Bearer '+session.access_token,Accept:'application/json'}
+          })
+          const data=await response.json().catch(()=>({}))
+          if(response.ok&&data.order){
+            if(data.order.payment_status==='paid'){
+              setMessage('Payment verified. Order '+data.order.order_ref+' is paid and your production slot is reserved.')
+              return
+            }
+            if(data.order.payment_status==='failed'){
+              setMessage('Payment was not verified. No production slot has been reserved.')
+              return
+            }
+          }
+        }catch{}
+        if(attempt<7)await new Promise(resolve=>setTimeout(resolve,2000))
+      }
+      if(!cancelled)setMessage('Payment returned, but signed confirmation is still pending. Your production slot is not reserved until verification succeeds.')
+    })()
+    return()=>{cancelled=true}
+  },[session?.access_token])
+
   useEffect(()=>{(async()=>{
     if(!supabase||!session?.user?.id){setVettingStatus(null);setMyMerch([]);return}
     const[{data:vetting},{data:mine}]=await Promise.all([
