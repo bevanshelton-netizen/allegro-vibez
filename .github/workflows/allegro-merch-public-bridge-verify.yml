@@ -1,10 +1,16 @@
 name: ALLEGRO Merch Public Bridge Verify
 
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/allegro-merch-public-bridge-verify.yml'
+      - '.github/workflows/allegro-merch-checkout-readiness.yml'
   push:
     branches: [main]
     paths:
       - '.github/workflows/allegro-merch-public-bridge-verify.yml'
+      - '.github/workflows/allegro-merch-checkout-readiness.yml'
   workflow_dispatch:
 
 permissions:
@@ -16,7 +22,7 @@ jobs:
     timeout-minutes: 8
     env:
       GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
-      PREVIEW_URL: https://deploy-preview-104--allegro-vibez.netlify.app/merch
+      PREVIEW_URL: https://deploy-preview-117--allegro-vibez.netlify.app/merch
       BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
     steps:
       - uses: actions/checkout@v4
@@ -26,34 +32,36 @@ jobs:
         run: |
           set -euo pipefail
           node <<'NODE'
-          const required = [
-            'WEAR THE MOVEMENT',
-            'allegro-vibez-merch-lookbook.webp',
-            '/runtime/merch-checkout.json',
-          ];
+          const expectedRelease = 'ALLEGRO-DROP01-R100K-20260925';
 
           async function markerCheck(page) {
             if (page.status !== 200) throw new Error('Final merch status ' + page.status);
             const html = await page.text();
             if (!/id=["']root["']/.test(html)) throw new Error('Missing ALLEGRO root marker');
-            const scripts = [...html.matchAll(/<script[^>]+src=["']([^"']+\.js[^"']*)["']/gi)]
-              .map(m => new URL(m[1], page.url).toString())
-              .slice(0, 12);
-            const bodies = await Promise.all(scripts.map(async (url) => {
-              const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' } });
-              return r.ok ? await r.text() : '';
-            }));
-            const searchable = html + '\n' + bodies.join('\n');
-            for (const marker of required) {
-              if (!searchable.includes(marker)) throw new Error('Missing release marker: ' + marker);
-            }
-            return true;
+            const base = new URL(page.url).origin;
+            const [manifestResponse, checkoutResponse, lookbookResponse] = await Promise.all([
+              fetch(base + '/runtime/drop01-release.json', { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/2.0' } }),
+              fetch(base + '/runtime/merch-checkout.json', { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/2.0' } }),
+              fetch(base + '/allegro-vibez-merch-lookbook.webp', { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/2.0' } }),
+            ]);
+            if (!manifestResponse.ok) throw new Error('DROP 01 release manifest status ' + manifestResponse.status);
+            if (!checkoutResponse.ok) throw new Error('Checkout runtime contract status ' + checkoutResponse.status);
+            if (!lookbookResponse.ok) throw new Error('Lookbook asset status ' + lookbookResponse.status);
+            const manifest = await manifestResponse.json();
+            const checkout = await checkoutResponse.json();
+            if (manifest.release_id !== expectedRelease) throw new Error('Unexpected DROP 01 release id');
+            if (manifest.campaign_code !== 'AV-DROP-01') throw new Error('Campaign code mismatch');
+            if (Number(manifest.sales_target_zar) !== 100000) throw new Error('R100k target mismatch');
+            if (manifest.production_mode !== 'preorder-made-to-order' || manifest.inventory_policy !== 'zero-speculative-stock') throw new Error('Preorder inventory contract mismatch');
+            if (manifest.payment_gate !== 'fail-closed-until-verified-live') throw new Error('Payment safety contract mismatch');
+            if (manifest.owned_infrastructure_primary !== true) throw new Error('Owned-primary contract mismatch');
+            return { manifest, checkout };
           }
 
           async function run() {
             const first = await fetch(process.env.GATEWAY_URL, {
               redirect: 'manual',
-              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
+              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/2.0' },
             });
             if (first.status !== 302) throw new Error('Gateway initial status ' + first.status);
             const location = first.headers.get('location') || '';
@@ -61,13 +69,20 @@ jobs:
               throw new Error('Gateway did not use fail-closed ALLEGRO resilience verifier');
             }
 
-            const bridge = await fetch(process.env.BRIDGE_HEALTH_URL, {
-              redirect: 'follow',
-              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
-            });
-            const bridgeText = await bridge.text();
-            const bridgeBody = JSON.parse(bridgeText);
-            if (bridge.status !== 200 || bridgeBody.ok !== true) throw new Error('Bridge health failed');
+            let bridge = null;
+            let bridgeBody = null;
+            for (let attempt = 1; attempt <= 18; attempt += 1) {
+              bridge = await fetch(process.env.BRIDGE_HEALTH_URL, {
+                redirect: 'follow',
+                headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/2.0' },
+              });
+              const bridgeText = await bridge.text();
+              bridgeBody = JSON.parse(bridgeText);
+              console.log('bridge health attempt', attempt, bridge.status, JSON.stringify(bridgeBody));
+              if (bridge.status === 200 && bridgeBody.ok === true) break;
+              if (attempt < 18) await new Promise(resolve => setTimeout(resolve, 5000));
+            }
+            if (!bridge || bridge.status !== 200 || bridgeBody?.ok !== true) throw new Error('Bridge health failed after rollout grace period');
             if (bridgeBody.owned_route_primary !== true || bridgeBody.canonical_production_claim !== false) {
               throw new Error('Bridge authority contract invalid');
             }
@@ -77,7 +92,7 @@ jobs:
               headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
             });
             if (final.url !== process.env.PREVIEW_URL) throw new Error('Unexpected final URL: ' + final.url);
-            await markerCheck(final);
+            const releaseCheck = await markerCheck(final);
 
             const cfg = await fetch(new URL('/runtime/merch-checkout.json', process.env.PREVIEW_URL), {
               redirect: 'follow',
@@ -97,7 +112,9 @@ jobs:
               bridge_health: true,
               final_url: final.url,
               final_status: 200,
-              release_markers: required,
+              release_id: releaseCheck.manifest.release_id,
+              campaign_code: releaseCheck.manifest.campaign_code,
+              sales_target_zar: releaseCheck.manifest.sales_target_zar,
               checkout_provider: body.provider,
               checkout_urls_configured: configured,
               owned_route_primary: true,

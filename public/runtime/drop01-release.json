@@ -1,0 +1,16 @@
+{
+  "schema": "allegro.drop01.release/v1",
+  "release_id": "ALLEGRO-DROP01-R100K-20260925",
+  "campaign_code": "AV-DROP-01",
+  "campaign_name": "ALLEGRO-VIBEZ DROP 01",
+  "sales_target_zar": 100000,
+  "production_mode": "preorder-made-to-order",
+  "inventory_policy": "zero-speculative-stock",
+  "payment_provider": "iKhokha",
+  "payment_gate": "fail-closed-until-verified-live",
+  "sales_status": "PREORDER_PREPARED_PAYMENT_GATE_CLOSED",
+  "owned_infrastructure_primary": true,
+  "external_route_role": "reversible-resilience",
+  "public_sales_counter": "verified-paid-sales-only",
+  "refunds_reduce_progress": true
+}
