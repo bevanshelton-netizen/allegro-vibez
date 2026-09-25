@@ -15,7 +15,8 @@ jobs:
     timeout-minutes: 12
     env:
       PREVIEW_URL: https://deploy-preview-104--allegro-vibez.netlify.app/merch
-      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1\n      GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
+      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
+      GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
     steps:
       - uses: actions/checkout@v4
 
