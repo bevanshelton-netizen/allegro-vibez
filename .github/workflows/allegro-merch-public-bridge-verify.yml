@@ -1,0 +1,112 @@
+name: ALLEGRO Merch Public Bridge Verify
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/allegro-merch-public-bridge-verify.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      GATEWAY_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/merch
+      PREVIEW_URL: https://deploy-preview-104--allegro-vibez.netlify.app/merch
+      BRIDGE_HEALTH_URL: https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload?mode=merch-resilience&health=1
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify ALLEGRO public merch bridge end-to-end
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const required = [
+            'WEAR THE MOVEMENT',
+            'allegro-vibez-merch-lookbook.webp',
+            '/runtime/merch-checkout.json',
+          ];
+
+          async function markerCheck(page) {
+            if (page.status !== 200) throw new Error('Final merch status ' + page.status);
+            const html = await page.text();
+            if (!/id=["']root["']/.test(html)) throw new Error('Missing ALLEGRO root marker');
+            const scripts = [...html.matchAll(/<script[^>]+src=["']([^"']+\.js[^"']*)["']/gi)]
+              .map(m => new URL(m[1], page.url).toString())
+              .slice(0, 12);
+            const bodies = await Promise.all(scripts.map(async (url) => {
+              const r = await fetch(url, { redirect: 'follow', headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' } });
+              return r.ok ? await r.text() : '';
+            }));
+            const searchable = html + '\n' + bodies.join('\n');
+            for (const marker of required) {
+              if (!searchable.includes(marker)) throw new Error('Missing release marker: ' + marker);
+            }
+            return true;
+          }
+
+          async function run() {
+            const first = await fetch(process.env.GATEWAY_URL, {
+              redirect: 'manual',
+              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
+            });
+            if (first.status !== 302) throw new Error('Gateway initial status ' + first.status);
+            const location = first.headers.get('location') || '';
+            if (!location.includes('allegro-asset-upload') || !location.includes('mode=merch-resilience')) {
+              throw new Error('Gateway did not use fail-closed ALLEGRO resilience verifier');
+            }
+
+            const bridge = await fetch(process.env.BRIDGE_HEALTH_URL, {
+              redirect: 'follow',
+              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
+            });
+            const bridgeText = await bridge.text();
+            const bridgeBody = JSON.parse(bridgeText);
+            if (bridge.status !== 200 || bridgeBody.ok !== true) throw new Error('Bridge health failed');
+            if (bridgeBody.owned_route_primary !== true || bridgeBody.canonical_production_claim !== false) {
+              throw new Error('Bridge authority contract invalid');
+            }
+
+            const final = await fetch(process.env.GATEWAY_URL, {
+              redirect: 'follow',
+              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
+            });
+            if (final.url !== process.env.PREVIEW_URL) throw new Error('Unexpected final URL: ' + final.url);
+            await markerCheck(final);
+
+            const cfg = await fetch(new URL('/runtime/merch-checkout.json', process.env.PREVIEW_URL), {
+              redirect: 'follow',
+              headers: { 'user-agent': 'IZAKHONO-PUBLIC-BRIDGE-VERIFY/1.0' },
+            });
+            if (cfg.status !== 200) throw new Error('Checkout runtime config status ' + cfg.status);
+            const body = await cfg.json();
+            const ids = ['movement-black','african-born-cream','creators-burgundy','creator-economy-white'];
+            if (body.provider !== 'iKhokha' || !body.products) throw new Error('Checkout runtime contract invalid');
+            for (const id of ids) if (!(id in body.products)) throw new Error('Missing checkout product ' + id);
+            const configured = ids.filter(id => typeof body.products[id] === 'string' && body.products[id].startsWith('https://')).length;
+
+            console.log(JSON.stringify({
+              ok: true,
+              gateway_url: process.env.GATEWAY_URL,
+              gateway_status: first.status,
+              bridge_health: true,
+              final_url: final.url,
+              final_status: 200,
+              release_markers: required,
+              checkout_provider: body.provider,
+              checkout_urls_configured: configured,
+              owned_route_primary: true,
+              canonical_production_claim: false,
+            }, null, 2));
+          }
+
+          run().catch((err) => {
+            console.error(err.stack || err.message);
+            process.exit(1);
+          });
+          NODE
