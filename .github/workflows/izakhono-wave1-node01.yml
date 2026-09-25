@@ -121,9 +121,13 @@ jobs:
           if report.get("overall") != "PASS_LOCAL_OWNED":
               raise SystemExit(f"[SAFE STOP] Local proof did not pass: {report.get('overall')}")
 
-          builder_ref = contract.get("BUILDER_REF")
-          if report.get("builder_bundle_ref") not in {builder_ref, "UNATTESTED"}:
-              raise SystemExit("[SAFE STOP] Proof report Builder provenance is inconsistent.")
+          installed_builder = report.get("builder_bundle_ref")
+          if not (
+              isinstance(installed_builder, str)
+              and len(installed_builder) == 40
+              and all(ch in "0123456789abcdef" for ch in installed_builder)
+          ):
+              raise SystemExit("[SAFE STOP] Proof report Builder provenance is not attested.")
 
           expected_bundle_path = pathlib.Path("/opt/izakhono/wave1/BUNDLE_SHA256")
           if not expected_bundle_path.is_file():
