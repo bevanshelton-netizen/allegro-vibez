@@ -191,7 +191,7 @@ export default function MerchStore({session}){
       try{
         const parsed=new URL(data.checkout_url)
         if(parsed.protocol==='https:')checkoutUrl=parsed.toString()
-      }catch{}
+      }catch{checkoutUrl=null}
       if(!checkoutUrl){
         setMessage('The payment provider did not return a valid secure checkout URL. No payment has been taken.')
         return
