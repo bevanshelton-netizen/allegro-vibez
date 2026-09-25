@@ -76,6 +76,7 @@ jobs:
             });
             const bridgeText = await bridge.text();
             const bridgeBody = JSON.parse(bridgeText);
+            console.log('bridge health', bridge.status, JSON.stringify(bridgeBody));
             if (bridge.status !== 200 || bridgeBody.ok !== true) throw new Error('Bridge health failed');
             if (bridgeBody.owned_route_primary !== true || bridgeBody.canonical_production_claim !== false) {
               throw new Error('Bridge authority contract invalid');
