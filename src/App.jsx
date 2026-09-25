@@ -21,7 +21,7 @@ import MusicAcademy from './pages/MusicAcademy.jsx'
 import MusicAcademyLearner from './pages/MusicAcademyLearner.jsx'
 import { MusicAcademyPaymentSuccess, MusicAcademyPaymentFailed, MusicAcademyPaymentCancelled } from './pages/MusicAcademyPayment.jsx'
 
-const nav=[['Home','/'],['Stream','/stream'],['Live Radio','/radio'],['Global Artists','/artists'],['Career Engine','/career'],['Join Artists','/join-artists'],['Advertise','/revenue'],['Music School','/music-academy'],['Radio Academy','/radio-academy'],['SA Protocol','/sa/protocol'],['Creator Hub','/creator-hub']]
+const nav=[['Home','/'],['Merch','/merch/'],['Stream','/stream'],['Live Radio','/radio'],['Global Artists','/artists'],['Career Engine','/career'],['Join Artists','/join-artists'],['Advertise','/revenue'],['Music School','/music-academy'],['Radio Academy','/radio-academy'],['SA Protocol','/sa/protocol'],['Creator Hub','/creator-hub']]
 const releaseTypes=['Single','EP','Album','DJ Mix']
 
 function Page({title,children,eyebrow='ALLEGRO-VIBEZ'}){return <main className="page"><div className="eyebrow">{eyebrow}</div><h2>{title}</h2>{children}</main>}
