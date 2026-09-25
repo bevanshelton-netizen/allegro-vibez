@@ -2,6 +2,8 @@ import { useEffect,useMemo,useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { getOfficialMerchCheckoutUrl } from '../lib/merchCheckout'
+import MovementSizzle from '../components/MovementSizzle'
+import '../styles/movement-sizzle.css'
 import '../styles/merch-store.css'
 
 const TEE_SIZES=['XS','S','M','L','XL','2XL','3XL','4XL','5XL']
@@ -108,6 +110,8 @@ export default function MerchStore({session}){
         <strong>Launch tees from {money(launchPrice)}</strong>
       </div>
     </section>
+
+    <MovementSizzle launchPrice={launchPrice}/>
 
     <nav className="merch-categories" aria-label="Merchandise categories">
       <a href="#lookbook">2026 Lookbook</a><a href="#tees">T-Shirts</a><a href="#outerwear">Hoodies</a><a href="#outerwear">Jackets</a><a href="#outerwear">Caps & Hats</a><a href="#creator-merch">Creator Merch</a>
