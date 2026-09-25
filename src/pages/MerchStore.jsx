@@ -18,6 +18,14 @@ const dropCategories=[
   {name:'Jackets',anchor:'#outerwear',note:'Varsity and statement outerwear.'},
   {name:'Bucket Hats & Caps',anchor:'#outerwear',note:'Headwear for stage, street and everyday wear.'}
 ]
+const PREVIEW_CATEGORIES=['All','Hoodies','Jackets','Caps','Bucket Hats','Accessories']
+const PREVIEW_POSITIONS={
+  Hoodies:'16% 42%',
+  Jackets:'43% 40%',
+  Caps:'75% 30%',
+  'Bucket Hats':'83% 66%',
+  Accessories:'54% 76%'
+}
 const comingProducts=[
   {id:'movement-hoodie-black',category:'Hoodies',name:'The Movement Hoodie',colour:'Black',tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.',note:'Official ALLEGRO-VIBEZ statement hoodie.'},
   {id:'african-born-hoodie-cream',category:'Hoodies',name:'African-Born Hoodie',colour:'Cream',tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.',note:'Signature cream creator-culture hoodie.'},
@@ -47,6 +55,8 @@ export default function MerchStore({session}){
   const[selected,setSelected]=useState(null)
   const[selectedSize,setSelectedSize]=useState('L')
   const[quantity,setQuantity]=useState(1)
+  const[selectedMerchCategory,setSelectedMerchCategory]=useState('All')
+  const[previewItem,setPreviewItem]=useState(null)
 
   useEffect(()=>{(async()=>{
     if(!supabase){setLoading(false);return}
@@ -56,6 +66,7 @@ export default function MerchStore({session}){
   })()},[])
 
   const launchPrice=useMemo(()=>Math.min(...officialTees.map(item=>item.price)),[])
+  const filteredComingProducts=useMemo(()=>selectedMerchCategory==='All'?comingProducts:comingProducts.filter(item=>item.category===selectedMerchCategory),[selectedMerchCategory])
 
   function orderOfficial(item){
     setSelected(item)
@@ -146,9 +157,12 @@ export default function MerchStore({session}){
     <section id="outerwear" className="merch-section">
       <div className="merch-heading"><div><div className="eyebrow">THE NEXT DROP · OFFICIAL RANGE PREVIEW</div><h3>Hoodies, jackets, caps, bucket hats & accessories</h3></div><p>Preview the wider collection now. Final product details and pricing will follow as each piece is approved.</p></div>
       <img className="outerwear-lookbook" src="/merch/outerwear-hats.jpg" alt="ALLEGRO-VIBEZ hoodie, jacket, caps, bucket hats and accessories"/>
+      <div className="merch-filter-row" role="group" aria-label="Filter ALLEGRO-VIBEZ collection previews">
+        {PREVIEW_CATEGORIES.map(category=><button key={category} className={selectedMerchCategory===category?'active':''} onClick={()=>setSelectedMerchCategory(category)}>{category}</button>)}
+      </div>
       <div className="coming-merch-grid">
-        {comingProducts.map(item=><article className={"coming-product tone-"+item.tone} key={item.id}>
-          <div className="coming-product-art">
+        {filteredComingProducts.map(item=><article className={"coming-product tone-"+item.tone} key={item.id}>
+          <div className="coming-product-art coming-product-photo" style={{'--preview-position':PREVIEW_POSITIONS[item.category]||'center'}}>
             <span>{item.category}</span>
             <strong>{item.tag}</strong>
             <small>ALLEGRO-VIBEZ</small>
@@ -156,10 +170,24 @@ export default function MerchStore({session}){
           <div className="product-copy"><div><span>{item.colour}</span><h4>{item.name}</h4></div><strong className="merch-tba">COMING SOON</strong></div>
           <p>{item.note}</p>
           <div className="merch-preview-labels"><span>Official merch</span><span>Collection preview</span><span>Details to follow</span></div>
-          <button className="secondary" onClick={()=>setMessage(item.name+' is now listed in the ALLEGRO shop. Final price and garment specification will be added once confirmed.')}>Register interest</button>
+          <button className="secondary" onClick={()=>{setPreviewItem(item);window.setTimeout(()=>document.getElementById('collection-preview')?.scrollIntoView({behavior:'smooth',block:'center'}),50)}}>View piece</button>
         </article>)}
       </div>
     </section>
+
+    {previewItem&&<section id="collection-preview" className={"merch-piece-preview tone-"+previewItem.tone}>
+      <div className="merch-piece-visual" style={{'--preview-position':PREVIEW_POSITIONS[previewItem.category]||'center'}}>
+        <div><span>{previewItem.category}</span><strong>{previewItem.tag}</strong><small>ALLEGRO-VIBEZ ATELIER</small></div>
+      </div>
+      <div className="merch-piece-copy">
+        <div className="eyebrow">OFFICIAL COLLECTION PREVIEW</div>
+        <h3>{previewItem.name}</h3>
+        <p className="merch-piece-colour">{previewItem.colour}</p>
+        <p>{previewItem.note} The final selling price and garment specification will only be published after the production piece is approved.</p>
+        <div className="merch-piece-status"><span>Design direction approved</span><span>Price to follow</span><span>Specification to follow</span></div>
+        <div className="merch-piece-actions"><button className="primary" onClick={()=>setPreviewItem(null)}>Back to collection</button><a className="secondary" href="#lookbook">View lookbook</a></div>
+      </div>
+    </section>}
 
     {selected&&<section id="merch-order-panel" className="panel merch-order-panel">
       <div>
