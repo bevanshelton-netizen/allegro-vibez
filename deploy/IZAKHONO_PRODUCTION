@@ -2,14 +2,14 @@ ALLEGRO-VIBEZ
 owner_host=true
 core_project=allegro-vibez
 requested_at=2026-09-25
-launch_attempt=10
+launch_attempt=11
 migration_mode=IZAKHONO_PRIMARY
 deployment_target=IZAKHONO_NODE_CLUSTER
 preferred_node=NODE01
 failover_nodes=NODE02,NODE03,NODE04
 fallback_hosts=TEMPORARY_ONLY
 release=founding-100-creative-economy
-release_commit=ef2b9367718c6a5a891c77e73a31faeb4b0f919d
+release_commit=79221c38b64d977af59bb528e8915dc139e589fb
 protocol_route=/sa/protocol
 shop_route=/merch
 marketplace_route=/marketplace
