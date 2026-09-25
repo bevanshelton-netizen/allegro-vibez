@@ -2,6 +2,7 @@ import { useEffect,useState } from 'react'
 import { Link,useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/artist-launch.css'
+import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 export default function ArtistSpace(){
   const{artistId}=useParams();const[profile,setProfile]=useState(null);const[releases,setReleases]=useState([]);const[loading,setLoading]=useState(true)
@@ -16,6 +17,7 @@ export default function ArtistSpace(){
   if(!profile)return <main className="page"><div className="eyebrow">ALLEGRO ARTIST SPACE</div><h2>Artist space coming online</h2><p>This creator has not published a public ALLEGRO profile yet.</p><Link to="/join-artists">Join ALLEGRO</Link></main>
   const name=profile.stage_name||profile.display_name||'ALLEGRO Creator'
   return <main className="artist-public-space">
+    <StudioLaunchPromo source="artist-space"/>
     <section className="artist-public-hero"><div className="eyebrow">{(profile.home_region||profile.account_type||'CREATOR').toUpperCase()} · {profile.city||profile.country||'GLOBAL'} · {(profile.career_path||'grow').toUpperCase()}</div><h1>{name}</h1><p>{profile.press_headline||profile.bio||'Independent creator on ALLEGRO.'}</p>{profile.primary_genres?.length?<div className="artist-links">{profile.primary_genres.map(g=><span key={g}>{g}</span>)}</div>:null}{profile.available_for_international_bookings?<div className="notice">GLOBAL BOOKINGS OPEN · {(profile.booking_regions||[]).join(' · ')||'Enquiries welcome worldwide'}</div>:null}</section>
     <section className="artist-public-grid">
       <article><div className="eyebrow">MUSIC</div><h2>Released on ALLEGRO</h2>{releases.length?<div className="release-list">{releases.map(r=><div key={r.id}><strong>{r.title}</strong><span>{r.release_type}</span></div>)}</div>:<p>Public releases will appear here once approved and published.</p>}</article>
