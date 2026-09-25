@@ -1,0 +1,33 @@
+{
+  "schema": "izakhono.production-excellence/v1",
+  "product": "ALLEGRO-VIBEZ",
+  "profile": "izakhono-premium-v1",
+  "budgets": {
+    "htmlBytes": 393216
+  },
+  "profileMarkers": [
+    {
+      "file": "src/main.jsx",
+      "contains": "izakhono-premium-v1"
+    }
+  ],
+  "premiumCssFiles": [
+    "src/styles/premium-v1.css"
+  ],
+  "responsiveFiles": [
+    "index.html",
+    "src/styles/app.css"
+  ],
+  "htmlFiles": [
+    "index.html"
+  ],
+  "securityAssertions": [],
+  "sourceAssertions": [
+    {
+      "file": "src/main.jsx",
+      "needles": [
+        "startIzakhonoAnalytics"
+      ]
+    }
+  ]
+}
