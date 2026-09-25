@@ -106,7 +106,7 @@ class CoreQueryBuilder {
     query.set('limit', String(this.limitValue ?? (this.head || this.countMode ? 1000 : 100)))
     if (this.offsetValue) query.set('offset', String(this.offsetValue))
 
-    const rows = await this.client.request(`/v1/data/${this.client.project}/${this.table}?${query}`)
+    const rows = await this.client.request(`/v2/data/${this.client.project}/${this.table}?${query}`)
     const projected = (rows || []).map(row => projectColumns(row, this.columns))
     const count = this.countMode ? projected.length : null
 
@@ -126,7 +126,7 @@ class CoreQueryBuilder {
     const values = Array.isArray(this.payload) ? this.payload : [this.payload]
     const rows = []
     for (const value of values) {
-      rows.push(await this.client.request(`/v1/data/${this.client.project}/${this.table}`, {
+      rows.push(await this.client.request(`/v2/data/${this.client.project}/${this.table}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ data: value }),
@@ -140,7 +140,7 @@ class CoreQueryBuilder {
   async executeUpdate() {
     const id = this.filters.id
     if (!id) return { data: null, error: new Error("IZAKHONO Core updates require .eq('id', value).") }
-    const row = await this.client.request(`/v1/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, {
+    const row = await this.client.request(`/v2/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ data: this.payload || {} }),
@@ -153,7 +153,7 @@ class CoreQueryBuilder {
   async executeDelete() {
     const id = this.filters.id
     if (!id) return { data: null, error: new Error("IZAKHONO Core deletes require .eq('id', value).") }
-    const data = await this.client.request(`/v1/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    const data = await this.client.request(`/v2/data/${this.client.project}/${this.table}/${encodeURIComponent(id)}`, { method: 'DELETE' })
     return { data, error: null }
   }
 
