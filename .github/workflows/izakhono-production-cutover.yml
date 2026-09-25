@@ -6,6 +6,12 @@ on:
     branches: [main]
     paths:
       - 'deploy/IZAKHONO_PRODUCTION'
+      - 'src/pages/MerchStore.jsx'
+      - 'src/components/MovementSizzle.jsx'
+      - 'src/styles/movement-sizzle.css'
+      - 'src/styles/merch-store.css'
+      - 'src/lib/merchCheckout.js'
+      - 'public/runtime/merch-checkout.json'
 
 permissions:
   contents: read
