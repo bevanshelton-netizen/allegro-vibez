@@ -1,0 +1,66 @@
+name: IZAKHONO Wave 1 NODE01 Local Proof
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/IZAKHONO_WAVE1_NODE01'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: izakhono-wave1-node01-local-proof
+  cancel-in-progress: false
+
+jobs:
+  local-proof:
+    name: NODE01 immutable Wave 1 proof
+    runs-on: [self-hosted, linux, x64, izakhono]
+    timeout-minutes: 60
+    steps:
+      - name: Check out reviewed Builder cutover controller
+        uses: actions/checkout@v4
+        with:
+          repository: bevanshelton-netizen/izakhono-builder
+          ref: dec336e0d56b21a7c1659a37287a077ae0185ddd
+          path: izakhono-builder
+
+      - name: Verify NODE01 local services
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error http://127.0.0.1:9191/readyz
+          curl --fail --silent --show-error http://127.0.0.1:9292/healthz
+
+      - name: Run immutable Wave 1 local deployment
+        shell: bash
+        env:
+          IZAKHONO_CONTROL_URL: http://127.0.0.1:9292
+          IZAKHONO_CONTROL_TOKEN_FILE: /etc/izakhono/control.owner-token
+        run: |
+          set -euo pipefail
+          python3 izakhono-builder/products/izakhono-node/wave1_deploy.py \
+            --report "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json"
+
+      - name: Preserve NODE01 report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: IZAKHONO-NODE01-WAVE1-REPORT
+          path: IZAKHONO-NODE01-WAVE1-REPORT.json
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Probe owned public routes without changing DNS
+        if: success()
+        shell: bash
+        run: |
+          set -u
+          for host in allegro.izakhonoafrica.co.za chancellor.izakhonoafrica.co.za; do
+            echo "=== $host ==="
+            getent ahostsv4 "$host" || true
+          done
+          curl -fsS --max-time 15 https://allegro.izakhonoafrica.co.za/healthz || true
+          curl -fsS --max-time 15 https://chancellor.izakhonoafrica.co.za/api/health || true
