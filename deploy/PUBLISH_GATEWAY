@@ -10,3 +10,7 @@ social_campaign_status=AWAITING_PROVIDER_CONNECTION
 seo-discovery-refresh=2026-09-23T20:42:00+02:00
 github_pages_full_app_refresh=2026-09-24T11:30:00+02:00
 deployment_payload=COMPLETE_ALLEGRO_CURRENT_MAIN
+merch_resilience_refresh=2026-09-25T04:17:00+02:00
+merch_route=/allegro-vibez/merch/
+merch_campaign=WEAR_THE_MOVEMENT
+runtime_checkout_map=/allegro-vibez/runtime/merch-checkout.json
