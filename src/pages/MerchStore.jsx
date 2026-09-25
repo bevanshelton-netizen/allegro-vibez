@@ -10,6 +10,13 @@ const officialTees=[
   {id:'creators-burgundy',name:'Creators. Culture. Sound. Tee',colour:'Burgundy',price:599,tone:'burgundy',tag:'CREATORS. CULTURE. SOUND.'},
   {id:'creator-economy-white',name:'Creator Economy Oversized Tee',colour:'White',price:549,tone:'white',tag:'ARTISTS · RADIO · CULTURE · LIVE'}
 ]
+const dropCategories=[
+  {name:'Oversized Tees',anchor:'#tees',note:'Heavyweight 300gsm statement tees.'},
+  {name:'Golf Shirts',anchor:'#golf',note:'Premium polos with clean ALLEGRO-VIBEZ detailing.'},
+  {name:'Hoodies',anchor:'#outerwear',note:'Heavyweight streetwear layers.'},
+  {name:'Jackets',anchor:'#outerwear',note:'Varsity and statement outerwear.'},
+  {name:'Bucket Hats & Caps',anchor:'#outerwear',note:'Headwear for stage, street and everyday wear.'}
+]
 const categories=[
   {name:'Premium Hoodies',note:'Oversized ALLEGRO hoodies with statement graphics.',status:'Range being loaded'},
   {name:'Varsity & Street Jackets',note:'Premium outerwear designed for creators and events.',status:'Range being loaded'},
@@ -73,6 +80,22 @@ export default function MerchStore({session}){
     <section id="lookbook" className="merch-section">
       <div className="merch-heading"><div><div className="eyebrow">ALLEGRO-VIBEZ 2026 LOOKBOOK</div><h3>Music. People. Culture. On the street.</h3></div><p>Oversized tees · golf shirts · hoodies · jackets · bucket hats · caps</p></div>
       <img className="outerwear-lookbook allegro-lookbook" src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ fashion lookbook with oversized T-shirts, golf shirts, hoodies, jackets, bucket hats and caps"/>
+    </section>
+
+    <section className="merch-drop-nav" aria-label="Shop the ALLEGRO-VIBEZ drop">
+      {dropCategories.map((item,index)=><a key={item.name} href={item.anchor}>
+        <small>{String(index+1).padStart(2,'0')}</small>
+        <strong>{item.name}</strong>
+        <span>{item.note}</span>
+      </a>)}
+    </section>
+
+    <section id="golf" className="merch-section merch-golf-preview">
+      <div className="merch-heading"><div><div className="eyebrow">PREMIUM GOLF SHIRTS</div><h3>Clean enough for business. Loud enough for ALLEGRO.</h3></div><p>Design preview only · final garment specification and selling price will be published once approved.</p></div>
+      <div className="golf-preview-card">
+        <img src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ golf shirt concept in the 2026 lookbook"/>
+        <div><span>ALLEGRO-VIBEZ 2026</span><h4>Golf Shirt Collection</h4><p>Premium black, cream and statement-accent direction with restrained branding for events, creators and corporate wear.</p><button className="secondary" onClick={()=>setMessage('ALLEGRO-VIBEZ golf shirts are in the 2026 merch range. Final price and garment specification will be published once approved.')}>Register interest</button></div>
+      </div>
     </section>
 
     <section id="tees" className="merch-section">
