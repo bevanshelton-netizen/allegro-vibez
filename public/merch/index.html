@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#08090d" />
+  <title>ALLEGRO-VIBEZ MERCH — Wear the Movement</title>
+  <style>
+    :root{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#f7f7f9;background:#07080c;--red:#ff3154;--silver:#c9ccd3;--muted:#9da1ab;--line:rgba(255,255,255,.13);--card:#11131a}
+    *{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 82% 0,rgba(255,49,84,.18),transparent 28%),radial-gradient(circle at 8% 35%,rgba(137,78,255,.12),transparent 30%),#07080c;color:#f7f7f9}
+    a{color:inherit;text-decoration:none}.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:18px 5vw;border-bottom:1px solid var(--line);background:rgba(7,8,12,.88);backdrop-filter:blur(18px)}
+    .brand{font-weight:950;letter-spacing:.12em}.brand b{color:var(--red);margin-left:6px}.nav{display:flex;align-items:center;gap:20px;color:#b9bdc7}.nav a:hover{color:#fff}.bag{border:1px solid var(--line);border-radius:999px;padding:10px 14px;font-weight:800}
+    .hero{min-height:70vh;padding:9vh 7vw 7vh;display:grid;grid-template-columns:1.15fr .85fr;gap:50px;align-items:center;max-width:1500px;margin:auto}
+    .eyebrow{color:#ff6b83;font-size:.75rem;font-weight:950;letter-spacing:.2em;text-transform:uppercase}.hero h1{font-family:Georgia,serif;font-weight:500;font-size:clamp(4.2rem,9vw,9rem);line-height:.82;margin:.13em 0}.hero h1 em{font-style:italic;color:var(--silver)}.hero p{max-width:700px;color:#b0b4be;font-size:1.15rem;line-height:1.65}
+    .cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.btn{border-radius:999px;padding:13px 20px;font-weight:900;border:1px solid var(--line);background:transparent;color:#fff;cursor:pointer}.btn.primary{border:0;background:linear-gradient(135deg,#ff3154,#a40f32)}
+    .poster{min-height:520px;border:1px solid var(--line);border-radius:34px;position:relative;overflow:hidden;background:linear-gradient(145deg,#151723,#090a0f);box-shadow:0 30px 90px rgba(0,0,0,.38)}.poster:before{content:"A";position:absolute;font-family:Georgia,serif;font-size:28rem;font-weight:900;color:rgba(255,49,84,.09);left:50%;top:46%;transform:translate(-50%,-50%)}.poster .stamp{position:absolute;right:28px;top:28px;border:1px solid rgba(255,255,255,.2);border-radius:999px;padding:10px 14px;font-size:.74rem;font-weight:900;letter-spacing:.12em}.poster .slogan{position:absolute;left:32px;bottom:34px}.poster .slogan strong{display:block;font-size:2.1rem;letter-spacing:.03em}.poster .slogan span{color:#aeb2bd}
+    .collection{width:min(1380px,92%);margin:20px auto 100px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:24px;margin-bottom:28px}.section-head h2{font-family:Georgia,serif;font-size:clamp(2.8rem,6vw,5rem);font-weight:500;margin:.1em 0}.section-head p{max-width:560px;color:#9ea2ad;line-height:1.6}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.product{border:1px solid var(--line);background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.018));border-radius:26px;overflow:hidden}.visual{height:390px;position:relative;display:grid;place-items:center;background:radial-gradient(circle at 50% 15%,rgba(255,255,255,.08),transparent 38%),#0c0e14}.garment{position:relative;width:62%;height:64%;filter:drop-shadow(0 30px 24px rgba(0,0,0,.35))}
+    .tee{clip-path:polygon(20% 8%,35% 0,65% 0,80% 8%,100% 22%,87% 42%,77% 36%,77% 100%,23% 100%,23% 36%,13% 42%,0 22%);background:#161923}.hoodie{clip-path:polygon(34% 0,66% 0,75% 10%,84% 14%,100% 30%,88% 48%,79% 42%,78% 100%,22% 100%,21% 42%,12% 48%,0 30%,16% 14%,25% 10%);background:#11131a}.golf{clip-path:polygon(25% 7%,40% 0,60% 0,75% 7%,100% 23%,87% 42%,78% 37%,78% 100%,22% 100%,22% 37%,13% 42%,0 23%);background:#e8e9ec}.jacket{clip-path:polygon(27% 4%,42% 0,58% 0,73% 4%,100% 22%,87% 43%,78% 38%,78% 100%,22% 100%,22% 38%,13% 43%,0 22%);background:linear-gradient(90deg,#161923 0 27%,#efeff2 27% 73%,#161923 73%)}.bucket{height:42%;width:58%;clip-path:polygon(28% 8%,72% 8%,82% 55%,100% 80%,92% 100%,8% 100%,0 80%,18% 55%);background:#12151e}.track{width:58%;height:72%;clip-path:polygon(25% 0,75% 0,82% 100%,56% 100%,50% 42%,44% 100%,18% 100%);background:#141721}
+    .mark{position:absolute;left:50%;top:43%;transform:translate(-50%,-50%);text-align:center;font-weight:950;letter-spacing:.08em;color:#fff;text-shadow:0 2px 10px rgba(0,0,0,.35)}.golf .mark{color:#111}.mark b{color:var(--red)}.drop{position:absolute;top:18px;left:18px;border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:8px 11px;font-size:.7rem;font-weight:900;letter-spacing:.12em;background:rgba(0,0,0,.28)}
+    .info{padding:24px}.info h3{font-size:1.35rem;margin:.2rem 0}.info p{color:#9fa3ae;line-height:1.55;min-height:48px}.meta{display:flex;justify-content:space-between;gap:14px;align-items:center;margin-top:18px}.price{font-weight:950}.price small{display:block;color:#858a95;font-size:.7rem;font-weight:700;margin-top:4px}.select{width:100%;margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px}.select select{padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:#0b0d13;color:#fff}.product button{width:100%;margin-top:12px}
+    .notice{width:min(1380px,92%);margin:0 auto 80px;border:1px solid rgba(255,49,84,.3);border-radius:24px;padding:28px;background:rgba(255,49,84,.055);display:grid;grid-template-columns:1fr auto;gap:24px;align-items:center}.notice strong{display:block;font-size:1.25rem;margin-bottom:6px}.notice span{color:#b0b4be;line-height:1.55}.notice .tag{border:1px solid rgba(255,255,255,.18);border-radius:999px;padding:10px 14px;font-weight:900;white-space:nowrap}
+    footer{border-top:1px solid var(--line);padding:32px 5vw;color:#858a95;display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);padding:12px 18px;border-radius:999px;background:#fff;color:#090a0f;font-weight:900;box-shadow:0 18px 50px rgba(0,0,0,.45);opacity:0;pointer-events:none;transition:.25s}.toast.show{opacity:1}
+    @media(max-width:960px){.hero{grid-template-columns:1fr}.poster{min-height:390px}.grid{grid-template-columns:repeat(2,1fr)}.nav a:not(:first-child){display:none}}
+    @media(max-width:650px){.hero{padding-left:5vw;padding-right:5vw}.hero h1{font-size:4rem}.grid{grid-template-columns:1fr}.section-head{display:block}.notice{grid-template-columns:1fr}.visual{height:340px}}
+  </style>
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/"><span>ALLEGRO</span><b>VIBEZ</b></a>
+    <nav class="nav"><a href="/">Music</a><a href="/studio/index.html">Studio</a><a href="/music-academy">Academy</a><span class="bag">MERCH · FIRST DROP</span></nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <div class="eyebrow">ALLEGRO-VIBEZ MERCH · DROP 001</div>
+        <h1>Wear the<br/><em>movement.</em></h1>
+        <p>Streetwear, performance pieces and clean premium essentials inspired by the ALLEGRO-VIBEZ sound. Designed as an unmistakable extension of the music platform — bold enough for stage, refined enough for every day.</p>
+        <div class="cta"><a class="btn primary" href="#drop">Explore Drop 001</a><a class="btn" href="/">Back to ALLEGRO</a></div>
+      </div>
+      <div class="poster" aria-label="ALLEGRO-VIBEZ first merch drop">
+        <div class="stamp">AFRICAN-BORN · GLOBAL BY DESIGN</div>
+        <div class="slogan"><strong>MORE THAN MUSIC.</strong><strong>A MOVEMENT.</strong><span>ALLEGRO-VIBEZ · DROP 001</span></div>
+      </div>
+    </section>
+
+    <section id="drop" class="collection">
+      <div class="section-head"><div><div class="eyebrow">THE FIRST COLLECTION</div><h2>Stage. Street. Everyday.</h2></div><p>Oversized silhouettes, polished polos, statement outerwear and accessories. Every piece is designed to carry ALLEGRO-VIBEZ without looking like ordinary promotional merchandise.</p></div>
+      <div class="grid">
+        <article class="product">
+          <div class="visual"><span class="drop">01 · ESSENTIAL</span><div class="garment tee"><span class="mark">ALLEGRO<br/><b>VIBEZ</b></span></div></div>
+          <div class="info"><h3>Movement Oversized Tee</h3><p>Heavy-look oversized street tee with centre ALLEGRO-VIBEZ identity.</p><div class="meta"><span class="price">PRICE TO CONFIRM<small>Checkout opens after price approval</small></span></div><div class="select"><select aria-label="T-shirt size"><option>Size: S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option><option>6XL</option></select><select aria-label="T-shirt colour"><option>Black / Red</option><option>White / Red</option><option>Charcoal / Silver</option></select></div><button class="btn" data-product="Movement Oversized Tee">Add to preview bag</button></div>
+        </article>
+        <article class="product">
+          <div class="visual"><span class="drop">02 · ICON</span><div class="garment hoodie"><span class="mark">ALLEGRO<br/><b>VIBEZ</b></span></div></div>
+          <div class="info"><h3>After Dark Hoodie</h3><p>Premium hoodie with understated front mark and full movement energy.</p><div class="meta"><span class="price">PRICE TO CONFIRM<small>Checkout opens after price approval</small></span></div><div class="select"><select><option>Size: S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option><option>6XL</option></select><select><option>Black / Red</option><option>Graphite / Silver</option></select></div><button class="btn" data-product="After Dark Hoodie">Add to preview bag</button></div>
+        </article>
+        <article class="product">
+          <div class="visual"><span class="drop">03 · CLEAN</span><div class="garment golf"><span class="mark">ALLEGRO <b>VIBEZ</b></span></div></div>
+          <div class="info"><h3>Executive Vibez Golf</h3><p>Clean performance golf shirt for creators, crews, partners and events.</p><div class="meta"><span class="price">PRICE TO CONFIRM<small>Checkout opens after price approval</small></span></div><div class="select"><select><option>Size: S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option><option>6XL</option></select><select><option>White / Red</option><option>Black / Silver</option></select></div><button class="btn" data-product="Executive Vibez Golf">Add to preview bag</button></div>
+        </article>
+        <article class="product">
+          <div class="visual"><span class="drop">04 · HEADLINER</span><div class="garment jacket"><span class="mark">A<b>V</b></span></div></div>
+          <div class="info"><h3>Headliner Varsity Jacket</h3><p>Statement outerwear built for artists, crews and limited-edition drops.</p><div class="meta"><span class="price">QUOTE ITEM<small>Final material & embroidery spec required</small></span></div><div class="select"><select><option>Size: S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option><option>6XL</option></select><select><option>Black / White / Red</option><option>Black / Silver</option></select></div><button class="btn" data-product="Headliner Varsity Jacket">Add to preview bag</button></div>
+        </article>
+        <article class="product">
+          <div class="visual"><span class="drop">05 · ACCESSORY</span><div class="garment bucket"><span class="mark">A<b>V</b></span></div></div>
+          <div class="info"><h3>Vibez Bucket Hat</h3><p>Minimal AV monogram bucket hat for festivals, shoots and daily wear.</p><div class="meta"><span class="price">PRICE TO CONFIRM<small>Checkout opens after price approval</small></span></div><div class="select"><select><option>Size: S/M</option><option>L/XL</option></select><select><option>Black / Red</option><option>Stone / Black</option></select></div><button class="btn" data-product="Vibez Bucket Hat">Add to preview bag</button></div>
+        </article>
+        <article class="product">
+          <div class="visual"><span class="drop">06 · CREW</span><div class="garment track"><span class="mark">ALLEGRO<br/><b>VIBEZ</b></span></div></div>
+          <div class="info"><h3>Movement Track Set</h3><p>Clean performance tracksuit for stage crews, artists, travel and events.</p><div class="meta"><span class="price">PRICE TO CONFIRM<small>Checkout opens after price approval</small></span></div><div class="select"><select><option>Size: S</option><option>M</option><option>L</option><option>XL</option><option>2XL</option><option>3XL</option><option>4XL</option><option>5XL</option><option>6XL</option></select><select><option>Black / Red</option><option>Black / Silver</option></select></div><button class="btn" data-product="Movement Track Set">Add to preview bag</button></div>
+        </article>
+      </div>
+    </section>
+
+    <section class="notice">
+      <div><strong>Storefront preview is ready. Payments are deliberately not faked.</strong><span>The collection, variants and shopping experience are visible now. iKhokha checkout will be enabled only after the final merch prices, delivery rules and merchant items are approved and verified.</span></div>
+      <div class="tag">iKHOKHA · GATED</div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite">Added to preview bag</div>
+  <footer><span>ALLEGRO-VIBEZ · MORE THAN MUSIC. A MOVEMENT.</span><span>IZAKHONO AFRICA (PTY) LTD · Preview storefront</span></footer>
+
+  <script>
+    let count=0;
+    const bag=document.querySelector('.bag');
+    const toast=document.getElementById('toast');
+    document.querySelectorAll('[data-product]').forEach(button=>{
+      button.addEventListener('click',()=>{
+        count+=1;
+        bag.textContent='PREVIEW BAG · '+count;
+        toast.textContent=button.dataset.product+' added to preview bag';
+        toast.classList.add('show');
+        setTimeout(()=>toast.classList.remove('show'),1600);
+      });
+    });
+  </script>
+</body>
+</html>
