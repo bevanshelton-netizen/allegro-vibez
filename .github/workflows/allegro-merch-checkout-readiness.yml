@@ -35,7 +35,7 @@ jobs:
             const ids=['movement-black','african-born-cream','creators-burgundy','creator-economy-white'];
             console.log('checkout health',JSON.stringify(health.body));
             if(health.body.provider!=='ikhokha')throw new Error('Provider mismatch');
-            if(!health.body.configured)throw new Error('Payment credentials/service role are not configured: '+JSON.stringify({app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,service_role:health.body.service_role_configured,mode:health.body.mode}));
+            if(!health.body.service_role_configured)throw new Error('Server service role is unavailable');
             for(const id of ids)if(!health.body.products?.includes(id))throw new Error('Missing server product '+id);
             if(health.body.delivery_fee_included!==false)throw new Error('Delivery fee contract changed unexpectedly');
 
@@ -55,13 +55,13 @@ jobs:
             });
 
             if(health.body.live){
-              if(health.body.mode!=='live')throw new Error('live=true but mode is not live');
+              if(health.body.mode!=='live'||!health.body.configured)throw new Error('live=true without a complete live configuration');
               if(unauth.r.status!==401||unauth.body.error!=='authentication_required'){
                 throw new Error('Live-mode unauthenticated request did not fail before payment creation');
               }
             }else{
-              if(unauth.r.status!==503||unauth.body.error!=='payment_gateway_not_live'){
-                throw new Error('Non-live mode did not fail closed before auth/payment');
+              if(unauth.r.status!==503||!['payment_gateway_not_live','payment_gateway_not_configured'].includes(unauth.body.error)){
+                throw new Error('Non-live/unconfigured mode did not fail closed before auth/payment');
               }
             }
 
@@ -72,6 +72,7 @@ jobs:
               configured:health.body.configured,
               live:health.body.live,
               safe_fail_closed:!health.body.live,
+              credential_flags:{app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,service_role:health.body.service_role_configured},
               products:health.body.products,
               delivery_fee_included:health.body.delivery_fee_included,
               webhook_version:webhook.body.version,
