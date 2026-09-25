@@ -1,0 +1,85 @@
+name: ALLEGRO Merch Checkout Readiness
+
+on:
+  push:
+    branches:
+      - feature/allegro-merch-order-checkout-2026-09-25
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify checkout readiness without creating a payment
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const base='https://yfawrenhudjomhnglfhq.supabase.co/functions/v1';
+          async function jsonFetch(url,options={}){
+            const r=await fetch(url,{...options,headers:{'user-agent':'ALLEGRO-CHECKOUT-READINESS/1.0',...(options.headers||{})}});
+            const text=await r.text();
+            let body={};
+            try{body=JSON.parse(text)}catch{}
+            return {r,text,body};
+          }
+          async function run(){
+            const health=await jsonFetch(base+'/allegro-asset-upload?mode=merch-checkout-health');
+            if(health.r.status!==200||health.body.ok!==true)throw new Error('Checkout health failed: '+health.text.slice(0,500));
+            const ids=['movement-black','african-born-cream','creators-burgundy','creator-economy-white'];
+            console.log('checkout health',JSON.stringify(health.body));
+            if(health.body.provider!=='ikhokha')throw new Error('Provider mismatch');
+            if(!health.body.service_role_configured)throw new Error('Server service role is unavailable');
+            for(const id of ids)if(!health.body.products?.includes(id))throw new Error('Missing server product '+id);
+            if(health.body.delivery_fee_included!==false)throw new Error('Delivery fee contract changed unexpectedly');
+
+            const webhook=await jsonFetch(base+'/izakhono-ikhokha-webhook');
+            if(webhook.r.status!==200||webhook.body.version<2)throw new Error('Webhook v2+ unavailable');
+            if(!webhook.body.supported_platforms?.includes('allegro-vibez'))throw new Error('Webhook does not advertise ALLEGRO support');
+
+            const unauth=await jsonFetch(base+'/allegro-asset-upload?mode=merch-checkout',{
+              method:'POST',
+              headers:{'content-type':'application/json'},
+              body:JSON.stringify({
+                product_id:'movement-black',size:'L',quantity:1,
+                customer_name:'Readiness Probe',mobile:'0000000000',
+                delivery_address:'No transaction probe',delivery_city:'Johannesburg',
+                delivery_province:'Gauteng',delivery_postal_code:'0000'
+              })
+            });
+
+            if(health.body.live){
+              if(health.body.mode!=='live'||!health.body.configured)throw new Error('live=true without a complete live configuration');
+              if(unauth.r.status!==401||unauth.body.error!=='authentication_required'){
+                throw new Error('Live-mode unauthenticated request did not fail before payment creation');
+              }
+            }else{
+              if(unauth.r.status!==503||!['payment_gateway_not_live','payment_gateway_not_configured'].includes(unauth.body.error)){
+                throw new Error('Non-live/unconfigured mode did not fail closed before auth/payment');
+              }
+            }
+
+            console.log(JSON.stringify({
+              ok:true,
+              provider:health.body.provider,
+              mode:health.body.mode,
+              configured:health.body.configured,
+              live:health.body.live,
+              safe_fail_closed:!health.body.live,
+              credential_flags:{app_id:health.body.app_id_configured,app_secret:health.body.app_secret_configured,entity_id:health.body.entity_id_configured,server_access:health.body.service_role_configured},
+              products:health.body.products,
+              delivery_fee_included:health.body.delivery_fee_included,
+              webhook_version:webhook.body.version,
+              webhook_platforms:webhook.body.supported_platforms,
+              unauthenticated_probe_status:unauth.r.status,
+              transaction_created:false
+            },null,2));
+          }
+          run().catch(e=>{console.error(e.stack||e.message);process.exit(1)});
+          NODE
