@@ -9,3 +9,6 @@ release=creator-merch-studio
 release_commit=1d1ca0fd323ad665f176c74cb26497b141ff3fa7
 shop_route=/merch
 marketplace_route=/marketplace
+ALLEGRO_MERCH_REVENUE_READY=2026-09-25
+MERCH_CHECKOUT_RUNTIME_CONFIG=enabled
+PUBLIC_LIVE_REQUIRES_INDEPENDENT_HTTPS_VERIFY=true
