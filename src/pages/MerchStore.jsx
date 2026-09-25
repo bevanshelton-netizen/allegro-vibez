@@ -71,6 +71,7 @@ export default function MerchStore({session}){
   const[creatorForm,setCreatorForm]=useState({title:'',description:'',product_type:'tshirt',price:'',image_url:'',sizes:'',colours:'',stock_quantity:'',made_to_order:false})
   const[savingMerch,setSavingMerch]=useState(false)
   const[campaignProgress,setCampaignProgress]=useState({paid_sales:0,payment_count:0,units:0,status:'preparing'})
+  const[demandProgress,setDemandProgress]=useState({unique_buyers:0,reservation_count:0,reservation_units:0,unpaid_intended_value_cents:0,total_reserved_intended_value_cents:0,founding_goal_buyers:100,buyer_goal_percent:0})
 
   useEffect(()=>{(async()=>{
     if(!supabase){setLoading(false);return}
@@ -90,6 +91,25 @@ export default function MerchStore({session}){
       status:data.status||'preparing'
     })
   })()},[])
+
+  async function refreshDemand(){
+    try{
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-demand',{cache:'no-store',headers:{Accept:'application/json'}})
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok||data.ok!==true)return
+      setDemandProgress({
+        unique_buyers:Number(data.unique_buyers||0),
+        reservation_count:Number(data.reservation_count||0),
+        reservation_units:Number(data.reservation_units||0),
+        unpaid_intended_value_cents:Number(data.unpaid_intended_value_cents||0),
+        total_reserved_intended_value_cents:Number(data.total_reserved_intended_value_cents||0),
+        founding_goal_buyers:Number(data.founding_goal_buyers||100),
+        buyer_goal_percent:Number(data.buyer_goal_percent||0)
+      })
+    }catch{void 0}
+  }
+
+  useEffect(()=>{refreshDemand()},[])
 
   useEffect(()=>{(async()=>{
     try{
@@ -177,6 +197,9 @@ export default function MerchStore({session}){
   const paidSales=Math.max(0,Number(campaignProgress.paid_sales||0))
   const salesRemaining=Math.max(0,PREORDER_CAMPAIGN.target-paidSales)
   const salesPercent=Math.min(100,(paidSales/PREORDER_CAMPAIGN.target)*100)
+  const foundingRemaining=Math.max(0,Number(demandProgress.founding_goal_buyers||100)-Number(demandProgress.unique_buyers||0))
+  const foundingPercent=Math.min(100,Number(demandProgress.buyer_goal_percent||0))
+  const reservedDemandValue=Math.max(0,Number(demandProgress.unpaid_intended_value_cents||0)/100)
   const filteredComingProducts=useMemo(()=>selectedMerchCategory==='All'?comingProducts:comingProducts.filter(item=>item.category===selectedMerchCategory),[selectedMerchCategory])
 
   function orderOfficial(item){
@@ -221,9 +244,9 @@ export default function MerchStore({session}){
           quantity,
           customer_name:delivery.customer_name,
           mobile:delivery.mobile,
-          utm_source:params.get('utm_source')||'allegro',
+          utm_source:params.get('ref')?('ref:'+params.get('ref').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40)):(params.get('utm_source')||'allegro'),
           utm_medium:params.get('utm_medium')||'merch-reservation',
-          utm_campaign:params.get('utm_campaign')||'drop01-r100k'
+          utm_campaign:params.get('utm_campaign')||'drop01-founding100'
         })
       })
       const data=await response.json().catch(()=>({}))
@@ -258,6 +281,7 @@ export default function MerchStore({session}){
         return [next,...current.filter(item=>item.reservation_ref!==data.reservation_ref)]
       })
       setMessage('Reservation '+data.reservation_ref+' saved for '+selected.name+', size '+selectedSize+', quantity '+quantity+'. No payment has been taken and production is not reserved until verified payment succeeds.')
+      refreshDemand()
     }catch{
       setMessage('The reservation service is temporarily unavailable. No payment has been taken.')
     }finally{
@@ -366,9 +390,9 @@ export default function MerchStore({session}){
           size:selectedSize,
           quantity,
           ...delivery,
-          utm_source:params.get('utm_source')||'allegro',
+          utm_source:params.get('ref')?('ref:'+params.get('ref').replace(/[^a-zA-Z0-9_-]/g,'').slice(0,40)):(params.get('utm_source')||'allegro'),
           utm_medium:params.get('utm_medium')||'merch-checkout',
-          utm_campaign:params.get('utm_campaign')||'wear-the-movement'
+          utm_campaign:params.get('utm_campaign')||'drop01-founding100'
         })
       })
       const data=await response.json().catch(()=>({}))
@@ -445,15 +469,29 @@ export default function MerchStore({session}){
     setMessage('Your creator merchandise is now listed inside ALLEGRO.')
   }
 
+  function foundingShareUrl(){
+    const url=new URL(window.location.href)
+    if(!url.searchParams.get('ref'))url.searchParams.set('ref','FOUNDING100')
+    if(!url.searchParams.get('utm_campaign'))url.searchParams.set('utm_campaign','drop01-founding100')
+    if(!url.searchParams.get('utm_medium'))url.searchParams.set('utm_medium','organic-share')
+    return url.toString()
+  }
+
   async function shareDrop(){
-    const shareData={title:PREORDER_CAMPAIGN.name,text:'Limited ALLEGRO-VIBEZ made-to-order merch. Help take DROP 01 to R100,000 in verified paid sales.',url:window.location.href}
+    const url=foundingShareUrl()
+    const shareData={title:PREORDER_CAMPAIGN.name,text:'Join the ALLEGRO-VIBEZ Founding 100. Reserve DROP 01 now—no payment is taken until verified iKhokha checkout is live.',url}
     try{
       if(navigator.share){await navigator.share(shareData);return}
-      await navigator.clipboard.writeText(window.location.href)
-      setMessage('Drop link copied. Share it with your people.')
+      await navigator.clipboard.writeText(url)
+      setMessage('Founding 100 link copied. Share it with your people.')
     }catch(error){
-      if(error?.name!=='AbortError')setMessage('Copy this page link to share the drop.')
+      if(error?.name!=='AbortError')setMessage('Copy the Founding 100 link and share it with your people.')
     }
+  }
+
+  function shareWhatsApp(){
+    const text='ALLEGRO-VIBEZ DROP 01 · Join the Founding 100. Reserve your size now—no payment is taken until secure checkout is live. '+foundingShareUrl()
+    window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank','noopener,noreferrer')
   }
 
   async function buyCreator(item){
@@ -474,12 +512,36 @@ export default function MerchStore({session}){
         <h2>Wear the movement.</h2>
         <p>Made to order from verified paid demand. No warehouse gamble, no mass stock — we manufacture what the movement actually buys.</p>
         <div className="merch-specs"><span>300gsm tees</span><span>Oversized fit</span><span>Dropped shoulders</span><span>Original ALLEGRO design</span></div>
-        <div className="merch-hero-actions"><a className="primary" href="#tees">Pre-order DROP 01</a><button className="merch-text-button" onClick={shareDrop}>Share the drop</button><a className="merch-text-link" href="#lookbook">View lookbook</a></div>
+        <div className="merch-hero-actions"><a className="primary" href="#tees">Join the Founding 100</a><button className="merch-text-button" onClick={shareWhatsApp}>WhatsApp</button><button className="merch-text-button" onClick={shareDrop}>Share</button><a className="merch-text-link" href="#lookbook">View lookbook</a></div>
         <strong>Pre-order tees from {money(launchPrice)} · Sales target {money(PREORDER_CAMPAIGN.target)}</strong>
       </div>
     </section>
 
     <MovementSizzle launchPrice={launchPrice}/>
+
+    <section className="founding100" aria-label="ALLEGRO-VIBEZ Founding 100 reservation campaign">
+      <div className="founding100-copy">
+        <div className="eyebrow">ZERO-BUDGET ORGANIC LAUNCH · FOUNDING 100</div>
+        <h3>100 buyers before paid media.</h3>
+        <p>Reserve your DROP 01 item and size now. This is a buyer queue, not a sale: no money is taken and no production slot is reserved until verified payment succeeds.</p>
+        <div className="founding100-actions">
+          <a className="primary" href="#tees">Join the Founding 100</a>
+          <button className="secondary" onClick={shareWhatsApp}>Share on WhatsApp</button>
+          <button className="secondary" onClick={shareDrop}>Copy / share link</button>
+        </div>
+      </div>
+      <div className="founding100-meter">
+        <div className="founding100-count"><strong>{demandProgress.unique_buyers}</strong><span>/ {demandProgress.founding_goal_buyers||100} buyers</span></div>
+        <div className="preorder-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(foundingPercent)}><span style={{width:foundingPercent+'%'}}/></div>
+        <div className="founding100-stats">
+          <div><span>Reservations</span><strong>{demandProgress.reservation_count}</strong></div>
+          <div><span>Reserved units</span><strong>{demandProgress.reservation_units}</strong></div>
+          <div><span>Unpaid demand</span><strong>{money(reservedDemandValue)}</strong></div>
+          <div><span>Buyers needed</span><strong>{foundingRemaining}</strong></div>
+        </div>
+        <small>Reservation demand is shown separately from verified sales and never moves the R100k sales counter.</small>
+      </div>
+    </section>
 
     <section className="preorder-target" aria-label="ALLEGRO-VIBEZ DROP 01 sales target">
       <div className="preorder-target-copy">
