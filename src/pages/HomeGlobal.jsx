@@ -24,7 +24,6 @@ const experiences=[
   ['STREAM','▶','Play music from published artists','/stream','/av-hero.webp','stream'],
   ['DISCOVER','✦','Find artists across Africa, India, Korea, China and beyond','/artists','/av-discover.webp','discover'],
   ['RADIO','◉','Tune into ALLEGRO Radio and programmed culture','/radio',null,'radio'],
-  ['MERCH','◆','Wear the movement — oversized tees, golf shirts, hoodies, jackets and bucket hats.','/merch',null,'merch'],
   ['ARTISTS','♬','Create a profile, upload music and build an audience','/join-artists','/av-artists.webp','artists'],
   ['RIGHTS','◇','Keep ownership, splits and commercial records attached to the music','/sa/protocol',null,'rights'],
   ['EARN','↗','Track prosperity, wallet activity and creator opportunities','/prosperity',null,'earn']
@@ -71,7 +70,7 @@ export default function HomeGlobal(){
     </section>
 
     <section className="showcase-ticker" aria-label="ALLEGRO platform capabilities">
-      <div>STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b> ARTISTS <b>✦</b> RIGHTS <b>✦</b> MERCH <b>✦</b> BOOKINGS <b>✦</b> EARN <b>✦</b> STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b></div>
+      <div>STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b> ARTISTS <b>✦</b> RIGHTS <b>✦</b> BOOKINGS <b>✦</b> EARN <b>✦</b> STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b></div>
     </section>
 
     <section className="showcase-offers">

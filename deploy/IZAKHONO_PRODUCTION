@@ -1,9 +1,11 @@
 ALLEGRO-VIBEZ
 owner_host=true
 core_project=allegro-vibez
-requested_at=2026-09-20
-launch_attempt=5
+requested_at=2026-09-25
+launch_attempt=6
 migration_mode=IZAKHONO_PRIMARY
 fallback_hosts=TEMPORARY_ONLY
-release=music-academy-r99-secure
-release_commit=2a24a5743934f582a6ffbfa0c8f1187358d490b3
+release=musician-marketplace-official-merch
+release_commit=2b85caed5ab69bfd0c3d99ad926347773196568e
+shop_route=/merch
+marketplace_route=/marketplace
