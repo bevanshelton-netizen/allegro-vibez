@@ -59,7 +59,8 @@ export default function MerchStore({session}){
   const[selectedSize,setSelectedSize]=useState('L')
   const[quantity,setQuantity]=useState(1)
   const[checkoutBusy,setCheckoutBusy]=useState(false)
-  const[checkoutHealth,setCheckoutHealth]=useState({loading:true,configured:false,live:false,mode:'unknown'})
+  const[reservationBusy,setReservationBusy]=useState(false)
+  const[checkoutHealth,setCheckoutHealth]=useState({loading:true,configured:false,live:false,mode:'unknown',reservationAvailable:false})
   const[delivery,setDelivery]=useState({customer_name:'',mobile:'',delivery_address:'',delivery_city:'',delivery_province:'',delivery_postal_code:''})
   const[selectedMerchCategory,setSelectedMerchCategory]=useState('All')
   const[previewItem,setPreviewItem]=useState(null)
@@ -96,10 +97,11 @@ export default function MerchStore({session}){
         loading:false,
         configured:response.ok&&Boolean(data.configured),
         live:response.ok&&Boolean(data.live),
-        mode:String(data.mode||'unknown')
+        mode:String(data.mode||'unknown'),
+        reservationAvailable:Boolean(data.reservation_mode_available)
       })
     }catch{
-      setCheckoutHealth({loading:false,configured:false,live:false,mode:'unavailable'})
+      setCheckoutHealth({loading:false,configured:false,live:false,mode:'unavailable',reservationAvailable:false})
     }
   })()},[])
 
@@ -173,6 +175,59 @@ export default function MerchStore({session}){
 
   function updateDelivery(field,value){
     setDelivery(current=>({...current,[field]:value}))
+  }
+
+  async function reserveOfficialPreorder(){
+    if(!selected)return
+    if(!session?.access_token){setMessage('Log in before reserving your DROP 01 pre-order interest.');return}
+    if(checkoutHealth.live){return continueOfficialCheckout()}
+    if(!checkoutHealth.reservationAvailable){
+      setMessage('The secure reservation service is preparing. No payment has been taken.')
+      return
+    }
+    if(!String(delivery.customer_name||'').trim()||!String(delivery.mobile||'').trim()){
+      setMessage('Add your full name and mobile number so we can hold your pre-order interest and contact you when verified checkout opens.')
+      return
+    }
+    setReservationBusy(true)
+    setMessage('Saving your DROP 01 pre-order interest…')
+    try{
+      const params=new URLSearchParams(window.location.search)
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-reserve',{
+        method:'POST',
+        headers:{
+          Authorization:'Bearer '+session.access_token,
+          'Content-Type':'application/json',
+          Accept:'application/json'
+        },
+        body:JSON.stringify({
+          product_id:selected.id,
+          size:selectedSize,
+          quantity,
+          customer_name:delivery.customer_name,
+          mobile:delivery.mobile,
+          utm_source:params.get('utm_source')||'allegro',
+          utm_medium:params.get('utm_medium')||'merch-reservation',
+          utm_campaign:params.get('utm_campaign')||'drop01-r100k'
+        })
+      })
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok){
+        if(data.error==='authentication_required'){
+          setMessage('Your login session needs to be refreshed before reserving. Please log in again.')
+        }else if(data.error==='contact_details_required'){
+          setMessage('Add your full name and mobile number before reserving.')
+        }else{
+          setMessage('We could not save the reservation right now. No payment has been taken.')
+        }
+        return
+      }
+      setMessage('Reservation '+data.reservation_ref+' saved for '+selected.name+', size '+selectedSize+', quantity '+quantity+'. No payment has been taken and production is not reserved until verified payment succeeds.')
+    }catch{
+      setMessage('The reservation service is temporarily unavailable. No payment has been taken.')
+    }finally{
+      setReservationBusy(false)
+    }
   }
 
   async function continueOfficialCheckout(){
@@ -441,12 +496,12 @@ export default function MerchStore({session}){
           <label>Province<input value={delivery.delivery_province} onChange={e=>updateDelivery('delivery_province',e.target.value)} autoComplete="address-level1" placeholder="Province"/></label>
           <label>Postal code<input value={delivery.delivery_postal_code} onChange={e=>updateDelivery('delivery_postal_code',e.target.value)} autoComplete="postal-code" inputMode="numeric" placeholder="Postal code"/></label>
         </div>}
-        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" disabled={checkoutBusy||checkoutHealth.loading||!checkoutHealth.live} onClick={continueOfficialCheckout}>{checkoutBusy?'Preparing secure checkout…':checkoutHealth.live?'Continue to secure iKhokha checkout':checkoutHealth.loading?'Checking payment gateway…':'Secure checkout preparing'}</button>}
+        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" disabled={checkoutBusy||reservationBusy||checkoutHealth.loading||(!checkoutHealth.live&&!checkoutHealth.reservationAvailable)} onClick={checkoutHealth.live?continueOfficialCheckout:reserveOfficialPreorder}>{checkoutBusy?'Preparing secure checkout…':reservationBusy?'Saving reservation…':checkoutHealth.live?'Continue to secure iKhokha checkout':checkoutHealth.loading?'Checking payment gateway…':checkoutHealth.reservationAvailable?'Reserve pre-order · no payment now':'Secure checkout preparing'}</button>}
         <div className={"checkout-readiness "+(checkoutHealth.live?'is-live':'is-preparing')}>
-          <strong>{checkoutHealth.live?'Secure checkout ready':'Payment protection active'}</strong>
-          <span>{checkoutHealth.live?'Server-priced order + verified iKhokha handoff.':checkoutHealth.mode==='test'?'iKhokha API is currently in test mode, so ALLEGRO will not take payment.':'Checkout remains blocked until the verified gateway is live.'}</span>
+          <strong>{checkoutHealth.live?'Secure checkout ready':checkoutHealth.reservationAvailable?'Pre-order reservations open':'Payment protection active'}</strong>
+          <span>{checkoutHealth.live?'Server-priced order + verified iKhokha handoff.':checkoutHealth.reservationAvailable?'Choose your item, size and quantity now. This records demand only; no payment is taken and no production slot is reserved until verified payment succeeds.':checkoutHealth.mode==='test'?'iKhokha API is currently in test mode, so ALLEGRO will not take payment.':'Checkout remains blocked until the verified gateway is live.'}</span>
         </div>
-        <small className="checkout-note">Your production slot is reserved only after a signed successful payment confirmation. Garment price excludes courier/delivery; delivery is arranged and quoted separately before dispatch. ALLEGRO records your size, quantity and delivery details before creating any payment link.</small>
+        <small className="checkout-note">For a reservation, only your name and mobile number are required. Your production slot is reserved only after a signed successful payment confirmation. Garment price excludes courier/delivery; delivery is arranged and quoted separately before dispatch.</small>
       </div>
     </section>}
 
