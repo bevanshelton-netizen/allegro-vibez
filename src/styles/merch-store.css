@@ -352,3 +352,176 @@
   .merch-trust>div{border:1px solid var(--merch-line);border-radius:14px;margin-bottom:8px}
   .founders-drop{padding:30px}
 }
+
+/* Curated collection browsing */
+.merch-filter-row{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:22px 0 26px;
+}
+.merch-filter-row button{
+  appearance:none;
+  border:1px solid rgba(255,255,255,.11);
+  background:#0b0e13;
+  color:#aeb6c3;
+  border-radius:999px;
+  padding:10px 14px;
+  font-size:.7rem;
+  font-weight:850;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  cursor:pointer;
+  transition:.2s ease;
+}
+.merch-filter-row button:hover,
+.merch-filter-row button.active{
+  color:#f4efe5;
+  border-color:rgba(215,180,106,.42);
+  background:rgba(215,180,106,.10);
+}
+.coming-product-photo{
+  isolation:isolate;
+  background:#0d1015!important;
+}
+.coming-product-photo:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:
+    linear-gradient(to top,rgba(5,6,8,.92) 0%,rgba(5,6,8,.34) 48%,rgba(5,6,8,.15) 100%),
+    url('/allegro-vibez-merch-lookbook.webp') var(--preview-position,center)/190% auto no-repeat;
+  filter:saturate(.82) contrast(1.03);
+  transform:scale(1.03);
+}
+.coming-product-photo:after{
+  z-index:-1;
+  inset:0;
+  width:auto;
+  aspect-ratio:auto;
+  border-radius:inherit;
+  background:linear-gradient(135deg,rgba(215,180,106,.08),transparent 42%,rgba(255,255,255,.03));
+}
+.coming-product-photo span,
+.coming-product-photo strong,
+.coming-product-photo small{
+  text-shadow:0 2px 18px rgba(0,0,0,.55);
+}
+.merch-piece-preview{
+  margin:54px 0 88px;
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(320px,.85fr);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:30px;
+  overflow:hidden;
+  background:#0b0e13;
+  box-shadow:0 28px 76px rgba(0,0,0,.24);
+}
+.merch-piece-visual{
+  min-height:520px;
+  position:relative;
+  display:flex;
+  align-items:flex-end;
+  padding:34px;
+  overflow:hidden;
+  isolation:isolate;
+}
+.merch-piece-visual:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-2;
+  background:
+    linear-gradient(to top,rgba(4,5,7,.92) 0%,rgba(4,5,7,.30) 48%,rgba(4,5,7,.08) 100%),
+    url('/allegro-vibez-merch-lookbook.webp') var(--preview-position,center)/165% auto no-repeat;
+  transform:scale(1.025);
+}
+.merch-piece-visual:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  background:radial-gradient(circle at 20% 20%,rgba(215,180,106,.10),transparent 28%);
+}
+.merch-piece-visual>div{
+  display:grid;
+  gap:6px;
+  max-width:80%;
+}
+.merch-piece-visual span{
+  color:#d7b46a;
+  font-size:.68rem;
+  font-weight:900;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+.merch-piece-visual strong{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-weight:500;
+  font-size:clamp(2.5rem,5vw,5.1rem);
+  line-height:.92;
+}
+.merch-piece-visual small{
+  color:#d9dde4;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+.merch-piece-copy{
+  padding:clamp(30px,5vw,64px);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.merch-piece-copy h3{
+  font-family:"Bodoni 72","Didot",Georgia,serif;
+  font-weight:500;
+  letter-spacing:-.04em;
+  font-size:clamp(2.6rem,4.5vw,4.7rem);
+  line-height:.94;
+  margin:.18em 0;
+}
+.merch-piece-copy>p{
+  color:#b7bfcb;
+  line-height:1.72;
+}
+.merch-piece-colour{
+  color:#f2eee6!important;
+  font-size:.78rem;
+  font-weight:850;
+  letter-spacing:.10em;
+  text-transform:uppercase;
+}
+.merch-piece-status{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  margin:18px 0 24px;
+}
+.merch-piece-status span{
+  border:1px solid rgba(255,255,255,.10);
+  background:#0a0d11;
+  color:#9ea7b4;
+  border-radius:999px;
+  padding:8px 11px;
+  font-size:.64rem;
+  font-weight:800;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.merch-piece-actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+@media(max-width:900px){
+  .merch-piece-preview{grid-template-columns:1fr}
+  .merch-piece-visual{min-height:420px}
+}
+@media(max-width:560px){
+  .merch-filter-row{gap:6px}
+  .merch-filter-row button{padding:9px 11px;font-size:.62rem}
+  .merch-piece-visual{min-height:340px;padding:24px}
+  .merch-piece-copy{padding:28px 22px}
+  .merch-piece-actions{display:grid}
+}
