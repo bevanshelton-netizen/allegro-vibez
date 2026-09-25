@@ -9,3 +9,11 @@
 .golf-preview-card>div{padding:10px}.golf-preview-card>div>span{font-size:.7rem;letter-spacing:.12em;color:#f0bd55;font-weight:900}.golf-preview-card h4{font-size:clamp(1.7rem,3vw,3rem);margin:.35em 0}.golf-preview-card p{color:#aeb8c8;line-height:1.6}
 @media(max-width:1000px){.merch-drop-nav{grid-template-columns:repeat(2,1fr)}.golf-preview-card{grid-template-columns:1fr}}
 @media(max-width:650px){.merch-drop-nav{grid-template-columns:1fr}}
+
+.tee-mockup{height:280px;position:relative;display:flex;justify-content:center;align-items:flex-start;margin-bottom:4px;filter:drop-shadow(0 18px 20px rgba(0,0,0,.28))}
+.tee-body{position:relative;z-index:2;width:70%;height:88%;margin-top:18px;clip-path:polygon(22% 0,38% 5%,62% 5%,78% 0,100% 18%,87% 35%,79% 29%,79% 100%,21% 100%,21% 29%,13% 35%,0 18%);padding:40px 28px 28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border:1px solid rgba(255,255,255,.09)}
+.tee-body small{position:absolute;top:26px;font-size:.56rem;letter-spacing:.16em;font-weight:900}.tee-body strong{font-family:Georgia,serif;font-size:1.1rem;line-height:1.05;max-width:12ch}.tee-body span{position:absolute;bottom:20px;font-size:.5rem;letter-spacing:.12em}
+.tee-sleeve{position:absolute;top:34px;width:30%;height:88px;z-index:1}.tee-sleeve-left{left:3%;transform:rotate(28deg)}.tee-sleeve-right{right:3%;transform:rotate(-28deg)}
+.tone-black .tee-body,.tone-black .tee-sleeve{background:#090a0d;color:#f4ead7}.tone-cream .tee-body,.tone-cream .tee-sleeve{background:#eee5d2;color:#171717}.tone-burgundy .tee-body,.tone-burgundy .tee-sleeve{background:#55111d;color:#f7e8dc}.tone-white .tee-body,.tone-white .tee-sleeve{background:#f2f2ed;color:#111}
+.order-summary{display:block;color:#9da8ba;margin-top:8px}.checkout-note{grid-column:1/-1;color:#8995a6;line-height:1.45}.merch-order-panel h3{margin:.35em 0}
+@media(max-width:650px){.tee-mockup{height:240px}}
