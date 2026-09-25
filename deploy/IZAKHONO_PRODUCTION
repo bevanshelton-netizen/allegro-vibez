@@ -2,10 +2,10 @@ ALLEGRO-VIBEZ
 owner_host=true
 core_project=allegro-vibez
 requested_at=2026-09-25
-launch_attempt=6
+launch_attempt=7
 migration_mode=IZAKHONO_PRIMARY
 fallback_hosts=TEMPORARY_ONLY
-release=musician-marketplace-official-merch
-release_commit=2b85caed5ab69bfd0c3d99ad926347773196568e
+release=elegant-merch-marketplace
+release_commit=9e3affedc3b04314ab249553374fac643f5351f6
 shop_route=/merch
 marketplace_route=/marketplace
