@@ -1,13 +1,13 @@
 import { useEffect,useMemo,useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase, backendProvider } from '../lib/supabaseClient'
-import { getOfficialMerchCheckoutUrl } from '../lib/merchCheckout'
 import MovementSizzle from '../components/MovementSizzle'
 import '../styles/movement-sizzle.css'
 import '../styles/merch-store.css'
 
 const TEE_SIZES=['XS','S','M','L','XL','2XL','3XL','4XL','5XL']
 const PREORDER_CAMPAIGN={code:'AV-DROP-01',name:'ALLEGRO-VIBEZ DROP 01',target:100000,currency:'ZAR'}
+const MERCH_CHECKOUT_ENDPOINT='https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-asset-upload'
 const officialTees=[
   {id:'movement-black',sku:'AV-TEE-MOV-BLK',name:'The Movement Oversized Tee',colour:'Black',price:549,tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.'},
   {id:'african-born-cream',sku:'AV-TEE-AFR-CRM',name:'African-Born Oversized Tee',colour:'Cream',price:599,tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.'},
@@ -58,6 +58,9 @@ export default function MerchStore({session}){
   const[selected,setSelected]=useState(null)
   const[selectedSize,setSelectedSize]=useState('L')
   const[quantity,setQuantity]=useState(1)
+  const[checkoutBusy,setCheckoutBusy]=useState(false)
+  const[checkoutHealth,setCheckoutHealth]=useState({loading:true,configured:false,live:false,mode:'unknown'})
+  const[delivery,setDelivery]=useState({customer_name:'',mobile:'',delivery_address:'',delivery_city:'',delivery_province:'',delivery_postal_code:''})
   const[selectedMerchCategory,setSelectedMerchCategory]=useState('All')
   const[previewItem,setPreviewItem]=useState(null)
   const[vettingStatus,setVettingStatus]=useState(null)
@@ -86,6 +89,28 @@ export default function MerchStore({session}){
   })()},[])
 
   useEffect(()=>{(async()=>{
+    try{
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-checkout-health',{cache:'no-store',headers:{Accept:'application/json'}})
+      const data=await response.json().catch(()=>({}))
+      setCheckoutHealth({
+        loading:false,
+        configured:response.ok&&Boolean(data.configured),
+        live:response.ok&&Boolean(data.live),
+        mode:String(data.mode||'unknown')
+      })
+    }catch{
+      setCheckoutHealth({loading:false,configured:false,live:false,mode:'unavailable'})
+    }
+  })()},[])
+
+  useEffect(()=>{
+    if(!session?.user)return
+    const meta=session.user.user_metadata||{}
+    const customerName=meta.full_name||meta.name||''
+    if(customerName)setDelivery(current=>current.customer_name?current:{...current,customer_name:customerName})
+  },[session?.user?.id])
+
+  useEffect(()=>{(async()=>{
     if(!supabase||!session?.user?.id){setVettingStatus(null);setMyMerch([]);return}
     const[{data:vetting},{data:mine}]=await Promise.all([
       supabase.from('musician_vetting').select('status,verification_level,reviewed_at,expires_at').eq('user_id',session.user.id).maybeSingle(),
@@ -109,15 +134,75 @@ export default function MerchStore({session}){
     window.setTimeout(()=>document.getElementById('merch-order-panel')?.scrollIntoView({behavior:'smooth',block:'center'}),50)
   }
 
+  function updateDelivery(field,value){
+    setDelivery(current=>({...current,[field]:value}))
+  }
+
   async function continueOfficialCheckout(){
     if(!selected)return
-    setMessage('Checking the verified iKhokha checkout for this item…')
-    const checkoutUrl=await getOfficialMerchCheckoutUrl(selected.id)
-    if(!checkoutUrl){
-      setMessage('This item is ready for checkout, but its verified iKhokha Buy Button URL has not been configured yet. No payment has been taken.')
+    if(!session?.access_token){setMessage('Log in before continuing to secure checkout.');return}
+    if(!checkoutHealth.live){
+      setMessage(checkoutHealth.mode==='test'
+        ?'Secure iKhokha checkout is prepared, but the gateway is still in test mode. No payment has been taken.'
+        :'Secure iKhokha checkout is not live yet. No payment has been taken.')
       return
     }
-    window.location.assign(checkoutUrl)
+    const required=['customer_name','mobile','delivery_address','delivery_city','delivery_province','delivery_postal_code']
+    if(required.some(field=>!String(delivery[field]||'').trim())){
+      setMessage('Complete your name, mobile number and delivery address before secure checkout.')
+      return
+    }
+    setCheckoutBusy(true)
+    setMessage('Creating your ALLEGRO order and secure iKhokha checkout…')
+    try{
+      const params=new URLSearchParams(window.location.search)
+      const response=await fetch(MERCH_CHECKOUT_ENDPOINT+'?mode=merch-checkout',{
+        method:'POST',
+        headers:{
+          Authorization:'Bearer '+session.access_token,
+          'Content-Type':'application/json',
+          Accept:'application/json'
+        },
+        body:JSON.stringify({
+          product_id:selected.id,
+          size:selectedSize,
+          quantity,
+          ...delivery,
+          utm_source:params.get('utm_source')||'allegro',
+          utm_medium:params.get('utm_medium')||'merch-checkout',
+          utm_campaign:params.get('utm_campaign')||'wear-the-movement'
+        })
+      })
+      const data=await response.json().catch(()=>({}))
+      if(!response.ok){
+        if(data.error==='payment_gateway_not_live'){
+          setCheckoutHealth(current=>({...current,live:false,mode:data.mode||current.mode}))
+          setMessage('Secure iKhokha checkout is prepared, but the gateway is not in live mode. No payment has been taken.')
+        }else if(data.error==='authentication_required'){
+          setMessage('Your login session needs to be refreshed before checkout. Please log in again.')
+        }else if(data.error==='delivery_details_required'){
+          setMessage('Complete all delivery details before checkout.')
+        }else{
+          setMessage('Secure checkout could not be started. No payment has been taken.')
+        }
+        return
+      }
+      let checkoutUrl=null
+      try{
+        const parsed=new URL(data.checkout_url)
+        if(parsed.protocol==='https:')checkoutUrl=parsed.toString()
+      }catch{}
+      if(!checkoutUrl){
+        setMessage('The payment provider did not return a valid secure checkout URL. No payment has been taken.')
+        return
+      }
+      setMessage('Order '+data.order_ref+' created. Redirecting to secure iKhokha checkout…')
+      window.location.assign(checkoutUrl)
+    }catch{
+      setMessage('Secure checkout is temporarily unavailable. No payment has been taken.')
+    }finally{
+      setCheckoutBusy(false)
+    }
   }
 
   function updateCreatorForm(field,value){
@@ -306,11 +391,25 @@ export default function MerchStore({session}){
         <strong className="merch-price">{money(selected.price*quantity)}</strong>
         <small className="order-summary">{quantity} × {money(selected.price)} · Size {selectedSize}</small>
       </div>
-      <div>
-        <label>Size<select value={selectedSize} onChange={e=>setSelectedSize(e.target.value)}>{TEE_SIZES.map(size=><option key={size}>{size}</option>)}</select></label>
-        <label>Quantity<select value={quantity} onChange={e=>setQuantity(Number(e.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" onClick={continueOfficialCheckout}>Pay & reserve production slot</button>}
-        <small className="checkout-note">Your production slot is only reserved after verified payment. The button redirects only when an exact verified iKhokha Buy Button URL is configured; ALLEGRO never constructs or guesses payment URLs.</small>
+      <div className="official-checkout-form">
+        <div className="official-order-options">
+          <label>Size<select value={selectedSize} onChange={e=>setSelectedSize(e.target.value)}>{TEE_SIZES.map(size=><option key={size}>{size}</option>)}</select></label>
+          <label>Quantity<select value={quantity} onChange={e=>setQuantity(Number(e.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
+        </div>
+        {session&&<div className="delivery-fields">
+          <label>Full name<input value={delivery.customer_name} onChange={e=>updateDelivery('customer_name',e.target.value)} autoComplete="name" placeholder="Name for the order"/></label>
+          <label>Mobile number<input value={delivery.mobile} onChange={e=>updateDelivery('mobile',e.target.value)} autoComplete="tel" inputMode="tel" placeholder="Contact number"/></label>
+          <label className="delivery-wide">Delivery address<input value={delivery.delivery_address} onChange={e=>updateDelivery('delivery_address',e.target.value)} autoComplete="street-address" placeholder="Street address"/></label>
+          <label>City / town<input value={delivery.delivery_city} onChange={e=>updateDelivery('delivery_city',e.target.value)} autoComplete="address-level2" placeholder="City or town"/></label>
+          <label>Province<input value={delivery.delivery_province} onChange={e=>updateDelivery('delivery_province',e.target.value)} autoComplete="address-level1" placeholder="Province"/></label>
+          <label>Postal code<input value={delivery.delivery_postal_code} onChange={e=>updateDelivery('delivery_postal_code',e.target.value)} autoComplete="postal-code" inputMode="numeric" placeholder="Postal code"/></label>
+        </div>}
+        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" disabled={checkoutBusy||checkoutHealth.loading||!checkoutHealth.live} onClick={continueOfficialCheckout}>{checkoutBusy?'Preparing secure checkout…':checkoutHealth.live?'Continue to secure iKhokha checkout':checkoutHealth.loading?'Checking payment gateway…':'Secure checkout preparing'}</button>}
+        <div className={"checkout-readiness "+(checkoutHealth.live?'is-live':'is-preparing')}>
+          <strong>{checkoutHealth.live?'Secure checkout ready':'Payment protection active'}</strong>
+          <span>{checkoutHealth.live?'Server-priced order + verified iKhokha handoff.':checkoutHealth.mode==='test'?'iKhokha API is currently in test mode, so ALLEGRO will not take payment.':'Checkout remains blocked until the verified gateway is live.'}</span>
+        </div>
+        <small className="checkout-note">Your production slot is reserved only after a signed successful payment confirmation. Garment price excludes courier/delivery; delivery is arranged and quoted separately before dispatch. ALLEGRO records your size, quantity and delivery details before creating any payment link.</small>
       </div>
     </section>}
 
