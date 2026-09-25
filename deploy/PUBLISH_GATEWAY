@@ -1,16 +1,16 @@
 ALLEGRO public traffic gateway release.
-requested_at=2026-09-22
-release=allegro-public-traffic-gateway
+requested_at=2026-09-25T10:15:00+02:00
+release=allegro-drop01-r100k-preorder-rollout
 primary_public_route=https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live
 migration_mode=IZAKHONO_PRIMARY
 external_resilience=GITHUB_PAGES_NETLIFY_VERCEL
-vercel_public_status=PROTECTED_DO_NOT_ADVERTISE
-traffic_tracking=UTM_AND_IZAKHONO_GROWTH_EVENTS
-social_campaign_status=AWAITING_PROVIDER_CONNECTION
-seo-discovery-refresh=2026-09-23T20:42:00+02:00
-github_pages_full_app_refresh=2026-09-24T11:30:00+02:00
+vercel_public_status=RESILIENCE_ONLY
+traffic_tracking=IZAKHONO_OWNED_ONLY
+social_campaign_status=READY_AFTER_VERIFIED_CHECKOUT
+github_pages_full_app_refresh=2026-09-25T10:15:00+02:00
 deployment_payload=COMPLETE_ALLEGRO_CURRENT_MAIN
-merch_resilience_refresh=2026-09-25T04:17:00+02:00
+source_ref=bbb8aa32b8e2367eff54a057d68c15b94236d8b9
 merch_route=/allegro-vibez/merch/
-merch_campaign=WEAR_THE_MOVEMENT
+merch_campaign=DROP01_R100K_PREORDER
 runtime_checkout_map=/allegro-vibez/runtime/merch-checkout.json
+checkout_state=FAIL_CLOSED_PENDING_VERIFIED_IKHOKHA
