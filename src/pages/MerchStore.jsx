@@ -139,7 +139,7 @@ export default function MerchStore({session}){
               return
             }
           }
-        }catch{}
+        }catch(error){void error}
         if(attempt<7)await new Promise(resolve=>setTimeout(resolve,2000))
       }
       if(!cancelled)setMessage('Payment returned, but signed confirmation is still pending. Your production slot is not reserved until verification succeeds.')
