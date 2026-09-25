@@ -35,7 +35,7 @@ console.log('ALLEGRO_ARTIST_BOOKING_ENGINE=PASS')
 const coreWorkflow=fs.readFileSync('src/lib/creatorWorkflow.js','utf8')
 if(!coreWorkflow.includes("backendProvider === 'izakhono-core'"))throw new Error('IZAKHONO Core booking path missing')
 if(!coreWorkflow.includes(".from('artist_booking_intake')"))throw new Error('Owned Core booking intake table missing')
-const ownedInsert=coreWorkflow.match(/if \(backendProvider === 'izakhono-core'\) \{[\s\S]*?return data\n  \}/)?.[0]||''
+const ownedInsert=coreWorkflow.match(/if \(backendProvider === 'izakhono-core'\) \{[\s\S]*?return data\n\s{2}\}/)?.[0]||''
 if(!ownedInsert.includes("source: payload.source || 'artist_space'"))throw new Error('Owned booking intake source marker missing')
 if(ownedInsert.includes('created_at: now')||ownedInsert.includes('updated_at: now'))throw new Error('Browser must not forge Core-owned booking timestamps')
 
