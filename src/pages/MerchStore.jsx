@@ -17,12 +17,21 @@ const dropCategories=[
   {name:'Jackets',anchor:'#outerwear',note:'Varsity and statement outerwear.'},
   {name:'Bucket Hats & Caps',anchor:'#outerwear',note:'Headwear for stage, street and everyday wear.'}
 ]
-const categories=[
-  {name:'Premium Hoodies',note:'Oversized ALLEGRO hoodies with statement graphics.',status:'Range being loaded'},
-  {name:'Varsity & Street Jackets',note:'Premium outerwear designed for creators and events.',status:'Range being loaded'},
-  {name:'Caps',note:'ALLEGRO embroidered caps for everyday streetwear.',status:'Range being loaded'},
-  {name:'Bucket Hats',note:'Black and cream ALLEGRO bucket hats.',status:'Range being loaded'},
-  {name:'Accessories',note:'Bags, beanies, socks and creator essentials.',status:'Expanding collection'}
+const comingProducts=[
+  {id:'movement-hoodie-black',category:'Hoodies',name:'The Movement Hoodie',colour:'Black',tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.',note:'Official ALLEGRO-VIBEZ statement hoodie.'},
+  {id:'african-born-hoodie-cream',category:'Hoodies',name:'African-Born Hoodie',colour:'Cream',tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.',note:'Signature cream creator-culture hoodie.'},
+  {id:'creators-hoodie-burgundy',category:'Hoodies',name:'Creators. Culture. Sound. Hoodie',colour:'Burgundy',tone:'burgundy',tag:'CREATORS. CULTURE. SOUND.',note:'Deep burgundy ALLEGRO creator edition.'},
+  {id:'varsity-jacket-black',category:'Jackets',name:'ALLEGRO Varsity Jacket',colour:'Black / Cream',tone:'black',tag:'ALLEGRO VIBEZ',note:'Premium varsity direction for artists, crews and events.'},
+  {id:'tour-jacket-burgundy',category:'Jackets',name:'Creators Tour Jacket',colour:'Burgundy / Black',tone:'burgundy',tag:'WORLDWIDE FOR CREATORS',note:'Statement outerwear for stage, travel and culture.'},
+  {id:'bomber-jacket-black',category:'Jackets',name:'ALLEGRO Creator Bomber',colour:'Black',tone:'black',tag:'ARTISTS · RADIO · CULTURE · LIVE',note:'Clean creator-focused bomber concept.'},
+  {id:'classic-cap-black',category:'Caps',name:'ALLEGRO Classic Cap',colour:'Black',tone:'black',tag:'ALLEGRO VIBEZ',note:'Minimal embroidered-logo cap direction.'},
+  {id:'signature-cap-cream',category:'Caps',name:'African-Born Signature Cap',colour:'Cream',tone:'cream',tag:'AFRICAN-BORN',note:'Cream statement cap for the signature collection.'},
+  {id:'creator-cap-burgundy',category:'Caps',name:'Creator Culture Cap',colour:'Burgundy',tone:'burgundy',tag:'CREATORS. CULTURE. SOUND.',note:'Burgundy creator-edition headwear.'},
+  {id:'movement-bucket-black',category:'Bucket Hats',name:'The Movement Bucket Hat',colour:'Black',tone:'black',tag:'MORE THAN MUSIC.',note:'Black ALLEGRO bucket hat for street and festival wear.'},
+  {id:'african-born-bucket-cream',category:'Bucket Hats',name:'African-Born Bucket Hat',colour:'Cream',tone:'cream',tag:'GLOBAL SOUND.',note:'Cream bucket-hat direction from the signature drop.'},
+  {id:'creator-beanie',category:'Accessories',name:'ALLEGRO Creator Beanie',colour:'Black',tone:'black',tag:'ALLEGRO',note:'Cold-weather creator accessory with restrained branding.'},
+  {id:'creator-tote',category:'Accessories',name:'ALLEGRO Creator Tote',colour:'Black / Natural',tone:'cream',tag:'CARRY THE MOVEMENT.',note:'Everyday creator tote for gear, records and essentials.'},
+  {id:'studio-duffel',category:'Accessories',name:'ALLEGRO Studio Duffel',colour:'Black',tone:'black',tag:'CREATE. MOVE. REPEAT.',note:'Travel and studio bag concept for the creator ecosystem.'}
 ]
 
 function money(value,currency='ZAR'){
@@ -112,10 +121,20 @@ export default function MerchStore({session}){
     </section>
 
     <section id="outerwear" className="merch-section">
-      <div className="merch-heading"><div><div className="eyebrow">THE RANGE IS GROWING</div><h3>Hoodies, jackets, caps & hats</h3></div><p>Premium ALLEGRO streetwear without invented garment specifications.</p></div>
+      <div className="merch-heading"><div><div className="eyebrow">OFFICIAL RANGE PREVIEW</div><h3>Hoodies, jackets, caps, bucket hats & accessories</h3></div><p>Populated now for discovery and advertising. Price and garment specification will be added only when confirmed.</p></div>
       <img className="outerwear-lookbook" src="/merch/outerwear-hats.jpg" alt="ALLEGRO-VIBEZ hoodie, jacket, caps, bucket hats and accessories"/>
-      <div className="outerwear-grid">
-        {categories.map(category=><article className="outerwear-card" key={category.name}><span>{category.status}</span><h4>{category.name}</h4><p>{category.note}</p><button className="secondary" onClick={()=>setMessage(category.name+' added to the ALLEGRO shop range. Final selling price and garment specification will be published once confirmed.')}>View range</button></article>)}
+      <div className="coming-merch-grid">
+        {comingProducts.map(item=><article className={"coming-product tone-"+item.tone} key={item.id}>
+          <div className="coming-product-art">
+            <span>{item.category}</span>
+            <strong>{item.tag}</strong>
+            <small>ALLEGRO-VIBEZ</small>
+          </div>
+          <div className="product-copy"><div><span>{item.colour}</span><h4>{item.name}</h4></div><strong className="merch-tba">PRICE TBA</strong></div>
+          <p>{item.note}</p>
+          <div className="merch-preview-labels"><span>Official merch</span><span>Specs TBA</span><span>Price TBA</span></div>
+          <button className="secondary" onClick={()=>setMessage(item.name+' is now listed in the ALLEGRO shop. Final price and garment specification will be added once confirmed.')}>Register interest</button>
+        </article>)}
       </div>
     </section>
 

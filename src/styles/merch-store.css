@@ -9,3 +9,19 @@
 .golf-preview-card>div{padding:10px}.golf-preview-card>div>span{font-size:.7rem;letter-spacing:.12em;color:#f0bd55;font-weight:900}.golf-preview-card h4{font-size:clamp(1.7rem,3vw,3rem);margin:.35em 0}.golf-preview-card p{color:#aeb8c8;line-height:1.6}
 @media(max-width:1000px){.merch-drop-nav{grid-template-columns:repeat(2,1fr)}.golf-preview-card{grid-template-columns:1fr}}
 @media(max-width:650px){.merch-drop-nav{grid-template-columns:1fr}}
+
+.coming-merch-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.coming-product{padding:18px;border:1px solid #2b313b;background:#0d131c;border-radius:20px;display:flex;flex-direction:column;gap:13px}
+.coming-product-art{aspect-ratio:1.22/1;border-radius:16px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08);overflow:hidden;position:relative}
+.coming-product-art:after{content:"";position:absolute;inset:auto -12% -32% auto;width:72%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.05)}
+.coming-product-art span{position:relative;z-index:1;text-transform:uppercase;letter-spacing:.14em;font-size:.68rem;font-weight:900;opacity:.78}
+.coming-product-art strong{position:relative;z-index:1;font-family:Georgia,serif;font-size:1.65rem;line-height:1.02;max-width:88%}
+.coming-product-art small{position:relative;z-index:1;font-weight:900;letter-spacing:.12em}
+.coming-product.tone-black .coming-product-art{background:linear-gradient(145deg,#06070a,#15171e);color:#f5ead9}
+.coming-product.tone-cream .coming-product-art{background:linear-gradient(145deg,#efe7d7,#cfc0a4);color:#171717}
+.coming-product.tone-burgundy .coming-product-art{background:linear-gradient(145deg,#651824,#29070d);color:#f7e9dc}
+.merch-tba{color:#b9c2cf;font-size:.78rem;letter-spacing:.08em;white-space:nowrap}
+.merch-preview-labels{display:flex;gap:6px;flex-wrap:wrap}
+.merch-preview-labels span{border:1px solid #343b46;border-radius:999px;padding:6px 9px;color:#abb5c5;font-size:.67rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em}
+@media(max-width:1000px){.coming-merch-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.coming-merch-grid{grid-template-columns:1fr}}
