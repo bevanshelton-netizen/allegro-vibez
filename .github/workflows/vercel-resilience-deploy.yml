@@ -1,0 +1,71 @@
+name: ALLEGRO Vercel Resilience Deploy
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'deploy/VERCEL_RESILIENCE'
+      - '.github/workflows/vercel-resilience-deploy.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: allegro-vercel-resilience
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_ORG_ID: team_XSHdQaQxmXGD1HlK2E4nehif
+      VERCEL_PROJECT_ID: prj_TIYmHEDp2SLqb4EDm8iC52RH0uSS
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Require explicit Vercel credential
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${VERCEL_TOKEN:-}" ]; then
+            echo "::error::VERCEL_TOKEN is not configured for this repository."
+            exit 1
+          fi
+      - run: npm install --no-audit --no-fund
+      - name: Verify ALLEGRO before resilience deploy
+        run: npm run verify:all
+      - name: Bind exact ALLEGRO Vercel project
+        shell: bash
+        run: |
+          mkdir -p .vercel
+          cat > .vercel/project.json <<'EOF'
+          {"orgId":"team_XSHdQaQxmXGD1HlK2E4nehif","projectId":"prj_TIYmHEDp2SLqb4EDm8iC52RH0uSS"}
+          EOF
+      - name: Pull production environment
+        run: npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN" --scope=bevan2
+      - name: Build production artifact
+        run: npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN" --scope=bevan2
+      - name: Deploy prebuilt artifact to production
+        id: deploy
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$(npx --yes vercel@latest deploy --prebuilt --prod --token="$VERCEL_TOKEN" --scope=bevan2)"
+          echo "deployment_url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployment: $url"
+      - name: Verify public merch route and runtime checkout contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          origin="https://allegro-vibez.vercel.app"
+          code="$(curl --fail-with-body --silent --show-error --location --output /tmp/merch.html --write-out '%{http_code}' "$origin/merch")"
+          test "$code" = "200"
+          grep -Fq 'id="root"' /tmp/merch.html
+          curl --fail --silent --show-error --location "$origin/runtime/merch-checkout.json" -o /tmp/checkout.json
+          node -e "const f=require('fs');const x=JSON.parse(f.readFileSync('/tmp/checkout.json','utf8'));if(x.provider!=='iKhokha'||!x.products)process.exit(1)"
+          echo "[PASS] Vercel resilience route serves ALLEGRO merch shell and checkout runtime contract."
