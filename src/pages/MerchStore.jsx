@@ -7,6 +7,7 @@ import '../styles/movement-sizzle.css'
 import '../styles/merch-store.css'
 
 const TEE_SIZES=['XS','S','M','L','XL','2XL','3XL','4XL','5XL']
+const PREORDER_CAMPAIGN={code:'AV-DROP-01',name:'ALLEGRO-VIBEZ DROP 01',target:100000,currency:'ZAR'}
 const officialTees=[
   {id:'movement-black',sku:'AV-TEE-MOV-BLK',name:'The Movement Oversized Tee',colour:'Black',price:549,tone:'black',tag:'MORE THAN MUSIC. A MOVEMENT.'},
   {id:'african-born-cream',sku:'AV-TEE-AFR-CRM',name:'African-Born Oversized Tee',colour:'Cream',price:599,tone:'cream',tag:'AFRICAN-BORN. GLOBAL SOUND.'},
@@ -63,12 +64,25 @@ export default function MerchStore({session}){
   const[myMerch,setMyMerch]=useState([])
   const[creatorForm,setCreatorForm]=useState({title:'',description:'',product_type:'tshirt',price:'',image_url:'',sizes:'',colours:'',stock_quantity:'',made_to_order:false})
   const[savingMerch,setSavingMerch]=useState(false)
+  const[campaignProgress,setCampaignProgress]=useState({paid_sales:0,payment_count:0,units:0,status:'preparing'})
 
   useEffect(()=>{(async()=>{
     if(!supabase){setLoading(false);return}
     const{data,error}=await supabase.from('merch_products').select('*').eq('active',true).eq('owner_kind','creator').order('created_at',{ascending:false})
     if(!error)setCreatorItems(data||[])
     setLoading(false)
+  })()},[])
+
+  useEffect(()=>{(async()=>{
+    if(!supabase)return
+    const{data,error}=await supabase.rpc('get_merch_campaign_progress',{p_campaign_code:PREORDER_CAMPAIGN.code})
+    if(error||!data)return
+    setCampaignProgress({
+      paid_sales:Number(data.paid_sales||0),
+      payment_count:Number(data.payment_count||0),
+      units:Number(data.units||0),
+      status:data.status||'preparing'
+    })
   })()},[])
 
   useEffect(()=>{(async()=>{
@@ -82,6 +96,9 @@ export default function MerchStore({session}){
   })()},[session?.user?.id])
 
   const launchPrice=useMemo(()=>Math.min(...officialTees.map(item=>item.price)),[])
+  const paidSales=Math.max(0,Number(campaignProgress.paid_sales||0))
+  const salesRemaining=Math.max(0,PREORDER_CAMPAIGN.target-paidSales)
+  const salesPercent=Math.min(100,(paidSales/PREORDER_CAMPAIGN.target)*100)
   const filteredComingProducts=useMemo(()=>selectedMerchCategory==='All'?comingProducts:comingProducts.filter(item=>item.category===selectedMerchCategory),[selectedMerchCategory])
 
   function orderOfficial(item){
@@ -145,6 +162,17 @@ export default function MerchStore({session}){
     setMessage('Your creator merchandise is now listed inside ALLEGRO.')
   }
 
+  async function shareDrop(){
+    const shareData={title:PREORDER_CAMPAIGN.name,text:'Limited ALLEGRO-VIBEZ made-to-order merch. Help take DROP 01 to R100,000 in verified paid sales.',url:window.location.href}
+    try{
+      if(navigator.share){await navigator.share(shareData);return}
+      await navigator.clipboard.writeText(window.location.href)
+      setMessage('Drop link copied. Share it with your people.')
+    }catch(error){
+      if(error?.name!=='AbortError')setMessage('Copy this page link to share the drop.')
+    }
+  }
+
   async function buyCreator(item){
     if(!session){setMessage('Log in to buy creator merchandise through ALLEGRO.');return}
     const size=item.sizes?.length?window.prompt('Size: '+item.sizes.join(', '),item.sizes[0])||item.sizes[0]:null
@@ -159,16 +187,36 @@ export default function MerchStore({session}){
     <section className="merch-hero">
       <img src="/merch/merch-hero.jpg" alt="ALLEGRO-VIBEZ official 300gsm oversized tee collection"/>
       <div className="merch-hero-copy">
-        <div className="eyebrow">THE ALLEGRO-VIBEZ ATELIER · OFFICIAL MERCH</div>
+        <div className="eyebrow">DROP 01 · LIMITED PRE-ORDER · ZERO DEAD STOCK</div>
         <h2>Wear the movement.</h2>
-        <p>Quiet luxury meets creator culture — a refined streetwear collection for artists, fans and people who live music.</p>
+        <p>Made to order from verified paid demand. No warehouse gamble, no mass stock — we manufacture what the movement actually buys.</p>
         <div className="merch-specs"><span>300gsm tees</span><span>Oversized fit</span><span>Dropped shoulders</span><span>Original ALLEGRO design</span></div>
-        <div className="merch-hero-actions"><a className="primary" href="#tees">Shop the first drop</a><a className="merch-text-link" href="#lookbook">View lookbook</a></div>
-        <strong>Launch tees from {money(launchPrice)}</strong>
+        <div className="merch-hero-actions"><a className="primary" href="#tees">Pre-order DROP 01</a><button className="merch-text-button" onClick={shareDrop}>Share the drop</button><a className="merch-text-link" href="#lookbook">View lookbook</a></div>
+        <strong>Pre-order tees from {money(launchPrice)} · Sales target {money(PREORDER_CAMPAIGN.target)}</strong>
       </div>
     </section>
 
     <MovementSizzle launchPrice={launchPrice}/>
+
+    <section className="preorder-target" aria-label="ALLEGRO-VIBEZ DROP 01 sales target">
+      <div className="preorder-target-copy">
+        <div className="eyebrow">CEO LAUNCH TARGET · VERIFIED PAID SALES ONLY</div>
+        <h3>{money(PREORDER_CAMPAIGN.target)} before we scale production.</h3>
+        <p>Every confirmed payment moves the counter. Production is made against paid demand; customer fulfilment money stays protected before growth spend.</p>
+        <div className="preorder-target-stats">
+          <div><span>Paid sales</span><strong>{money(paidSales)}</strong></div>
+          <div><span>Remaining</span><strong>{money(salesRemaining)}</strong></div>
+          <div><span>Verified payments</span><strong>{campaignProgress.payment_count}</strong></div>
+          <div><span>Units sold</span><strong>{campaignProgress.units}</strong></div>
+        </div>
+      </div>
+      <div className="preorder-meter-wrap">
+        <div className="preorder-meter-label"><span>DROP 01 progress</span><strong>{salesPercent.toFixed(1)}%</strong></div>
+        <div className="preorder-meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow={Math.round(salesPercent)}><span style={{width:salesPercent+'%'}}/></div>
+        <small>Status: {campaignProgress.status==='open'?'Pre-orders open':'Preparing verified checkout'} · Counter excludes unpaid carts and unverified transfers.</small>
+        <button className="secondary" onClick={shareDrop}>Share DROP 01</button>
+      </div>
+    </section>
 
     <nav className="merch-categories" aria-label="Merchandise categories">
       <a href="#lookbook">2026 Lookbook</a><a href="#tees">T-Shirts</a><a href="#outerwear">Hoodies</a><a href="#outerwear">Jackets</a><a href="#outerwear">Caps & Hats</a><a href="#creator-merch">Creator Merch</a>
@@ -196,7 +244,7 @@ export default function MerchStore({session}){
     </section>
 
     <section id="tees" className="merch-section">
-      <div className="merch-heading"><div><div className="eyebrow">THE FIRST DROP · CONFIRMED 300GSM</div><h3>Signature Oversized Tees</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
+      <div className="merch-heading"><div><div className="eyebrow">DROP 01 · MADE TO ORDER · CONFIRMED 300GSM</div><h3>Signature Oversized Tees</h3></div><p>Heavyweight construction · oversized unisex fit · XS to 5XL</p></div>
       <div className="merch-product-grid">
         {officialTees.map(item=><article className={"official-product tone-"+item.tone} key={item.id}>
           <div className="tee-mockup" aria-label={item.name+' product mockup'}>
@@ -208,9 +256,9 @@ export default function MerchStore({session}){
             </div>
           </div>
           <div className="product-copy"><div><span>{item.colour} · {item.sku}</span><h4>{item.name}</h4></div><strong className="merch-price">{money(item.price)}</strong></div>
-          <p>Confirmed 300gsm heavyweight tee with premium oversized silhouette and dropped shoulders.</p>
+          <p>Confirmed 300gsm heavyweight tee with premium oversized silhouette and dropped shoulders. Produced against verified paid pre-orders.</p>
           <div className="size-row">{TEE_SIZES.map(size=><span key={size}>{size}</span>)}</div>
-          <button className="primary" onClick={()=>orderOfficial(item)}>Choose size & quantity</button>
+          <button className="primary" onClick={()=>orderOfficial(item)}>Pre-order · choose size</button>
         </article>)}
       </div>
     </section>
@@ -252,7 +300,7 @@ export default function MerchStore({session}){
 
     {selected&&<section id="merch-order-panel" className="panel merch-order-panel">
       <div>
-        <div className="eyebrow">YOUR ALLEGRO BAG</div>
+        <div className="eyebrow">DROP 01 PRE-ORDER</div>
         <h3>{selected.name}</h3>
         <p>{selected.colour} · 300gsm · Oversized fit · SKU {selected.sku}</p>
         <strong className="merch-price">{money(selected.price*quantity)}</strong>
@@ -261,8 +309,8 @@ export default function MerchStore({session}){
       <div>
         <label>Size<select value={selectedSize} onChange={e=>setSelectedSize(e.target.value)}>{TEE_SIZES.map(size=><option key={size}>{size}</option>)}</select></label>
         <label>Quantity<select value={quantity} onChange={e=>setQuantity(Number(e.target.value))}><option value="1">1</option><option value="2">2</option><option value="3">3</option><option value="4">4</option></select></label>
-        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" onClick={continueOfficialCheckout}>Continue to iKhokha checkout</button>}
-        <small className="checkout-note">The payment button only redirects when an exact verified iKhokha Buy Button URL is configured for this product. ALLEGRO does not construct or guess payment URLs.</small>
+        {!session?<Link className="primary" to="/login">Log in to continue</Link>:<button className="primary" onClick={continueOfficialCheckout}>Pay & reserve production slot</button>}
+        <small className="checkout-note">Your production slot is only reserved after verified payment. The button redirects only when an exact verified iKhokha Buy Button URL is configured; ALLEGRO never constructs or guesses payment URLs.</small>
       </div>
     </section>}
 
@@ -270,7 +318,7 @@ export default function MerchStore({session}){
 
     <section className="merch-trust">
       <div><strong>Official ALLEGRO-VIBEZ</strong><span>Original platform merchandise</span></div>
-      <div><strong>Confirmed 300gsm tees</strong><span>Heavyweight oversized collection</span></div>
+      <div><strong>Made to order</strong><span>No speculative stock; production follows paid demand</span></div>
       <div><strong>Secure checkout</strong><span>Payment only through a verified gateway</span></div>
       <div><strong>Creator economy</strong><span>Creator merch supports the 10% marketplace model</span></div>
     </section>
@@ -323,6 +371,6 @@ export default function MerchStore({session}){
       </div>}
     </section>
 
-    <section className="panel founders-drop"><div><div className="eyebrow">LIMITED LAUNCH</div><h3>ALLEGRO Founders Drop</h3><p>The first official collection establishes the visual language for future artist collaborations, event drops and limited editions.</p></div><a className="primary" href="#tees">Shop the first drop</a></section>
+    <section className="panel founders-drop"><div><div className="eyebrow">DROP 01 · R100K SALES MISSION</div><h3>ALLEGRO Founders Pre-Order</h3><p>We are building the first production run from paid demand, not borrowed inventory. Once fulfilment obligations are ring-fenced, the remaining margin funds the next drop, artist collaborations and growth.</p></div><div className="founders-drop-actions"><a className="primary" href="#tees">Pre-order now</a><button className="secondary" onClick={shareDrop}>Share DROP 01</button></div></section>
   </main>
 }
