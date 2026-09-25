@@ -12,7 +12,7 @@ permissions:
 
 concurrency:
   group: izakhono-wave1-node01-local-proof
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   local-proof:
