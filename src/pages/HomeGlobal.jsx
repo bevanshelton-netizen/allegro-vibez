@@ -98,6 +98,20 @@ export default function HomeGlobal(){
       </Link>
     </section>
 
+    <section className="showcase-merch">
+      <div className="showcase-merch-copy">
+        <span>ALLEGRO-VIBEZ ATELIER</span>
+        <h2>Wear the movement.</h2>
+        <p>Official ALLEGRO-VIBEZ streetwear for creators, artists and fans. Start with the confirmed 300gsm oversized tee drop, then preview hoodies, jackets, caps, bucket hats and accessories.</p>
+        <div className="showcase-merch-actions"><Link className="showcase-primary" to="/merch">Shop official merch</Link><Link className="showcase-text" to="/merch#lookbook">View the lookbook →</Link></div>
+        <div className="showcase-merch-proof"><span>300GSM TEES</span><span>OVERSIZED FIT</span><span>OFFICIAL ALLEGRO DESIGNS</span></div>
+      </div>
+      <Link to="/merch" className="showcase-merch-visual" aria-label="Open ALLEGRO-VIBEZ merch store">
+        <img src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ official fashion and merchandise collection"/>
+        <div><small>THE FIRST DROP</small><strong>ALLEGRO-VIBEZ</strong><span>OFFICIAL MERCH →</span></div>
+      </Link>
+    </section>
+
     <section className="future-section showcase-regions">
       <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets India, Korea, China and the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
       <div className="region-grid showcase-region-grid">{regions.map(([name,flag,cities])=><article key={name}><div className="region-glow"/><div className="showcase-region-flag">{flag}</div><strong>{name}</strong><p>{cities}</p><span>DISCOVER REGION ↗</span></article>)}</div>
