@@ -20,6 +20,56 @@ jobs:
     runs-on: [self-hosted, linux, x64, izakhono]
     timeout-minutes: 60
     steps:
+      - name: Checkout trigger contract
+        uses: actions/checkout@v4
+
+      - name: Verify installed Wave 1 bundle matches trigger
+        shell: bash
+        run: |
+          set -euo pipefail
+          contract="$GITHUB_WORKSPACE/deploy/IZAKHONO_WAVE1_NODE01"
+          test -r "$contract"
+
+          expected_builder="$(sed -n 's/^BUILDER_REF=//p' "$contract" | head -n1)"
+          expected_allegro="$(sed -n 's/^ALLEGRO_REF=//p' "$contract" | head -n1)"
+          expected_chancellor="$(sed -n 's/^CHANCELLOR_REF=//p' "$contract" | head -n1)"
+
+          [[ "$expected_builder" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$expected_allegro" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$expected_chancellor" =~ ^[0-9a-f]{40}$ ]]
+
+          test -r /opt/izakhono/wave1/BUILDER_REF
+          actual_builder="$(tr -d '\r\n' < /opt/izakhono/wave1/BUILDER_REF)"
+          if [ "$actual_builder" != "$expected_builder" ]; then
+            echo "[SAFE STOP] Installed NODE01 Wave 1 bundle is stale."
+            echo "Expected Builder: $expected_builder"
+            echo "Installed Builder: $actual_builder"
+            exit 78
+          fi
+
+          python3 - "$expected_allegro" "$expected_chancellor" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          expected_allegro, expected_chancellor = sys.argv[1:]
+          root = pathlib.Path("/opt/izakhono/wave1/products/izakhono-node/profiles/wave1")
+          checks = {
+              "allegro-vibez.production.json": expected_allegro,
+              "the-chancellor.production.json": expected_chancellor,
+          }
+          for filename, expected in checks.items():
+              path = root / filename
+              if not path.is_file():
+                  raise SystemExit(f"[SAFE STOP] Missing installed profile: {path}")
+              actual = json.loads(path.read_text(encoding="utf-8")).get("ref")
+              if actual != expected:
+                  raise SystemExit(
+                      f"[SAFE STOP] Stale installed profile {filename}: expected {expected}, got {actual}"
+                  )
+          print("[PASS] Installed Wave 1 bundle exactly matches the trigger contract.")
+          PY
+
       - name: Verify NODE01 local services
         shell: bash
         run: |
@@ -41,6 +91,40 @@ jobs:
             cp /opt/izakhono/evidence/IZAKHONO-NODE01-WAVE1-REPORT.json.sha256 \
               "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json.sha256"
           fi
+
+      - name: Verify proof report matches trigger contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - "$GITHUB_WORKSPACE/deploy/IZAKHONO_WAVE1_NODE01" "$GITHUB_WORKSPACE/IZAKHONO-NODE01-WAVE1-REPORT.json" <<'PY'
+          import json
+          import pathlib
+          import sys
+
+          contract_path, report_path = map(pathlib.Path, sys.argv[1:])
+          contract = {}
+          for raw in contract_path.read_text(encoding="utf-8").splitlines():
+              if "=" in raw:
+                  key, value = raw.split("=", 1)
+                  contract[key.strip()] = value.strip()
+
+          report = json.loads(report_path.read_text(encoding="utf-8"))
+          if report.get("overall") != "PASS_LOCAL_OWNED":
+              raise SystemExit(f"[SAFE STOP] Local proof did not pass: {report.get('overall')}")
+
+          if report.get("builder_bundle_ref") != contract.get("BUILDER_REF"):
+              raise SystemExit("[SAFE STOP] Proof report Builder bundle does not match trigger.")
+
+          refs = {entry.get("slug"): entry.get("immutable_ref") for entry in report.get("apps", [])}
+          expected = {
+              "allegro-vibez": contract.get("ALLEGRO_REF"),
+              "the-chancellor": contract.get("CHANCELLOR_REF"),
+          }
+          if refs != expected:
+              raise SystemExit(f"[SAFE STOP] Proof report app refs differ from trigger: {refs!r}")
+
+          print("[PASS] NODE01 proof report matches the exact requested Builder and app refs.")
+          PY
 
       - name: Preserve NODE01 report
         if: always()
