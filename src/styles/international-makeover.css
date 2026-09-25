@@ -1,0 +1,24 @@
+/* ALLEGRO VIBEZ — International Makeover v1 */
+:root{--allegro-shell:1240px;--allegro-radius:26px;--allegro-shadow:0 28px 90px rgba(0,0,0,.34)}
+html{scroll-behavior:smooth}
+body{font-size:16px;line-height:1.64;-webkit-font-smoothing:antialiased}
+.site-header{min-height:82px;height:auto;padding:13px max(20px,calc((100vw - var(--allegro-shell))/2));gap:22px}
+.site-header nav{gap:18px}
+.site-header nav a{position:relative}
+.site-header nav a:after{content:"";position:absolute;left:0;right:100%;bottom:-7px;height:2px;background:var(--red);transition:right .18s ease}
+.site-header nav a:hover:after{right:0}
+.hero{min-height:74vh;max-width:var(--allegro-shell);padding:12vh 0 8vh;margin:auto}
+.hero h1{font-size:clamp(4rem,8vw,7.5rem);line-height:.87;letter-spacing:-.06em;text-wrap:balance}
+.hero p{font-size:clamp(1.05rem,1.6vw,1.25rem);line-height:1.72;max-width:760px}
+.pill,.primary,.secondary,.share-button{min-height:48px;display:inline-flex;align-items:center;justify-content:center;padding-inline:20px;transition:transform .18s ease,box-shadow .18s ease}
+.pill:hover,.primary:hover,.secondary:hover,.share-button:hover{transform:translateY(-2px)}
+.cards{max-width:var(--allegro-shell);gap:18px}
+.cards article,.panel,.empty,.release-grid article,.release-list article,.plan-card,.wallet-grid article{border-radius:var(--allegro-radius);box-shadow:0 12px 46px rgba(0,0,0,.14)}
+.page{width:min(var(--allegro-shell),calc(100% - 40px));padding:92px 0}
+.page h2,.auth h2{font-size:clamp(3rem,6vw,5.6rem);letter-spacing:-.045em}
+input,select,textarea{min-height:48px;border-radius:14px}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #70e9ff;outline-offset:3px}
+footer{padding:38px max(20px,calc((100vw - var(--allegro-shell))/2))}
+@media(max-width:900px){.site-header nav{display:none}.hero{padding:8vh 22px 6vh}.cards{width:min(100% - 36px,var(--allegro-shell))}.hero h1{font-size:clamp(3.4rem,14vw,5.8rem)}}
+@media(max-width:560px){.site-header{min-height:70px;padding-inline:14px}.page{width:min(100% - 28px,var(--allegro-shell));padding-top:64px}.hero{padding-inline:16px}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}}

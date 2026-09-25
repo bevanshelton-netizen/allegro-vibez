@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx'
 import { supabase } from './lib/supabaseClient'
 import './styles/app.css'
 import './styles/premium-v1.css'
+import './styles/international-makeover.css'
 import './styles/landing-upgrade.css'
 import './styles/artist-magnet.css'
 import './styles/home-live.css'
@@ -18,11 +19,10 @@ import './styles/musicAcademy.css'
 import './homeArtistExperience.js'
 import './platformExperience.js'
 import './authExperience.js'
-import { startIzakhonoAnalytics } from './lib/analytics'
 
 document.body.dataset.qualityProfile = 'izakhono-premium-v1'
+document.body.dataset.izakhonoQuality = 'visual-review'
 
-startIzakhonoAnalytics()
 
 const basePath = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '')
 
