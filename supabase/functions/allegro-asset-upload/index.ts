@@ -224,6 +224,50 @@ async function probe(): Promise<Probe> {
 }
 
 
+async function publicDemandProgress() {
+  try {
+    const rows = await service(
+      "allegro_merch_reservations?select=buyer_user_id,intended_amount_cents,quantity,status" +
+      "&campaign_code=eq.AV-DROP-01&status=in.(awaiting_payment,payment_started,paid,converted)&limit=1000",
+    );
+    const reservations = Array.isArray(rows) ? rows : [];
+    const buyers = new Set<string>();
+    let unpaidIntended = 0;
+    let totalIntended = 0;
+    let units = 0;
+    for (const row of reservations) {
+      if (row?.buyer_user_id) buyers.add(String(row.buyer_user_id));
+      const value = Math.max(0, Number(row?.intended_amount_cents || 0));
+      const quantity = Math.max(0, Number(row?.quantity || 0));
+      totalIntended += value;
+      units += quantity;
+      if (row?.status === "awaiting_payment" || row?.status === "payment_started") unpaidIntended += value;
+    }
+    const goalBuyers = 100;
+    const uniqueBuyers = buyers.size;
+    return json({
+      ok: true,
+      campaign_code: "AV-DROP-01",
+      campaign_name: "ALLEGRO-VIBEZ DROP 01",
+      founding_goal_buyers: goalBuyers,
+      unique_buyers: uniqueBuyers,
+      buyer_goal_percent: Math.min(100, Number(((uniqueBuyers / goalBuyers) * 100).toFixed(1))),
+      reservation_count: reservations.length,
+      reservation_units: units,
+      unpaid_intended_value_cents: unpaidIntended,
+      total_reserved_intended_value_cents: totalIntended,
+      currency: "ZAR",
+      metric_type: "reservation_demand_not_sales",
+      counts_as_verified_sales: false,
+      reserves_production: false,
+      updated_at: new Date().toISOString(),
+    });
+  } catch (error) {
+    console.error("public reservation demand aggregate failed", error);
+    return json({ error: "reservation_demand_unavailable" }, 503);
+  }
+}
+
 async function listReservations(req: Request) {
   const user = await verifyAllegroUser(req);
   if (!user) return json({ error: "authentication_required" }, 401);
@@ -838,6 +882,11 @@ Deno.serve(async (req: Request) => {
   if (mode === "merch-reserve") {
     if (req.method !== "POST") return json({ error: "POST only" }, 405);
     return await reservePreorder(req);
+  }
+
+  if (mode === "merch-demand") {
+    if (req.method !== "GET" && req.method !== "HEAD") return json({ error: "GET only" }, 405);
+    return await publicDemandProgress();
   }
 
   if (mode === "merch-reservations") {
