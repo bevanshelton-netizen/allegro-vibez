@@ -31,6 +31,8 @@ jobs:
             'WEAR THE MOVEMENT',
             'allegro-vibez-merch-lookbook.webp',
             '/runtime/merch-checkout.json',
+            'official-checkout-form',
+            'merch-checkout-health',
           ];
 
           async function run() {
