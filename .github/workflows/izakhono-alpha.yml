@@ -13,6 +13,6 @@ permissions:
 jobs:
   alpha:
     # Owner-controlled, immutable IZAKHONO policy. Promotion remains health-gated.
-    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@6d791da96ee2c20a0701258d3d4674e0c50e7291
+    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@21f15c95a63045bdf4de88bdd92170e377fd501d
     with:
       manifest_path: .izakhono.json
