@@ -18,7 +18,7 @@ permissions:
 
 concurrency:
   group: allegro-vibez-izakhono-production
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 jobs:
   cutover:
