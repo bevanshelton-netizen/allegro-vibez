@@ -20,8 +20,15 @@ RUN npm run verify:all
 
 FROM nginx:1.27-alpine AS runtime
 
+ARG IZAKHONO_RELEASE_ID=UNATTESTED
+LABEL org.opencontainers.image.title="ALLEGRO VIBEZ" \
+      org.opencontainers.image.revision="$IZAKHONO_RELEASE_ID" \
+      izakhono.product="allegro-vibez"
+
 COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
+
+RUN printf '{"ok":true,"product":"allegro-vibez","release_id":"%s","runtime_class":"owned","health_schema":"izakhono.runtime.health.v1"}\n' "$IZAKHONO_RELEASE_ID" > /usr/share/nginx/html/healthz.json
 
 EXPOSE 8080
 
