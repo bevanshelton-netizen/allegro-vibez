@@ -26,6 +26,6 @@ jobs:
   alpha-core:
     # Pin the reviewed Builder policy so ALLEGRO cannot change gates merely because
     # the central repository moves. Upgrade this SHA only after Builder canaries pass.
-    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@b0698fccd942c132b22a3e4caa95044eef2da921
+    uses: bevanshelton-netizen/izakhono-builder/.github/workflows/izakhono-build-to-alpha.yml@21f15c95a63045bdf4de88bdd92170e377fd501d
     with:
       manifest_path: .izakhono.json
