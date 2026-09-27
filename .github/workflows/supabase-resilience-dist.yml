@@ -40,7 +40,8 @@ jobs:
         run: |
           set -euo pipefail
           grep -q '/functions/v1/allegro-vibez-live/assets/' dist/index.html
-          grep -q '/functions/v1/allegro-vibez-live/av-hero.webp' dist/index.html
+          grep -q './av-hero.webp' dist/index.html
+          test -s dist/av-hero.webp
       - name: Publish immutable Supabase dist branch
         shell: bash
         env:
