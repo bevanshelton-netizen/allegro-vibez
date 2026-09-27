@@ -52,3 +52,11 @@ radial-gradient(circle at 52% 45%,rgba(126,79,255,.11),transparent 28%),
 .showcase-merch-visual span{font-size:.7rem;font-weight:900;letter-spacing:.12em;color:#e7e0d2}
 @media(max-width:1000px){.showcase-merch{grid-template-columns:1fr}.showcase-merch-visual{min-height:440px}.showcase-merch-visual img{min-height:440px}}
 @media(max-width:560px){.showcase-merch{margin:0 14px 58px}.showcase-merch-copy{padding:28px 22px}.showcase-merch-copy h2{font-size:3.6rem}.showcase-merch-actions{align-items:stretch}.showcase-merch-actions a{width:100%;text-align:center}.showcase-merch-visual{min-height:360px}.showcase-merch-visual img{min-height:360px}.showcase-merch-visual>div{left:20px;right:20px;bottom:20px}}
+
+/* Wave 2: honest founding-creator onboarding instead of placeholder cards */
+.showcase-empty-signal{display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center;padding:34px;border-radius:28px;border:1px solid rgba(255,255,255,.12);background:linear-gradient(120deg,rgba(255,49,95,.12),rgba(126,79,255,.14) 52%,rgba(25,218,238,.1));box-shadow:0 22px 65px rgba(0,0,0,.22)}
+.showcase-empty-signal small{color:#83ecfa;font-size:.68rem;font-weight:900;letter-spacing:.15em}
+.showcase-empty-signal h3{font-family:'Bebas Neue','Arial Narrow',sans-serif;font-size:clamp(2.6rem,4.8vw,5rem);line-height:.9;margin:.18em 0 .12em}
+.showcase-empty-signal p{max-width:760px;color:#c2c8d7;line-height:1.65;margin:0}
+.showcase-empty-actions{display:grid;gap:10px;min-width:220px}
+@media(max-width:760px){.showcase-empty-signal{grid-template-columns:1fr;padding:26px}.showcase-empty-actions{display:flex;flex-wrap:wrap;min-width:0}.showcase-empty-actions a{flex:1 1 190px}}
