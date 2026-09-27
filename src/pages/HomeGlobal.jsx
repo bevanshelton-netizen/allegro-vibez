@@ -124,7 +124,12 @@ export default function HomeGlobal(){
 
     <section className="future-section showcase-signal">
       <div className="future-section-head"><div><span>GLOBAL CREATOR SIGNAL</span><h2>Artists are building here.</h2></div><Link to="/join-artists">Get your space →</Link></div>
-      <div className="signal-grid">{artists.length?artists.map((a,i)=><Link className="signal-card" key={a.id} to={'/artist/'+a.id}><div className="signal-number">{String(i+1).padStart(2,'0')}</div><div><small>{a.country||'GLOBAL'} · {(a.primary_genres||[]).slice(0,2).join(' / ')||'CREATOR'}</small><h3>{a.stage_name||a.display_name||'ALLEGRO Artist'}</h3><span>{a.available_for_international_bookings?'GLOBAL BOOKINGS OPEN':'ARTIST SPACE'}</span></div></Link>):regions.map(([name],i)=><article className="signal-card placeholder" key={name}><div className="signal-number">{String(i+1).padStart(2,'0')}</div><div><small>FOUNDING CREATOR SPACE</small><h3>{name}</h3><span>ONBOARDING NOW</span></div></article>)}</div>
+      {artists.length?
+        <div className="signal-grid">{artists.map((a,i)=><Link className="signal-card" key={a.id} to={'/artist/'+a.id}><div className="signal-number">{String(i+1).padStart(2,'0')}</div><div><small>{a.country||'GLOBAL'} · {(a.primary_genres||[]).slice(0,2).join(' / ')||'CREATOR'}</small><h3>{a.stage_name||a.display_name||'ALLEGRO Artist'}</h3><span>{a.available_for_international_bookings?'GLOBAL BOOKINGS OPEN':'ARTIST SPACE'}</span></div></Link>)}</div>
+        :<div className="showcase-empty-signal">
+          <div><small>FOUNDING CREATOR ONBOARDING</small><h3>Be one of the first artists people discover here.</h3><p>Build your public artist space, organise your catalogue and rights, prepare bookings and connect your music to the wider ALLEGRO + KORA ecosystem.</p></div>
+          <div className="showcase-empty-actions"><Link className="showcase-primary" to="/join-artists">Claim Artist Space</Link><Link className="showcase-secondary" to="/career">Explore Career Engine</Link></div>
+        </div>}
     </section>
 
     <section className="showcase-final">
