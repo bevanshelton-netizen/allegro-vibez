@@ -1,4 +1,3 @@
-/* global process, console */
 import { readFile, stat } from 'node:fs/promises'
 
 const MOUNT='/functions/v1/allegro-vibez-live/'
