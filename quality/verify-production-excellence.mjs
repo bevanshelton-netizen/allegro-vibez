@@ -43,9 +43,10 @@ for(const path of cfg.htmlFiles||[]){
   if(missingAlt(markup).length)fail(path+" image missing alt");
   const base=dirname(path);
   for(const ref of refs(html)){
+    const publicRef=ref.replace(/^\.\//,"");
     const candidates=ref.startsWith("/")
       ? [resolve(ROOT,ref.slice(1)),resolve(ROOT,"public",ref.slice(1))]
-      : [resolve(ROOT,base,ref)];
+      : [resolve(ROOT,base,ref),resolve(ROOT,"public",publicRef)];
     let found=false;
     for(const target of candidates){try{await access(target);found=true;break}catch{continue}}
     if(!found) fail(path+" broken local asset "+ref);
