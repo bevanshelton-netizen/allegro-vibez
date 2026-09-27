@@ -8,24 +8,25 @@
     <meta name="description" content="ALLEGRO is the IZAKHONO global music streaming and creator-commerce platform connecting Africa, India, Korea, China and the world." />
     <meta name="robots" content="index,follow" />
     <meta name="application-name" content="ALLEGRO VIBEZ" />
-    <link rel="canonical" href="https://allegro-vibez.vercel.app/" />
+    <link rel="canonical" href="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/" />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ALLEGRO VIBEZ" />
     <meta property="og:title" content="ALLEGRO — Africa’s Music Platform for the World" />
     <meta property="og:description" content="Stream globally. Discover across cultures. Support artists through rights, radio, live experiences and creator commerce." />
-    <meta property="og:url" content="https://allegro-vibez.vercel.app/" />
-    <meta property="og:image" content="https://allegro-vibez.vercel.app/av-hero.webp" />
+    <meta property="og:url" content="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/" />
+    <meta property="og:image" content="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/av-hero.webp" />
     <meta property="og:image:alt" content="ALLEGRO VIBEZ — African music from roots to the global digital stage" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ALLEGRO VIBEZ — More Than Music. A Movement." />
     <meta name="twitter:description" content="Global music streaming and creator prosperity, built from Africa for the world." />
-    <meta name="twitter:image" content="https://allegro-vibez.vercel.app/av-hero.webp" />
+    <meta name="twitter:image" content="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/allegro-vibez-live/av-hero.webp" />
     <title>ALLEGRO — Africa’s Music Platform for the World</title>
     <link rel="preload" as="image" href="/av-hero.webp" fetchpriority="high" />
     <script>
       if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
       window.scrollTo(0, 0);
-      document.documentElement.dataset.initialRoute = location.pathname === '/' ? 'home' : 'app';
+      const routePath=location.pathname.replace(/\/+$/,'');
+      document.documentElement.dataset.initialRoute = (!routePath || routePath.endsWith('/allegro-vibez-live')) ? 'home' : 'app';
     </script>
     <style>
       html,body{margin:0;background:#07080c;color:#fff}
@@ -138,8 +139,8 @@
           <h1>ALLEGRO is live.<br><em>Press play.</em></h1>
           <p>Stream music, discover artists, listen to ALLEGRO Radio and help creators build, protect and earn from their work.</p>
           <div class="boot-actions">
-            <a href="/stream">Start Streaming</a>
-            <a href="/join-artists">Join as an Artist</a>
+            <a href="./stream">Start Streaming</a>
+            <a href="./join-artists">Join as an Artist</a>
           </div>
           <div class="boot-strip"><span>AFRICA</span><span>INDIA</span><span>KOREA</span><span>CHINA</span><span>GLOBAL</span></div>
         </div>

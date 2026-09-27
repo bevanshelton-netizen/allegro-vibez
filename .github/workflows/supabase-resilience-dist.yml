@@ -1,0 +1,62 @@
+name: Prepare ALLEGRO Supabase Resilience Dist
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/supabase-resilience-dist.yml'
+      - 'vite.config.js'
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'scripts/**'
+      - 'assets/**'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: allegro-supabase-resilience-dist
+  cancel-in-progress: true
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-latest
+    env:
+      VITE_PUBLIC_BASE: /functions/v1/allegro-vibez-live/
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: npm run verify:all
+      - name: Verify mounted asset base
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '/functions/v1/allegro-vibez-live/assets/' dist/index.html
+          grep -q '/functions/v1/allegro-vibez-live/av-hero.webp' dist/index.html
+      - name: Publish immutable Supabase dist branch
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/allegro-supabase-dist
+          mkdir -p /tmp/allegro-supabase-dist
+          cp -R dist/. /tmp/allegro-supabase-dist/
+          printf '%s\n' "${GITHUB_SHA}" > /tmp/allegro-supabase-dist/IZAKHONO_RELEASE_ID
+          cd /tmp/allegro-supabase-dist
+          git init
+          git config user.name "IZAKHONO Runtime Fabric"
+          git config user.email "actions@users.noreply.github.com"
+          git checkout -b supabase-dist
+          git add .
+          git commit -m "ALLEGRO Supabase resilience dist ${GITHUB_SHA}"
+          git remote add origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push --force origin supabase-dist
