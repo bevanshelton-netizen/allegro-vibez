@@ -24,8 +24,6 @@ concurrency:
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
-    env:
-      VITE_PUBLIC_BASE: /functions/v1/allegro-vibez-live/
     steps:
       - uses: actions/checkout@v4
         with:
@@ -34,7 +32,10 @@ jobs:
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: npm run verify:all
+      - name: Verify normal ALLEGRO build
+        run: npm run verify:all
+      - name: Build mounted Supabase resilience dist
+        run: npm run build -- --base=/functions/v1/allegro-vibez-live/
       - name: Verify mounted runtime dist
         run: node scripts/verify-mounted-dist.mjs
       - name: Publish immutable Supabase dist branch
