@@ -35,13 +35,8 @@ jobs:
           node-version: 22
       - run: npm install --no-audit --no-fund
       - run: npm run verify:all
-      - name: Verify mounted asset base
-        shell: bash
-        run: |
-          set -euo pipefail
-          grep -q '/functions/v1/allegro-vibez-live/assets/' dist/index.html
-          grep -q './av-hero.webp' dist/index.html
-          test -s dist/av-hero.webp
+      - name: Verify mounted runtime dist
+        run: node scripts/verify-mounted-dist.mjs
       - name: Publish immutable Supabase dist branch
         shell: bash
         env:
