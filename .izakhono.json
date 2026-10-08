@@ -12,9 +12,9 @@
   "infrastructure": {
     "policy": "owned-first-externally-reversible",
     "authoritative_source": "IZAKHONO CODE / Forge; GitHub mirror bevanshelton-netizen/allegro-vibez",
-    "owned_target": "IZAKHONO Runtime Fabric via approved owned NODE targets and IZAKHONO EDGE/TLS",
-    "current_public_route": "https://allegro-vibez-g5c7s8xj3-bevan2.vercel.app",
-    "external_fallback": "https://allegro-vibez-79622wjli-bevan2.vercel.app",
+    "owned_target": "IZAKHONO Runtime Fabric via resilient NODE targets and IZAKHONO EDGE/TLS",
+    "current_public_route": "https://allegro-vibez.vercel.app/",
+    "external_fallback": "https://allegro-vibez-kznhajott-bevan2.vercel.app/",
     "status_label": "EXTERNAL LIVE VERIFIED",
     "data_dependencies": [
       "REQUIRES_CURRENT_VERIFICATION"
