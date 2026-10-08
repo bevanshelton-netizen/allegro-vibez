@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import '../styles/future.css'
 import '../styles/home-showcase.css'
+import '../styles/allegro-dusk.css'
 import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const regions=[
@@ -40,9 +41,11 @@ export default function HomeGlobal(){
     if(active)setArtists(data||[])
   })();return()=>{active=false}},[])
 
-  return <main className="future-home product-first-home showcase-home">
+  return <main className="future-home product-first-home showcase-home allegro-rainbow-home">
     <StudioLaunchPromo source="home"/>
-    <section className="showcase-hero">
+    <section className="showcase-hero allegro-dusk-hero">
+      <div className="allegro-dusk-backdrop" aria-hidden="true"><img src="/allegro-dusk-hero.svg" alt=""/></div>
+      <div className="allegro-marquee" aria-hidden="true"><div className="allegro-marquee-spin"><span className="allegro-marquee-face">ALLEGRO VIBEZ</span><span className="allegro-marquee-face allegro-marquee-back">ALLEGRO VIBEZ</span></div></div>
       <div className="showcase-copy">
         <div className="showcase-kicker"><span/> MUSIC · RADIO · ARTISTS · CREATOR TOOLS</div>
         <div className="showcase-brand">ALLEGRO</div>
