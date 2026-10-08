@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import '../styles/revenue.css'
+import '../styles/opportunity-ad.css'
+import OpportunityAdvert from '../components/OpportunityAdvert.jsx'
 import { ALLEGRO_LEAD_ENDPOINT } from '../lib/allegroLeadEndpoint'
 
 const offers=[
@@ -103,6 +105,8 @@ export default function Revenue(){
       <p>Book creator, sponsor and founding radio packages. Radio inventory can be reserved now, but no radio-airtime invoice becomes payable until ALLEGRO confirms the first verified airdate.</p>
       <div className="revenue-trust"><span>NO CARD DETAILS COLLECTED HERE</span><span>LAUNCH RATES</span><span>LIMITED FOUNDING INVENTORY</span></div>
     </section>
+
+    <OpportunityAdvert/>
 
     <section className="revenue-offers">
       {offers.map(o=><article key={o.code} className={selected===o.code?'revenue-card selected':'revenue-card'}>
