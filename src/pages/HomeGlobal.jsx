@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabaseClient'
 import '../styles/future.css'
 import '../styles/home-showcase.css'
 import '../styles/allegro-dusk.css'
+import '../styles/hollywood-landing.css'
 import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const regions=[
