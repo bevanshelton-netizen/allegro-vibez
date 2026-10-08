@@ -5,11 +5,11 @@
 .allegro-reference-hero:before{content:""!important;position:absolute!important;inset:0!important;z-index:1!important;pointer-events:none!important;background:linear-gradient(180deg,rgba(4,5,18,.16) 0%,rgba(4,3,12,0) 42%,rgba(3,3,9,.26) 100%)!important}
 .allegro-reference-hero:after{content:""!important;position:absolute!important;left:0!important;right:0!important;bottom:0!important;height:150px!important;z-index:2!important;pointer-events:none!important;background:linear-gradient(180deg,transparent,rgba(2,2,7,.72))!important}
 
-/* The reference artwork already contains the marquee. Do not stack a second sign over it. */
+/* The master artwork already contains the illuminated marquee. Never stack a second sign over it. */
 .allegro-reference-hero .allegro-hollywood-sign,.allegro-reference-hero .showcase-collage{display:none!important}
 .allegro-reference-hero .hero-cinematic-glow{position:absolute!important;inset:0!important;z-index:3!important;pointer-events:none!important;mix-blend-mode:screen!important;background:radial-gradient(circle at 50% 44%,rgba(255,198,66,.08),transparent 28%),radial-gradient(circle at 50% 38%,rgba(255,30,164,.08),transparent 42%)!important;animation:referenceGlow 7s ease-in-out infinite alternate!important}
 
-/* Functional controls sit exactly over the visual reference without changing its composition. */
+/* Functional controls sit over the reference without changing its composition. */
 .allegro-reference-hero .showcase-copy{position:absolute!important;left:50%!important;bottom:166px!important;z-index:8!important;width:min(560px,78vw)!important;transform:translateX(-50%)!important;text-align:center!important;margin:0!important;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important}
 .allegro-reference-hero .showcase-kicker{font-size:.64rem!important;letter-spacing:.25em!important;font-weight:900!important;color:#fff!important;justify-content:center!important;text-shadow:0 2px 12px #000!important}
 .allegro-reference-hero .showcase-kicker span{display:none!important}
@@ -30,9 +30,13 @@
 .allegro-reference-hero .reference-card p{margin:5px 0 0!important;color:rgba(255,255,255,.78)!important;font-size:.58rem!important;line-height:1.25!important}
 .allegro-reference-hero .reference-card>b{margin-left:auto!important;align-self:center!important;flex:0 0 27px!important;width:27px!important;height:27px!important;display:grid!important;place-items:center!important;border:1px solid rgba(255,255,255,.55)!important;border-radius:50%!important;font-size:.9rem!important}
 
-/* Keep the normal site header usable while letting the visual carry the hero. */
-body:has(.allegro-reference-hero) .site-header{position:absolute!important;left:0!important;right:0!important;top:0!important;z-index:50!important;background:linear-gradient(180deg,rgba(4,5,18,.48),transparent)!important;border-bottom:0!important;backdrop-filter:none!important}
-body:has(.allegro-reference-hero) .site-header .brand,body:has(.allegro-reference-hero) .site-header nav,body:has(.allegro-reference-hero) .site-header .account-links{opacity:0!important}
+/* Master reference header: visible, cinematic, compact and readable over the artwork. */
+body:has(.allegro-reference-hero) .site-header{position:absolute!important;left:0!important;right:0!important;top:0!important;z-index:50!important;background:linear-gradient(180deg,rgba(4,5,18,.72),rgba(4,5,18,.08))!important;border-bottom:0!important;backdrop-filter:none!important;box-shadow:none!important}
+body:has(.allegro-reference-hero) .site-header .brand,body:has(.allegro-reference-hero) .site-header nav,body:has(.allegro-reference-hero) .site-header .account-links{opacity:1!important}
+body:has(.allegro-reference-hero) .site-header .brand{filter:drop-shadow(0 3px 10px rgba(0,0,0,.7))!important}
+body:has(.allegro-reference-hero) .site-header nav a,body:has(.allegro-reference-hero) .site-header .account-links a,body:has(.allegro-reference-hero) .site-header .share-button{color:#fff!important;text-shadow:0 2px 8px rgba(0,0,0,.85)!important}
+body:has(.allegro-reference-hero) .site-header nav a:hover,body:has(.allegro-reference-hero) .site-header .account-links a:hover{color:#7ceaf8!important}
+body:has(.allegro-reference-hero) .site-header .pill{background:linear-gradient(90deg,#ff2c6d,#7d39ff)!important;border-color:rgba(255,255,255,.28)!important;color:#fff!important;text-shadow:none!important}
 
 @keyframes referenceGlow{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.015)}}
 @media(max-width:900px){.allegro-reference-hero{min-height:720px!important}.allegro-reference-hero .showcase-copy{bottom:165px!important;width:88vw!important}.allegro-reference-hero .showcase-reference-cards{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:7px!important;bottom:8px!important}.allegro-reference-hero .reference-card{min-height:78px!important;padding:8px!important}.allegro-reference-hero .reference-card strong{font-size:.88rem!important}.allegro-reference-hero .reference-card p{font-size:.47rem!important}.allegro-reference-hero .reference-card-icon{font-size:1.1rem!important}.allegro-reference-hero .reference-card>b{display:none!important}}
