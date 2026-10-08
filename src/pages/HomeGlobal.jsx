@@ -22,55 +22,43 @@ const pillars=[
 ]
 
 const experiences=[
-  ['STREAM','▶','Play published music and explore the listening experience','/stream','/av-hero.webp','stream'],
-  ['DISCOVER','✦','Find artists, releases and music across the platform','/artists','/av-discover.webp','discover'],
-  ['RADIO','◉','Tune into programmed radio and music culture','/radio',null,'radio'],
-  ['ARTISTS','♬','Create a profile, upload music and build an audience','/join-artists','/av-artists.webp','artists'],
-  ['RIGHTS','◇','Connect ownership, splits, metadata and music records','/sa/protocol',null,'rights'],
-  ['EARN','↗','Explore creator reporting, opportunities and commercial tools','/prosperity',null,'earn']
+  ['MUSIC','♫','Stream the latest releases and independent talent.','/stream'],
+  ['RADIO','▣','Live stations. Fresh mixes. 24/7 vibes.','/radio'],
+  ['ARTISTS','♬','Profiles, releases, videos and more.','/artists'],
+  ['RIGHTS & IP','◆','Protect your music. Track your rights.','/sa/protocol'],
+  ['BOOKINGS','▦','Find gigs, events and opportunities.','/bookings'],
+  ['CREATOR TOOLS','▥','Upload, manage, promote and grow.','/creator-hub']
 ]
-
-function Equalizer(){return <div className="showcase-eq" aria-hidden="true">{Array.from({length:18},(_,i)=><i key={i} style={{'--bar':i}}/>)}</div>}
 
 export default function HomeGlobal(){
   const[artists,setArtists]=useState([])
   useEffect(()=>{let active=true;(async()=>{if(!supabase)return;const{data}=await supabase.from('profiles').select('id,stage_name,display_name,country,primary_genres,available_for_international_bookings').order('created_at',{ascending:false}).limit(8);if(active)setArtists(data||[])})();return()=>{active=false}},[])
 
   return <main className="future-home product-first-home showcase-home allegro-rainbow-home">
-    <section className="showcase-hero allegro-dusk-hero">
-      <div className="allegro-dusk-backdrop" aria-hidden="true"><img src="/allegro-dusk-hero.svg" alt=""/></div>
+    <section className="showcase-hero allegro-dusk-hero allegro-reference-hero">
+      <div className="allegro-dusk-backdrop" aria-hidden="true"><img src="/av-hero.webp" alt=""/></div>
+      <div className="hero-cinematic-glow" aria-hidden="true"/>
 
-      <div className="allegro-hollywood-sign" aria-label="ALLEGRO VIBEZ">
-        <div className="allegro-sign-bulbs" aria-hidden="true"/>
-        <div className="allegro-sign-panel">
-          <div className="allegro-sign-word">ALLEGRO</div>
-          <div className="allegro-sign-word allegro-sign-vibez">VIBEZ</div>
-        </div>
-      </div>
+      <div className="reference-hotspot reference-listening" aria-hidden="true"/>
+      <div className="reference-hotspot reference-artist" aria-hidden="true"/>
 
       <div className="showcase-copy">
-        <div className="showcase-kicker"><span/> WELCOME TO ALLEGRO VIBEZ · MUSIC · RADIO · ARTISTS</div>
+        <div className="showcase-kicker"><span/> AFRICAN TALENT · GLOBAL STAGE <span/></div>
         <h1>More Than Music.<br/><em>A Movement.</em></h1>
-        <p>Stream music, discover artists, hear radio, explore rights records and build your music journey.</p>
+        <p>Stream. Discover. Create. Own.</p>
         <div className="showcase-actions">
           <Link className="showcase-primary" to="/stream">▶ Start Listening</Link>
           <Link className="showcase-secondary" to="/join-artists">♬ Join as an Artist</Link>
         </div>
       </div>
 
-      <div className="showcase-collage" aria-label="ALLEGRO music and creator experience">
-        <figure className="showcase-photo showcase-photo-main"><img src="/av-hero.webp" alt="ALLEGRO music experience"/></figure>
-        <figure className="showcase-photo showcase-photo-artists"><img src="/av-artists.webp" alt="Artists on ALLEGRO"/></figure>
-        <figure className="showcase-photo showcase-photo-discover"><img src="/av-discover.webp" alt="Music discovery on ALLEGRO"/></figure>
-        <div className="showcase-now"><span className="showcase-live-dot"/> NOW PLAYING <b>ALLEGRO</b></div>
-        <div className="showcase-radio-chip"><small>LIVE</small><strong>ALLEGRO RADIO</strong><span>24/7</span></div>
-        <div className="showcase-rights-chip"><strong>MUSIC RECORDS.</strong><span>CONNECTED.</span></div>
-        <Equalizer/>
+      <div className="showcase-reference-cards" aria-label="ALLEGRO experience">
+        {experiences.map(([title,icon,desc,to],i)=><Link key={title} to={to} className="reference-card"><span className="reference-card-icon">{icon}</span><div><strong>{title}</strong><p>{desc}</p></div><b aria-hidden="true">→</b></Link>)}
       </div>
     </section>
 
     <section className="showcase-ticker" aria-label="ALLEGRO platform capabilities"><div>STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b> ARTISTS <b>✦</b> RIGHTS <b>✦</b> BOOKINGS <b>✦</b> CREATOR TOOLS <b>✦</b> STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b></div></section>
-    <section className="showcase-offers"><div className="showcase-section-head"><div><span>WHAT ALLEGRO IS DESIGNED TO DO</span><h2>More than streaming.<br/><em>One connected music experience.</em></h2></div><p>Listen, discover, create, organise music information, manage artist activity and explore opportunities from one place.</p></div><div className="showcase-offer-grid">{experiences.map(([title,icon,desc,to,image,kind],i)=><Link key={title} to={to} className={'showcase-offer showcase-offer-'+kind+(i===0?' showcase-offer-featured':'')} style={image?{'--offer-image':'url("'+image+'")'}:undefined}><div className="showcase-offer-bg"/><div className="showcase-offer-top"><span className="showcase-offer-icon">{icon}</span><small>{String(i+1).padStart(2,'0')}</small></div><div className="showcase-offer-copy"><h3>{title}</h3><p>{desc}</p><span>OPEN {title} →</span></div></Link>)}</div></section>
+    <section className="showcase-offers"><div className="showcase-section-head"><div><span>WHAT ALLEGRO IS DESIGNED TO DO</span><h2>More than streaming.<br/><em>One connected music experience.</em></h2></div><p>Listen, discover, create, organise music information, manage artist activity and explore opportunities from one place.</p></div><div className="showcase-offer-grid">{experiences.map(([title,icon,desc,to],i)=><Link key={title} to={to} className={'showcase-offer showcase-offer-'+title.toLowerCase().replace(/[^a-z]+/g,'-')+(i===0?' showcase-offer-featured':'')}><div className="showcase-offer-top"><span className="showcase-offer-icon">{icon}</span><small>{String(i+1).padStart(2,'0')}</small></div><div className="showcase-offer-copy"><h3>{title}</h3><p>{desc}</p><span>OPEN {title} →</span></div></Link>)}</div></section>
     <section className="showcase-audience"><Link to="/stream" className="showcase-audience-card showcase-listeners"><div className="showcase-audience-label">FOR LISTENERS</div><div><h2>Press play.<br/><em>Discover more.</em></h2><p>Music, releases, discovery and radio in one place.</p><span>START LISTENING →</span></div></Link><Link to="/join-artists" className="showcase-audience-card showcase-creators"><div className="showcase-audience-label">FOR CREATORS</div><div><h2>Upload. Organise.<br/><em>Build. Grow.</em></h2><p>Artist identity, catalogue, rights records, bookings and creator tools connected.</p><span>BUILD YOUR ARTIST SPACE →</span></div></Link></section>
     <section className="showcase-merch"><div className="showcase-merch-copy"><span>ALLEGRO-VIBEZ ATELIER</span><h2>Wear the movement.</h2><p>Official ALLEGRO-VIBEZ streetwear for creators, artists and fans. Start with the confirmed 300gsm oversized tee drop, then preview hoodies, jackets, caps, bucket hats and accessories.</p><div className="showcase-merch-actions"><Link className="showcase-primary" to="/merch">Shop official merch</Link><Link className="showcase-text" to="/merch#lookbook">View the lookbook →</Link></div><div className="showcase-merch-proof"><span>300GSM TEES</span><span>OVERSIZED FIT</span><span>OFFICIAL ALLEGRO DESIGNS</span></div></div><Link to="/merch" className="showcase-merch-visual" aria-label="Open ALLEGRO-VIBEZ merch store"><img src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ merchandise collection"/><div><small>THE FIRST DROP</small><strong>ALLEGRO-VIBEZ</strong><span>OFFICIAL MERCH →</span></div></Link></section>
     <section className="future-section showcase-regions"><div className="future-section-head"><div><span>THE PLATFORM EXPERIENCE</span><h2>Music, radio, artists, rights and opportunities.</h2></div><Link to="/artists">Explore artists →</Link></div><div className="region-grid showcase-region-grid">{regions.map(([name,flag,cities])=><article key={name}><div className="region-glow"/><div className="showcase-region-flag">{flag}</div><strong>{name}</strong><p>{cities}</p><span>EXPLORE ↗</span></article>)}</div></section>
