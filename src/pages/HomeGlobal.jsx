@@ -6,27 +6,27 @@ import '../styles/home-showcase.css'
 import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const regions=[
-  ['AFRICA','🌍','Johannesburg · Lagos · Accra · Nairobi · Cape Town'],
-  ['INDIA','🇮🇳','Mumbai · Delhi · Chennai · Hyderabad · Punjab'],
-  ['KOREA','🇰🇷','Seoul · Busan · Incheon · Daegu'],
-  ['CHINA','🇨🇳','Shanghai · Beijing · Shenzhen · Guangzhou'],
-  ['GLOBAL','✦','London · New York · Toronto · São Paulo · Dubai']
+  ['MUSIC','◉','Streaming · discovery · releases'],
+  ['RADIO','◌','Live programming · culture · shows'],
+  ['ARTISTS','♬','Profiles · catalogue · audience'],
+  ['RIGHTS','◇','Ownership records · splits · metadata'],
+  ['GLOBAL','✦','Bookings · opportunities · creator tools']
 ]
 
 const pillars=[
-  ['01','LIVE RADIO','24/7 format-driven radio with rights-aware playout, artist discovery and sponsor inventory.'],
-  ['02','ARTIST PASSPORT','One global creator identity for music, rights, marketing, bookings and commercial growth.'],
-  ['03','PROTECT','Splits, ownership, contract guardrails, evidence and clearance before monetisation.'],
-  ['04','PROSPER','Transparent creator economics by default, plus wallet, reporting and payout rails.']
+  ['01','LISTEN','Stream music, discover artists and explore programmed radio.'],
+  ['02','CREATE','Build an artist profile, organise releases and connect with audiences.'],
+  ['03','PROTECT','Keep rights, ownership, contributor and music information connected to the work.'],
+  ['04','GROW','Support bookings, creator opportunities, reporting and commercial activity.']
 ]
 
 const experiences=[
-  ['STREAM','▶','Play music from published artists','/stream','/av-hero.webp','stream'],
-  ['DISCOVER','✦','Find artists across Africa, India, Korea, China and beyond','/artists','/av-discover.webp','discover'],
-  ['RADIO','◉','Tune into ALLEGRO Radio and programmed culture','/radio',null,'radio'],
+  ['STREAM','▶','Play published music and explore the listening experience','/stream','/av-hero.webp','stream'],
+  ['DISCOVER','✦','Find artists, releases and music across the platform','/artists','/av-discover.webp','discover'],
+  ['RADIO','◉','Tune into programmed radio and music culture','/radio',null,'radio'],
   ['ARTISTS','♬','Create a profile, upload music and build an audience','/join-artists','/av-artists.webp','artists'],
-  ['RIGHTS','◇','Keep ownership, splits and commercial records attached to the music','/sa/protocol',null,'rights'],
-  ['EARN','↗','Track prosperity, wallet activity and creator opportunities','/prosperity',null,'earn']
+  ['RIGHTS','◇','Connect ownership, splits, metadata and music records','/sa/protocol',null,'rights'],
+  ['EARN','↗','Explore creator reporting, opportunities and commercial tools','/prosperity',null,'earn']
 ]
 
 function Equalizer(){
@@ -44,39 +44,39 @@ export default function HomeGlobal(){
     <StudioLaunchPromo source="home"/>
     <section className="showcase-hero">
       <div className="showcase-copy">
-        <div className="showcase-kicker"><span/> GLOBAL MUSIC · RADIO · CREATOR ECONOMY</div>
+        <div className="showcase-kicker"><span/> MUSIC · RADIO · ARTISTS · CREATOR TOOLS</div>
         <div className="showcase-brand">ALLEGRO</div>
-        <h1>The world is listening.<br/><em>Make your sound travel.</em></h1>
-        <p>Stream music. Discover artists. Tune into live radio. Upload your work. Protect your rights. Build a creator business — all from one global platform born in Africa.</p>
+        <h1>Listen. Discover.<br/><em>Build your music journey.</em></h1>
+        <p>A music platform designed for streaming, radio, artist profiles, rights records, bookings and creator tools — in one vibrant experience.</p>
         <div className="showcase-actions">
           <Link className="showcase-primary" to="/stream">▶ Start Listening</Link>
           <Link className="showcase-secondary" to="/join-artists">♬ Join as an Artist</Link>
-          <Link className="showcase-text" to="/radio">Listen to ALLEGRO Radio →</Link>
+          <Link className="showcase-text" to="/radio">Listen to Radio →</Link>
         </div>
         <div className="showcase-proof">
-          <span>24/7 RADIO</span><span>GLOBAL DISCOVERY</span><span>ARTIST RIGHTS</span><span>CREATOR WALLET</span>
+          <span>MUSIC</span><span>RADIO</span><span>ARTIST PROFILES</span><span>RIGHTS RECORDS</span><span>BOOKINGS</span>
         </div>
       </div>
 
-      <div className="showcase-collage" aria-label="ALLEGRO music, artist and discovery experience">
+      <div className="showcase-collage" aria-label="ALLEGRO music and creator experience">
         <figure className="showcase-photo showcase-photo-main"><img src="/av-hero.webp" alt="ALLEGRO music experience"/></figure>
-        <figure className="showcase-photo showcase-photo-artists"><img src="/av-artists.webp" alt="Artists building on ALLEGRO"/></figure>
+        <figure className="showcase-photo showcase-photo-artists"><img src="/av-artists.webp" alt="Artists on ALLEGRO"/></figure>
         <figure className="showcase-photo showcase-photo-discover"><img src="/av-discover.webp" alt="Music discovery on ALLEGRO"/></figure>
-        <div className="showcase-now"><span className="showcase-live-dot"/> NOW PLAYING <b>ALLEGRO GLOBAL</b></div>
+        <div className="showcase-now"><span className="showcase-live-dot"/> NOW PLAYING <b>ALLEGRO</b></div>
         <div className="showcase-radio-chip"><small>LIVE</small><strong>ALLEGRO RADIO</strong><span>24/7</span></div>
-        <div className="showcase-rights-chip"><strong>YOUR MUSIC.</strong><span>YOUR RIGHTS.</span></div>
+        <div className="showcase-rights-chip"><strong>MUSIC RECORDS.</strong><span>CONNECTED.</span></div>
         <Equalizer/>
       </div>
     </section>
 
     <section className="showcase-ticker" aria-label="ALLEGRO platform capabilities">
-      <div>STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b> ARTISTS <b>✦</b> RIGHTS <b>✦</b> BOOKINGS <b>✦</b> EARN <b>✦</b> STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b></div>
+      <div>STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b> ARTISTS <b>✦</b> RIGHTS <b>✦</b> BOOKINGS <b>✦</b> CREATOR TOOLS <b>✦</b> STREAM <b>✦</b> DISCOVER <b>✦</b> RADIO <b>✦</b></div>
     </section>
 
     <section className="showcase-offers">
       <div className="showcase-section-head">
-        <div><span>WHAT YOU CAN DO HERE</span><h2>More than streaming.<br/><em>A complete music ecosystem.</em></h2></div>
-        <p>Whether you came to listen, discover talent, build an artist career or advertise around music culture, Allegro gives you a clear place to start.</p>
+        <div><span>WHAT ALLEGRO IS DESIGNED TO DO</span><h2>More than streaming.<br/><em>One connected music experience.</em></h2></div>
+        <p>Listen, discover, create, organise music information, manage artist activity and explore opportunities from one place.</p>
       </div>
       <div className="showcase-offer-grid">
         {experiences.map(([title,icon,desc,to,image,kind],i)=><Link key={title} to={to} className={'showcase-offer showcase-offer-'+kind+(i===0?' showcase-offer-featured':'')} style={image?{'--offer-image':'url("'+image+'")'}:undefined}>
@@ -90,11 +90,11 @@ export default function HomeGlobal(){
     <section className="showcase-audience">
       <Link to="/stream" className="showcase-audience-card showcase-listeners">
         <div className="showcase-audience-label">FOR LISTENERS</div>
-        <div><h2>Press play.<br/><em>Meet the world.</em></h2><p>New releases, culture, global discovery and ALLEGRO Radio in one place.</p><span>START LISTENING →</span></div>
+        <div><h2>Press play.<br/><em>Discover more.</em></h2><p>Music, releases, discovery and radio in one place.</p><span>START LISTENING →</span></div>
       </Link>
       <Link to="/join-artists" className="showcase-audience-card showcase-creators">
         <div className="showcase-audience-label">FOR CREATORS</div>
-        <div><h2>Upload. Protect.<br/><em>Build. Earn.</em></h2><p>Your catalogue, artist identity, rights, bookings and prosperity journey connected.</p><span>BUILD YOUR ARTIST SPACE →</span></div>
+        <div><h2>Upload. Organise.<br/><em>Build. Grow.</em></h2><p>Artist identity, catalogue, rights records, bookings and creator tools connected.</p><span>BUILD YOUR ARTIST SPACE →</span></div>
       </Link>
     </section>
 
@@ -107,33 +107,33 @@ export default function HomeGlobal(){
         <div className="showcase-merch-proof"><span>300GSM TEES</span><span>OVERSIZED FIT</span><span>OFFICIAL ALLEGRO DESIGNS</span></div>
       </div>
       <Link to="/merch" className="showcase-merch-visual" aria-label="Open ALLEGRO-VIBEZ merch store">
-        <img src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ official fashion and merchandise collection"/>
+        <img src="/allegro-vibez-merch-lookbook.webp" alt="ALLEGRO-VIBEZ merchandise collection"/>
         <div><small>THE FIRST DROP</small><strong>ALLEGRO-VIBEZ</strong><span>OFFICIAL MERCH →</span></div>
       </Link>
     </section>
 
     <section className="future-section showcase-regions">
-      <div className="future-section-head"><div><span>DISCOVER WITHOUT BORDERS</span><h2>Africa meets India, Korea, China and the world.</h2></div><Link to="/artists">Explore artists →</Link></div>
-      <div className="region-grid showcase-region-grid">{regions.map(([name,flag,cities])=><article key={name}><div className="region-glow"/><div className="showcase-region-flag">{flag}</div><strong>{name}</strong><p>{cities}</p><span>DISCOVER REGION ↗</span></article>)}</div>
+      <div className="future-section-head"><div><span>THE PLATFORM EXPERIENCE</span><h2>Music, radio, artists, rights and opportunities.</h2></div><Link to="/artists">Explore artists →</Link></div>
+      <div className="region-grid showcase-region-grid">{regions.map(([name,flag,cities])=><article key={name}><div className="region-glow"/><div className="showcase-region-flag">{flag}</div><strong>{name}</strong><p>{cities}</p><span>EXPLORE ↗</span></article>)}</div>
     </section>
 
     <section className="future-section showcase-system">
-      <div className="future-section-head"><div><span>THE ALLEGRO SYSTEM</span><h2>Built around the artist — not around extraction.</h2></div></div>
+      <div className="future-section-head"><div><span>THE ALLEGRO SYSTEM</span><h2>Designed around the complete music journey.</h2></div></div>
       <div className="future-pillars showcase-pillars">{pillars.map(([n,t,d])=><article key={n}><b>{n}</b><h3>{t}</h3><p>{d}</p></article>)}</div>
     </section>
 
     <section className="future-section showcase-signal">
-      <div className="future-section-head"><div><span>GLOBAL CREATOR SIGNAL</span><h2>Artists are building here.</h2></div><Link to="/join-artists">Get your space →</Link></div>
+      <div className="future-section-head"><div><span>CREATOR DISCOVERY</span><h2>Artist spaces are built for discovery.</h2></div><Link to="/join-artists">Get your space →</Link></div>
       {artists.length?
         <div className="signal-grid">{artists.map((a,i)=><Link className="signal-card" key={a.id} to={'/artist/'+a.id}><div className="signal-number">{String(i+1).padStart(2,'0')}</div><div><small>{a.country||'GLOBAL'} · {(a.primary_genres||[]).slice(0,2).join(' / ')||'CREATOR'}</small><h3>{a.stage_name||a.display_name||'ALLEGRO Artist'}</h3><span>{a.available_for_international_bookings?'GLOBAL BOOKINGS OPEN':'ARTIST SPACE'}</span></div></Link>)}</div>
         :<div className="showcase-empty-signal">
-          <div><small>FOUNDING CREATOR ONBOARDING</small><h3>Be one of the first artists people discover here.</h3><p>Build your public artist space, organise your catalogue and rights, prepare bookings and connect your music to the wider ALLEGRO + KORA ecosystem.</p></div>
-          <div className="showcase-empty-actions"><Link className="showcase-primary" to="/join-artists">Claim Artist Space</Link><Link className="showcase-secondary" to="/career">Explore Career Engine</Link></div>
+          <div><small>CREATOR ONBOARDING</small><h3>Build a public artist space.</h3><p>Create an artist profile, organise your catalogue and connect music information to the wider platform.</p></div>
+          <div className="showcase-empty-actions"><Link className="showcase-primary" to="/join-artists">Claim Artist Space</Link><Link className="showcase-secondary" to="/career">Explore Career Tools</Link></div>
         </div>}
     </section>
 
     <section className="showcase-final">
-      <div><span>BUILT IN AFRICA · PLAYED BY THE WORLD</span><h2>Your next favourite artist could come from anywhere.</h2><p>Listen globally. Build visibly. Protect the work. Let the creator own the journey.</p></div>
+      <div><span>MUSIC · RADIO · ARTISTS · CREATOR TOOLS</span><h2>Everything starts with the music.</h2><p>Listen, discover, create, organise and grow — with tools designed for the modern music journey.</p></div>
       <div className="showcase-final-actions"><Link className="showcase-primary" to="/stream">Open ALLEGRO Stream</Link><Link className="showcase-secondary" to="/join-artists">Claim Artist Space</Link></div>
     </section>
   </main>
