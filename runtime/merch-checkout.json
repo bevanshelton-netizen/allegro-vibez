@@ -1,0 +1,12 @@
+{
+  "schema": "allegro.merch.checkout.v1",
+  "provider": "iKhokha",
+  "updated_at": null,
+  "products": {
+    "movement-black": null,
+    "african-born-cream": null,
+    "creators-burgundy": null,
+    "creator-economy-white": null
+  },
+  "notes": "Public Buy Button URLs only. Never place API keys, passwords, merchant secrets or credentials in this file."
+}
