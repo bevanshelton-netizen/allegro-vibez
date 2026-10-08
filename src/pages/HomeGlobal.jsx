@@ -5,7 +5,6 @@ import '../styles/future.css'
 import '../styles/home-showcase.css'
 import '../styles/allegro-dusk.css'
 import '../styles/hollywood-landing.css'
-import StudioLaunchPromo from '../components/StudioLaunchPromo'
 
 const regions=[
   ['MUSIC','◉','Streaming · discovery · releases'],
@@ -38,7 +37,6 @@ export default function HomeGlobal(){
   useEffect(()=>{let active=true;(async()=>{if(!supabase)return;const{data}=await supabase.from('profiles').select('id,stage_name,display_name,country,primary_genres,available_for_international_bookings').order('created_at',{ascending:false}).limit(8);if(active)setArtists(data||[])})();return()=>{active=false}},[])
 
   return <main className="future-home product-first-home showcase-home allegro-rainbow-home">
-    <StudioLaunchPromo source="home"/>
     <section className="showcase-hero allegro-dusk-hero">
       <div className="allegro-dusk-backdrop" aria-hidden="true"><img src="/allegro-dusk-hero.svg" alt=""/></div>
 
@@ -51,7 +49,7 @@ export default function HomeGlobal(){
       </div>
 
       <div className="showcase-copy">
-        <div className="showcase-kicker"><span/> MUSIC · RADIO · ARTISTS · CREATOR TOOLS</div>
+        <div className="showcase-kicker"><span/> WELCOME TO ALLEGRO VIBEZ · MUSIC · RADIO · ARTISTS</div>
         <h1>More Than Music.<br/><em>A Movement.</em></h1>
         <p>Stream music, discover artists, hear radio, explore rights records and build your music journey.</p>
         <div className="showcase-actions">
