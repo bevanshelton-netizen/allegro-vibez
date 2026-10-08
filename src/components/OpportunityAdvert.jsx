@@ -1,4 +1,3 @@
-import { ExternalLink } from 'lucide-react'
 import '../styles/opportunity-ad.css'
 
 export default function OpportunityAdvert(){
@@ -11,7 +10,7 @@ export default function OpportunityAdvert(){
         <h2>WANT TO PLAY<br/><span>SUMMERFEST 2027?</span></h2>
         <div className="opportunity-ad-apply">APPLY TO PLAY</div>
         <div className="opportunity-ad-deadline"><small>APPLICATION DEADLINE</small><strong>DECEMBER 2, 2026</strong></div>
-        <a className="opportunity-ad-button" href="https://www.summerfest.com/want-to-perform-at-summerfest/" target="_blank" rel="noreferrer">VIEW OPPORTUNITY <ExternalLink size={16}/></a>
+        <a className="opportunity-ad-button" href="https://www.summerfest.com/want-to-perform-at-summerfest/" target="_blank" rel="noreferrer">VIEW OPPORTUNITY <span aria-hidden="true">↗</span></a>
         <div className="opportunity-ad-footer">ALLEGRO · ARTIST OPPORTUNITIES · GLOBAL STAGE</div>
       </div>
     </div>
