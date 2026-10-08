@@ -1,0 +1,9 @@
+/* ALLEGRO VIBEZ visual layer: vivid, musical, editorial, lightweight. */
+.showcase-home{background-image:radial-gradient(circle at 18% 10%,rgba(255,49,95,.16),transparent 22%),radial-gradient(circle at 84% 18%,rgba(17,207,229,.14),transparent 24%),radial-gradient(circle at 52% 72%,rgba(124,60,255,.12),transparent 28%)}
+.showcase-hero{isolation:isolate}
+.showcase-hero:after{content:'';position:absolute;inset:0;background:url('/allegro-sound-aura.svg') right center/62% auto no-repeat;opacity:.24;mix-blend-mode:screen;pointer-events:none;z-index:-1}
+.showcase-brand{filter:drop-shadow(0 14px 38px rgba(124,60,255,.18))}
+.showcase-photo-main:after,.showcase-photo-artists:after,.showcase-photo-discover:after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,49,95,.12),transparent 40%,rgba(17,207,229,.12));mix-blend-mode:screen;pointer-events:none}
+.showcase-offer-radio:before,.showcase-offer-rights:before,.showcase-offer-earn:before{content:'';position:absolute;inset:0;background:url('/allegro-sound-aura.svg') center/cover no-repeat;opacity:.13;mix-blend-mode:screen;pointer-events:none}
+.showcase-final{position:relative}.showcase-final:before{content:'';position:absolute;inset:0;background:url('/allegro-sound-aura.svg') right center/55% auto no-repeat;opacity:.18;pointer-events:none}.showcase-final>*{position:relative;z-index:2}
+@media(max-width:1150px){.showcase-hero:after{background-size:95% auto;opacity:.18}.showcase-final:before{background-size:90% auto;opacity:.14}}

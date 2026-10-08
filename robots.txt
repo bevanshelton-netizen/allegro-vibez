@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /dashboard
+Disallow: /creator-hub
+Disallow: /admin/
+Disallow: /upload
+Disallow: /my-music
+Disallow: /wallet
+Disallow: /billing
+Sitemap: https://allegro-vibez.vercel.app/sitemap.xml
