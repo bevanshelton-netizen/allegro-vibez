@@ -2,78 +2,58 @@
 
 ## Release status
 
-ALLEGRO-VIBEZ is a Vite/React single-page application prepared for the Netlify frontend and an IZAKHONO Core backend. The source now uses the IZAKHONO Core compatibility client; a Supabase browser client is no longer instantiated.
+ALLEGRO-VIBEZ is an IZAKHONO-owned-first Vite/React application. The canonical public origin is `https://allegrovibez.com`. The primary production target is the IZAKHONO APP FABRIC / NODE01 runtime; hosted platforms are fallbacks and must not be used as the primary health signal.
 
-The GitHub launch gate verifies the IZAKHONO runtime contract, linting, publishing structure, frontend secret boundaries and the production Vite build. Public promotion remains gated on a real Core host and end-to-end acceptance.
+The owned web image is published through GitHub Actions to GHCR as `ghcr.io/bevanshelton-netizen/allegro-vibez-web:production-master`. The image contains the production Vite build behind nginx and exposes a machine-verifiable `/healthz` contract.
 
-## Production capabilities already represented in source
+## Production capabilities represented in source
 
-- Creator signup/signin and persisted Core sessions
+- Creator signup/signin and persisted sessions through the selected backend contract
 - Creator profiles and safe public artist discovery
 - Private release upload, artwork/audio storage and creator catalogues
-- Release submission flow and rights/contributor records
+- Release submission and rights/contributor records
 - Royalty ledger, creator wallet and payout-request UI
 - Subscription-plan catalogue
-- Public Terms of Use and Privacy Notice
+- Terms of Use and Privacy Notice
 - SEO/social metadata, robots and sitemap
-- Netlify SPA routing/security configuration
-- IZAKHONO Core project manifest, schema, seed and exposure policies
-- Private storage owner enforcement when Core v0.3.1+ is used
-- GitHub Actions launch gate
+- IZAKHONO Core compatibility client with owned-first selection
+- Owned web container health contract
+- GitHub Actions build/release/smoke gates
 
-## Capabilities that still require protected server activation
+## Capabilities that require protected server activation
 
 These must not be represented as live merely because the UI exists:
 
-- administrator release moderation / publishing
-- payout administration and finalisation
-- PayFast checkout creation and notification processing
-- password-reset email delivery and password-recovery completion
+- administrator release moderation/publishing
+- payout administration/finalisation
+- payment checkout creation and notification validation
+- password-reset email delivery and password recovery completion
 
-The browser client deliberately refuses privileged server operations until their IZAKHONO-hosted implementations are active.
+The browser client deliberately refuses privileged server operations until their owner-controlled implementations are active.
 
-## Required IZAKHONO Core activation
+## Owned runtime gates
 
-Use IZAKHONO Core v0.3.1 or newer and provision `izakhono/manifest.json`. In Zero-Cost Host Mode, the package's ALLEGRO helper performs this provisioning automatically and records the one-time keys.
+Before public promotion, the owner-controlled environment must prove:
 
-The browser build requires:
+- Allegro web `/healthz` passes;
+- Allegro web root and `/radio` routes pass;
+- Allegro Core `/health` passes;
+- CRM, Revenue, Tasks, FLOW and APP FABRIC Gateway are healthy;
+- FLOW persistence backup/restore proof passes;
+- IZAKHONO ONE → FLOW bridge passes;
+- public edge HTTPS `/health` passes after DNS cutover;
+- the exact release commit passes `npm run verify:all`.
 
-- `VITE_IZAKHONO_CORE_URL`
-- `VITE_IZAKHONO_PROJECT=allegro_vibez`
-- `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
+## Backend selection
 
-Only the `ik_pub_*` key belongs in the frontend. `ik_sec_*`, root-admin, database and payment credentials remain server-side.
+When `VITE_IZAKHONO_CORE_URL`, `VITE_IZAKHONO_PROJECT` and `VITE_IZAKHONO_PUBLIC_KEY` are supplied, the browser selects `izakhono-core`. Until those values are backed by a verified public Core endpoint, the compatibility backend remains available as resilience fallback.
 
-## Zero-Cost Host Mode
+Only browser-safe public keys may enter the frontend. Server secrets, root-admin credentials, database passwords and payment credentials remain outside the bundle.
 
-A paid VPS is not required for the first host. An existing Docker-capable computer can run IZAKHONO CLOUD Zero-Cost Host Mode v1.0.
+## Public cutover
 
-Local host URL:
+Do not call ALLEGRO publicly live merely because a GitHub build or hosted deployment succeeded. The final gate is:
 
-`http://127.0.0.1:8787`
+**SOURCE → BUILD → IMAGE → NODE01 → CORE → EDGE/TLS → PUBLIC HTTPS → END-TO-END ACCEPTANCE.**
 
-This is suitable for tests made on the host computer. It is **not** a valid backend URL for public Netlify visitors. Before public launch, create a stable HTTPS route to the host using an existing public connection or a free encrypted tunnel and repeat the launch acceptance tests through that public route.
-
-## Publication gate
-
-Before marketing ALLEGRO as publicly operational, confirm:
-
-- Core `/healthz` and `/readyz` pass on the actual host.
-- The `allegro_vibez` manifest provisions successfully and one-time keys are captured securely.
-- A new creator can sign up, sign in and retain a session.
-- A creator can save a release and upload private audio/artwork.
-- Cross-account private-media reads and overwrites are denied.
-- Creator rights/contributor data stays isolated.
-- Public artist/release views contain only intended public fields/content.
-- Royalty/wallet/payout data stays isolated to the correct creator.
-- Payout balance validation is enforced server-side.
-- A backup can be created and restored successfully.
-- A stable public HTTPS Core route exists and is reachable from outside the host machine.
-- Netlify contains the public Core URL/project/public-key values.
-- `npm run verify:all` passes on the exact production commit.
-- The Netlify frontend deploy succeeds.
-- Protected moderation, payment, payout-admin and password-recovery services have their own green acceptance tests before being enabled.
-
-## Current engineering state
-
-The application source is IZAKHONO-Core-ready and the no-paid-VPS host package exists. The remaining launch proof is runtime infrastructure: start the Zero Host stack on a Docker-capable computer, provision ALLEGRO, expose a stable public HTTPS route, then run the end-to-end acceptance suite. Paid infrastructure is optional until measured uptime or scale makes it necessary.
+Vercel/Netlify may be retained for resilience, but hosted deployment rate limits do not block the owned production path.
