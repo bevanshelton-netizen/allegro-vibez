@@ -53,7 +53,7 @@ export default function HomeGlobal(){
       </div>
 
       <div className="showcase-reference-cards" aria-label="ALLEGRO experience">
-        {experiences.map(([title,icon,desc,to],i)=><Link key={title} to={to} className="reference-card"><span className="reference-card-icon">{icon}</span><div><strong>{title}</strong><p>{desc}</p></div><b aria-hidden="true">→</b></Link>)}
+        {experiences.map(([title,icon,desc,to])=><Link key={title} to={to} className="reference-card"><span className="reference-card-icon">{icon}</span><div><strong>{title}</strong><p>{desc}</p></div><b aria-hidden="true">→</b></Link>)}
       </div>
     </section>
 
