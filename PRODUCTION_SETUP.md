@@ -2,106 +2,97 @@
 
 ## Architecture
 
-The public React/Vite frontend remains on Netlify from GitHub `main`. **IZAKHONO Core is the target owner-controlled runtime**, while the current application still contains a Supabase compatibility path for existing authentication/data/Edge Function flows. Do not claim the Core cutover complete until the public Core route and protected adapters have passed the acceptance tests below.
+ALLEGRO-VIBEZ is an IZAKHONO-owned-first product. The canonical public frontend origin is `https://allegrovibez.com`. The primary runtime target is the IZAKHONO APP FABRIC / NODE01 stack; Vercel, Netlify and other hosted deployments are resilience fallbacks only.
 
-Production frontend origin:
+The owned web runtime is published as:
 
-`https://allegro-vibez.netlify.app`
+`ghcr.io/bevanshelton-netizen/allegro-vibez-web:production-master`
 
-The frontend requires three browser-safe values:
+The owned application core runs separately in the APP FABRIC topology as `izakhono-allegro-core` on port 8788. The web container exposes port 8080 and is intended to sit behind the owner-controlled edge.
 
-- `VITE_IZAKHONO_CORE_URL`
+## Browser configuration
+
+Preferred production values:
+
+- `VITE_IZAKHONO_CORE_URL` — stable public HTTPS URL for the owned Core runtime when Core-backed browser operations are enabled.
 - `VITE_IZAKHONO_PROJECT=allegro-vibez`
 - `VITE_IZAKHONO_PUBLIC_KEY=ik_pub_...`
 
-Never place an `ik_sec_*` key, the Core root-admin key, database password, PayFast merchant key/passphrase or any other server credential in the Vite build.
+Never place an `ik_sec_*` key, Core root-admin key, database password or payment credential in the Vite bundle.
 
-## Zero-Cost Host Mode
+Until a verified public Core route is configured, the frontend retains its compatibility backend path. This is a resilience fallback, not the owned production target.
 
-No paid VPS is required for the first self-hosted environment. IZAKHONO CLOUD Zero-Cost Host Mode v1.0 runs Core, PostgreSQL, storage, the application control plane, deployment runner, backups and Owner Console on an existing Docker-capable computer.
+## Owned runtime activation
 
-Local Core URL:
-
-`http://127.0.0.1:8787`
-
-This loopback URL is for software running on the host computer. **Do not put it into the public Netlify production environment.** Public visitors need a stable HTTPS Core URL routed to that same computer, using an existing public network route or a free encrypted tunnel.
-
-## Provision ALLEGRO
-
-Use the reviewed IZAKHONO owner-host tooling. The Core project identifier is **`allegro-vibez`**.
-
-On the owner host, provision the Core project with signup enabled:
+On NODE01, the reviewed APP FABRIC runtime is the source of truth:
 
 ```bash
-sudo /opt/izakhono/bin/provision-core-project.sh allegro-vibez --allow-signup
+sudo /opt/izakhono/bin/activate-node01.sh
+sudo /opt/izakhono/bin/verify-node01.sh
 ```
 
-Keep the generated owner-only project record private. Only the returned browser-safe public project key belongs in `VITE_IZAKHONO_PUBLIC_KEY`.
+The runtime must prove healthy CRM, Revenue, Tasks, FLOW, APP FABRIC Gateway, Allegro Core and the owned Allegro web container before public promotion.
 
-The ALLEGRO repository's `izakhono/manifest.json`, `schema.sql` and `seed.sql` remain the reviewed application data contract. Do not claim the Core cutover complete until those tables/policies and the private `release_assets` bucket have been provisioned and the acceptance tests below pass.
+The Allegro web image must pass `/healthz`, the root ALLEGRO marker and the `/radio` route contract before it is considered releasable.
+
+## Public edge
+
+The public hostname is `allegrovibez.com`. Public activation is a separate edge/DNS gate. Use the owner-controlled `prepare-edge.sh` flow only after DNS points the approved hostname to the NODE01-controlled edge:
+
+```bash
+sudo /opt/izakhono/bin/prepare-edge.sh allegrovibez.com <allowed-origins> --apply
+```
+
+The edge must prove HTTPS `/health` before the site is marked publicly connected. Do not claim a public cutover from a container health result alone.
 
 ## Data and creator acceptance
 
-Before public routing cutover, verify on the actual Core host:
+Before full public promotion, verify on the actual owned Core host:
 
-1. `/healthz` and `/readyz` return healthy.
-2. New creator signup/signin works and sessions persist.
-3. Creator profile data is owner-protected while `public_profiles` remains publicly readable.
-4. Private releases stay owner-only and only `published_releases` appears publicly.
-5. Artwork/audio upload and download work from the private bucket.
-6. A second creator cannot read or overwrite another creator's private media.
-7. Rights/contributor records remain owner-only.
-8. Royalty, subscription, wallet and payout rows remain owner-only.
-9. A payout request cannot exceed the server-validated withdrawable balance.
-10. Backup creation and restore proof complete successfully.
+1. Core `/healthz` and `/readyz` are healthy.
+2. Creator signup/signin and session persistence work.
+3. Creator profile data is owner-protected while public profiles expose only intended fields.
+4. Private releases remain owner-only and published releases are the only public release surface.
+5. Artwork/audio upload and download work through the intended private storage path.
+6. Cross-account private-media reads and overwrites are denied.
+7. Rights/contributor records remain owner-scoped.
+8. Royalty, subscription, wallet and payout rows remain owner-scoped.
+9. Payout validation is enforced server-side.
+10. Backup and isolated restore proof succeeds.
 
 ## Protected operations
 
-The Core browser adapter intentionally does not emulate privileged operations in the browser. Before full transactional launch, add and validate protected IZAKHONO-hosted services for:
+The browser adapter must not emulate privileged operations. Keep these server-side and disabled until their acceptance tests are green:
 
-- release moderation / publish decisions
-- payout administration and finalisation
-- PayFast checkout creation
-- PayFast notification validation and idempotent subscription activation
-- password recovery / email delivery
+- release moderation/publishing
+- payout administration/finalisation
+- payment checkout creation
+- payment notification validation and idempotent activation
+- password recovery/email delivery
 
-PayFast credentials must remain server-side. Keep live payment processing disabled until a complete sandbox checkout, validated notification, replay/idempotency and subscription-activation test passes.
+## Release gate
 
-## Public cutover
+A release is eligible for public promotion only when:
 
-Only after the Core host has a stable public HTTPS route:
+- the Allegro web image is published and passes its container smoke test;
+- APP FABRIC core services are healthy;
+- Allegro Core health and persistence contracts pass;
+- the IZAKHONO ONE → FLOW bridge passes;
+- the public edge HTTPS health check passes;
+- the exact production commit passes `npm run verify:all`;
+- protected payment/admin/recovery services have their own acceptance gates.
 
-1. Put the public Core URL and `ik_pub_*` project key in Netlify production variables.
-2. Deploy the exact tested commit.
-3. Test Home, Discover, Artists, Join and Login from a device that is **not** the Core host.
-4. Run creator signup, private upload, discovery and owner-isolation tests again over the public route.
-5. Verify security headers, Terms, Privacy and direct SPA navigation.
-6. Activate protected payment/admin services only after their server-side gates pass.
+Vercel/Netlify may remain available as emergency fallback deployments, but their availability or build limits must never be treated as the health signal for the owned Allegro runtime.
 
-The host computer must remain powered on and internet-connected for a workstation-hosted public service to remain available.
-
-
-## ALLEGRO ↔ KORA screen integration
+## ALLEGRO ↔ KORA integration
 
 Browser-safe frontend variable:
 
-- `VITE_KORA_URL` — the public KORA origin used only to open the creator-link page.
+- `VITE_KORA_URL` — public KORA origin used only to open the creator linking page.
 
-Server-only handoff values:
+Server-only values:
 
-- `KORA_INTERNAL_URL` — KORA HTTPS origin used by the server adapter;
-- `ALLEGRO_KORA_INTEGRATION_KEY` — shared secret used only server-to-server.
+- `KORA_INTERNAL_URL`
+- `ALLEGRO_KORA_INTEGRATION_KEY`
 
-The integration secret must never be present in the Vite bundle.
-
-Current compatibility implementation uses the `kora-video-handoff` server/Edge Function. When ALLEGRO protected operations move fully to IZAKHONO Core, the same contract should be implemented by the Creator OS `media_handoff` module without changing the browser workflow.
-
-Acceptance test:
-
-1. Artist logs into ALLEGRO and copies their Creator Code.
-2. Same artist logs into KORA Creator Studio and links the code.
-3. Artist creates a rights-declared project in ALLEGRO Screen Studio.
-4. KORA creates a **draft**, not a public production.
-5. KORA returns a secure upload allocation.
-6. Moderation/rights state remains pending/review until evidence is approved.
-7. No secret appears in browser network payloads or built assets.
+The integration secret must never enter the Vite bundle. The handoff remains draft/moderation-gated until rights and evidence are approved.
