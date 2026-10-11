@@ -1,11 +1,10 @@
 import { createClient } from '@supabase/supabase-js'
 import { createIzakhonoCoreClient } from './izakhonoCoreClient'
 
-// IZAKHONO Core is the preferred long-term backend. Until the self-hosted Core
-// production endpoint is healthy, ALLEGRO-VIBEZ stays launchable on the active
-// browser-safe Supabase project without requiring a Netlify environment edit.
-const FALLBACK_SUPABASE_URL = 'https://zoolsumifdtanycjryje.supabase.co'
-const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_8LBaWtgMxlewODl4STQ9YA_jMMEt5Gt'
+// IZAKHONO Core is the preferred long-term backend. The verified ALLEGRO production
+// Supabase project remains the browser-safe fallback until Core is configured here.
+const FALLBACK_SUPABASE_URL = 'https://yfawrenhudjomhnglfhq.supabase.co'
+const FALLBACK_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3KY--8Y_uuKEdfdumC2txg__OWTRo2p'
 
 const coreUrl = import.meta.env.VITE_IZAKHONO_CORE_URL || ''
 const coreProject = import.meta.env.VITE_IZAKHONO_PROJECT || 'allegro-vibez'
