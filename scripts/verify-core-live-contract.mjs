@@ -11,7 +11,7 @@ for (const token of [
   "this.client.from('public_profiles').insert(publicProfile)",
   "this.client.from('creator_wallets').insert",
   "this.client.from('creator_subscriptions').insert",
-  "Payout requests remain disabled until the IZAKHONO server-side balance validator is active.",
+  'Payout requests remain disabled until the IZAKHONO server-side balance validator is active.',
 ]) {
   if (!core.includes(token)) throw new Error('Core live contract missing: ' + token)
 }
@@ -21,16 +21,22 @@ if (core.includes('/v1/data/')) throw new Error('ALLEGRO data access must use th
 
 for (const token of [
   "backendProvider === 'izakhono-core'",
-  "public_profiles",
-  "public_artist_booking_settings",
-  "artist_booking_intake",
-  "platform_fee_bps: 1000",
+  'public_profiles',
+  'public_artist_booking_settings',
+  'artist_booking_intake',
+  'platform_fee_bps: 1000',
 ]) {
   if (!workflow.includes(token)) throw new Error('Creator workflow Core contract missing: ' + token)
 }
 
+if (!booking.includes('netlifyFallback')) {
+  throw new Error('Booking compatibility fallback function must remain explicit and isolated.')
+}
 if (!booking.includes("window.location.hostname.endsWith('.netlify.app')")) {
-  throw new Error('Legacy Netlify booking fallback must be explicitly host-gated.')
+  throw new Error('Legacy Netlify booking fallback must remain explicitly host-gated.')
+}
+if (!booking.includes('No payment has been taken')) {
+  throw new Error('Booking enquiry must remain non-payment until a protected quote/checkout flow is active.')
 }
 
 if (!runtime.includes("selectedProvider = 'izakhono-core'")) {
