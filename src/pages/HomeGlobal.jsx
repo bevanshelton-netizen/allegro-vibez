@@ -11,7 +11,7 @@ const experiences = [
   ['MUSIC', '♫', 'Stream the latest releases and independent talent.', '/stream'],
   ['RADIO', '▣', 'Live stations. Fresh mixes. 24/7 vibes.', '/radio'],
   ['ARTISTS', '♬', 'Profiles, releases, videos and more.', '/artists'],
-  ['RIGHTS & IP', '◆', 'Protect your music. Track your rights.', '/sa/protocol'],
+  ['RIGHTS & IP', '◆', 'Protect your music. Find missing money. Track your rights.', '/sa/protocol'],
   ['BOOKINGS', '▦', 'Find gigs, events and opportunities.', '/bookings'],
   ['CREATOR TOOLS', '▥', 'Upload, manage, promote and grow.', '/creator-hub'],
 ]
