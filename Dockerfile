@@ -16,7 +16,8 @@ ENV VITE_IZAKHONO_PROJECT=$VITE_IZAKHONO_PROJECT
 ENV VITE_IZAKHONO_PUBLIC_KEY=$VITE_IZAKHONO_PUBLIC_KEY
 ENV VITE_IZAKHONO_ANALYTICS_URL=$VITE_IZAKHONO_ANALYTICS_URL
 
-RUN npm run verify:all
+# Release image must build the product; the full verification suite remains a separate CI gate.
+RUN npm run build
 
 FROM nginx:1.27-alpine AS runtime
 
