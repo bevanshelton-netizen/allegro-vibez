@@ -1,14 +1,14 @@
 const origin=(process.env.PRODUCTION_ORIGIN||'https://allegrovibez.com').replace(/\/$/,'')
 const fallbackOrigin=(process.env.FALLBACK_PRODUCTION_ORIGIN||'https://allegro-vibez.vercel.app').replace(/\/$/,'')
-const expectedProject='zoolsumifdtanycjryje'
-const expectedPublishableKey='sb_publishable_8LBaWtgMxlewODl4STQ9YA_jMMEt5Gt'
+const expectedProject='yfawrenhudjomhnglfhq'
+const expectedPublishableKey='sb_publishable_3KY--8Y_uuKEdfdumC2txg__OWTRo2p'
 const attempts=Number(process.env.PRODUCTION_SMOKE_ATTEMPTS||12)
 const delayMs=Number(process.env.PRODUCTION_SMOKE_DELAY_MS||5000)
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))
 
 async function fetchText(url){
   try{
-    const response=await fetch(url,{redirect:'follow',headers:{'user-agent':'ALLEGRO-VIBEZ-production-smoke/5.0','cache-control':'no-cache'}})
+    const response=await fetch(url,{redirect:'follow',headers:{'user-agent':'ALLEGRO-VIBEZ-production-smoke/5.1','cache-control':'no-cache'}})
     return {response,text:await response.text(),url:response.url}
   }catch(error){return {error,url}}
 }
@@ -55,16 +55,14 @@ async function probe(){
       try{
         const health=JSON.parse(page.text)
         record('critical backend health is healthy',health.status==='healthy',health.status||'missing status')
-        for(const [name,check] of Object.entries(health.checks||{})){
-          if(check?.ok===false) record(`backend ${name}`,false,check.error||`HTTP ${check.status}`)
-        }
+        for(const [name,check] of Object.entries(health.checks||{})) if(check?.ok===false) record(`backend ${name}`,false,check.error||`HTTP ${check.status}`)
       }catch(error){record('health response is valid JSON',false,error.message)}
     }
   }
 
   const bundle=await collectBundle(home.text,home.url||`${origin}/`)
   record('production JavaScript bundle discovered',bundle.files>0,`${bundle.files} JavaScript assets inspected`)
-  record('live bundle targets Allegro backend',bundle.text.includes(expectedProject),'production project ref')
+  record('live bundle targets verified Allegro backend',bundle.text.includes(expectedProject),'production project ref')
   record('live bundle contains browser-safe auth bootstrap',bundle.text.includes(expectedPublishableKey),'publishable key present')
 
   const configuredCoreUrl=process.env.IZAKHONO_CORE_URL?.replace(/\/$/,'')
