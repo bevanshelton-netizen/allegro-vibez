@@ -18,7 +18,7 @@ async function probe(path, init = {}) {
 const functionProbe = slug => probe(`/functions/v1/${slug}`)
 
 export default async function handler(req, res) {
-  const [config, rest, profiles, releases, studio, growth, payments, webhook, music, creator, listener] = await Promise.all([
+  const [config, rest, profiles, releases, studio, growth, webhook, music, creator, listener] = await Promise.all([
     probe('/functions/v1/public-config'),
     probe('/rest/v1/'),
     probe('/rest/v1/public_profiles?select=id&limit=1'),
@@ -29,7 +29,6 @@ export default async function handler(req, res) {
     functionProbe('allegro-music-api'),
     functionProbe('allegro-creator-api'),
     functionProbe('allegro-listener-api'),
-    functionProbe('allegro-studio-api'),
   ])
 
   const checks = {
@@ -38,13 +37,13 @@ export default async function handler(req, res) {
     supabase_rest_gateway: rest,
     studio_api: studio,
     growth: growth,
+    payment_api: studio,
     payment_webhook: webhook,
     music: music,
     creator: creator,
     listener: listener,
     creator_profiles: profiles,
     music_releases: releases,
-    payments: payments,
     webhooks: webhook,
   }
 
