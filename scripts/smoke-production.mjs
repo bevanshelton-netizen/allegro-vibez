@@ -7,8 +7,8 @@ const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms))
 
 async function fetchText(url){
   try{
-    const response=await fetch(url,{redirect:'follow',headers:{'user-agent':'ALLEGRO-VIBEZ-production-smoke/4.0','cache-control':'no-cache'}})
-    return {response,text:await response.text(),url:response.url}
+    const response=await fetch(url,{redirect:'follow',headers:{'user-agent':'ALLEGRO-VIBEZ-production-smoke/4.1','cache-control':'no-cache'}})
+    return {response,text:await response.text(),url}
   }catch(error){ return {error,url} }
 }
 function jsReferences(text,base){
@@ -16,7 +16,7 @@ function jsReferences(text,base){
   for(const match of text.matchAll(/["']([^"']+\.js(?:\?[^"']*)?)["']/g)){
     const value=match[1]
     if(value.startsWith('http://')||value.startsWith('https://')) continue
-    try{ refs.add(new URL(value,base).href) }catch{}
+    try{ refs.add(new URL(value,base).href) }catch(error){ void error }
   }
   return [...refs]
 }
