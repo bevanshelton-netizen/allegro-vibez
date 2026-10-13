@@ -1,96 +1,171 @@
-import { useCallback, useEffect, useState } from 'react'
-import { Link, NavLink, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
-import { isSupabaseConfigured, supabase } from './lib/supabaseClient'
-import Rights from './pages/Rights.jsx'
-import { AdminReviewPage, ProfilePage, ProsperityPage, SubmitReleaseButton } from './pages/CreatorTools.jsx'
-import { AdminCommercialPage, BillingPage, WalletPage } from './pages/Commercial.jsx'
-import Radio from './pages/Radio.jsx'
-import RadioAcademy from './pages/RadioAcademy.jsx'
-import RadioAcademyLearner from './pages/RadioAcademyLearner.jsx'
-import Revenue from './pages/Revenue.jsx'
-import ArtistJoin from './pages/ArtistJoin.jsx'
-import ArtistSpace from './pages/ArtistSpace.jsx'
-import HomeGlobal from './pages/HomeGlobal.jsx'
-import Stream from './pages/Stream.jsx'
-import CareerEngine from './pages/CareerEngine.jsx'
-import ScreenStudio from './pages/ScreenStudio.jsx'
-import { ArtistBookingDesk, ArtistBookingRequest } from './pages/ArtistBooking.jsx'
-import BookingContractShield from './pages/BookingContractShield.jsx'
-import SheltonProtocol from './pages/SheltonProtocol.jsx'
-import MusicAcademy from './pages/MusicAcademy.jsx'
-import MusicAcademyLearner from './pages/MusicAcademyLearner.jsx'
-import { MusicAcademyPaymentSuccess, MusicAcademyPaymentFailed, MusicAcademyPaymentCancelled } from './pages/MusicAcademyPayment.jsx'
-import MusicianMarketplace from './pages/MusicianMarketplace.jsx'
-import MerchStore from './pages/MerchStore.jsx'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { supabase } from './lib/supabaseClient'
 
-const nav=[['Home','/'],['Stream','/stream'],['Live Radio','/radio'],['Global Artists','/artists'],['Career Engine','/career'],['Join Artists','/join-artists'],['Musician Market','/marketplace'],['Merch','/merch'],['Advertise','/revenue'],['Music School','/music-academy'],['Radio Academy','/radio-academy'],['SA Protocol','/sa/protocol'],['Creator Hub','/creator-hub']]
-const releaseTypes=['Single','EP','Album','DJ Mix']
-const staticUrl=(path='')=>`${import.meta.env.BASE_URL}${String(path).replace(/^\//,'')}`
+const artists = [
+  { id: 'a1', name: 'Nia Mokoena', genre: 'Afro-Soul', country: 'South Africa', color: 'coral', bio: 'Warm vocals, African rhythms and modern soul.' },
+  { id: 'a2', name: 'Thembi Nova', genre: 'Amapiano', country: 'South Africa', color: 'violet', bio: 'Electronic grooves with a Johannesburg pulse.' },
+  { id: 'a3', name: 'Kofi Meridian', genre: 'Afrobeat', country: 'Ghana', color: 'cyan', bio: 'West African rhythm meets global pop craft.' },
+  { id: 'a4', name: 'Lebo Skye', genre: 'Hip-Hop', country: 'South Africa', color: 'gold', bio: 'Sharp storytelling from the streets to the world.' },
+  { id: 'a5', name: 'Ama Kora', genre: 'Gospel', country: 'Nigeria', color: 'green', bio: 'Contemporary worship with a continental sound.' },
+  { id: 'a6', name: 'Siyabonga R', genre: 'House', country: 'South Africa', color: 'blue', bio: 'Deep, soulful club music built for movement.' },
+]
 
-function Page({title,children,eyebrow='ALLEGRO-VIBEZ'}){return <main className="page"><div className="eyebrow">{eyebrow}</div><h2>{title}</h2>{children}</main>}
-function RequireLogin(){return <Navigate to="/login" replace/>}
+const tracks = [
+  { id: 't1', title: 'Golden Hour', artist: 'Nia Mokoena', genre: 'Afro-Soul', duration: '3:42', tag: 'FEATURED' },
+  { id: 't2', title: 'Midnight Johannesburg', artist: 'Thembi Nova', genre: 'Amapiano', duration: '4:08', tag: 'HOT' },
+  { id: 't3', title: 'Accra Sunrise', artist: 'Kofi Meridian', genre: 'Afrobeat', duration: '3:26', tag: 'NEW' },
+  { id: 't4', title: 'No Apologies', artist: 'Lebo Skye', genre: 'Hip-Hop', duration: '2:58', tag: 'TRENDING' },
+  { id: 't5', title: 'Grace Carries Me', artist: 'Ama Kora', genre: 'Gospel', duration: '4:21', tag: 'NEW' },
+  { id: 't6', title: 'Soweto Nights', artist: 'Siyabonga R', genre: 'House', duration: '5:12', tag: 'RADIO' },
+]
 
-function ShareButton(){
-  const[label,setLabel]=useState('Share')
-  async function share(){
-    const url=window.location.href
-    const data={title:'ALLEGRO-VIBEZ',text:'Discover ALLEGRO-VIBEZ — music, artists, live radio and creator opportunities.',url}
-    try{
-      if(navigator.share){
-        await navigator.share(data)
-        return
-      }
-      if(navigator.clipboard?.writeText){
-        await navigator.clipboard.writeText(url)
-      }else{
-        const input=document.createElement('textarea')
-        input.value=url
-        input.setAttribute('readonly','')
-        input.style.position='fixed'
-        input.style.opacity='0'
-        document.body.appendChild(input)
-        input.select()
-        document.execCommand('copy')
-        input.remove()
-      }
-      setLabel('Link copied')
-      window.setTimeout(()=>setLabel('Share'),1800)
-    }catch(error){
-      if(error?.name!=='AbortError'){
-        setLabel('Try again')
-        window.setTimeout(()=>setLabel('Share'),1800)
-      }
-    }
+const plans = [
+  { name: 'Listener', price: 'FREE', features: ['Discover music', 'Artist profiles', 'ALLEGRO Radio', 'Save favourites'] },
+  { name: 'Creator', price: 'R99', suffix: '/month', featured: true, features: ['Creator profile', 'Release workspace', 'Rights & contributor records', 'Prosperity dashboard'] },
+  { name: 'Pro Artist', price: 'R299', suffix: '/month', features: ['Everything in Creator', 'Advanced catalogue tools', 'Booking enquiries', 'Priority support'] },
+]
+
+const nav = [
+  ['/', 'Home'], ['/discover', 'Discover'], ['/radio', 'Radio'], ['/artists', 'Artists'], ['/creator', 'Creator Studio'], ['/rights', 'Rights'], ['/bookings', 'Bookings'],
+]
+
+function initials(name) {
+  return name.split(' ').map(word => word[0]).slice(0, 2).join('')
+}
+
+function Logo() {
+  return <Link className="brand" to="/" aria-label="ALLEGRO VIBEZ home"><span className="brand-mark">A</span><span>ALLEGRO <b>VIBEZ</b></span></Link>
+}
+
+function ArtistTile({ artist, onOpen }) {
+  return <button className="artist-tile" onClick={() => onOpen(artist)}>
+    <div className={`portrait ${artist.color}`}><span>{initials(artist.name)}</span><i /></div>
+    <div className="artist-meta"><strong>{artist.name}</strong><span>{artist.genre} · {artist.country}</span></div>
+  </button>
+}
+
+function TrackRow({ track, active, onPlay }) {
+  return <div className={`track-row ${active ? 'active' : ''}`}>
+    <button className="play-mini" onClick={() => onPlay(track)} aria-label={`Play ${track.title}`}>{active ? 'Ⅱ' : '▶'}</button>
+    <div className="track-art"><span>{track.title.slice(0, 1)}</span></div>
+    <div className="track-copy"><strong>{track.title}</strong><span>{track.artist} · {track.genre}</span></div>
+    <span className="track-tag">{track.tag}</span><span className="track-time">{track.duration}</span>
+  </div>
+}
+
+function Shell({ children, onSearch }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [menu, setMenu] = useState(false)
+  const [query, setQuery] = useState('')
+  const active = path => location.pathname === path || (path !== '/' && location.pathname.startsWith(path))
+
+  function submitSearch(event) {
+    event.preventDefault()
+    navigate(`/discover${query ? `?q=${encodeURIComponent(query)}` : ''}`)
+    onSearch?.(query)
+    setMenu(false)
   }
-  return <button className="share-button" type="button" onClick={share} aria-label="Share ALLEGRO-VIBEZ" title="Share this ALLEGRO-VIBEZ page"><span aria-hidden="true">↗</span>{label}</button>
+
+  return <>
+    <header className="topbar">
+      <Logo />
+      <nav className="desktop-nav">{nav.map(([path, label]) => <Link key={path} className={active(path) ? 'active' : ''} to={path}>{label}</Link>)}</nav>
+      <form className="search" onSubmit={submitSearch}><span>⌕</span><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search artists, music, genres..." aria-label="Search" /></form>
+      <button className="mobile-menu" onClick={() => setMenu(v => !v)} aria-label="Open navigation">☰</button>
+      <Link className="creator-cta" to="/creator">Join as Artist</Link>
+    </header>
+    {menu && <div className="mobile-nav">{nav.map(([path, label]) => <Link key={path} to={path} onClick={() => setMenu(false)}>{label}</Link>)}</div>}
+    <main>{children}</main>
+    <footer className="footer"><div><Logo /><p>More than music. A movement.<br />African-born. Global by design.</p></div><div><strong>Explore</strong><Link to="/discover">Discover</Link><Link to="/radio">ALLEGRO Radio</Link><Link to="/artists">Artists</Link></div><div><strong>Creators</strong><Link to="/creator">Creator Studio</Link><Link to="/rights">Rights</Link><Link to="/bookings">Bookings</Link></div><div><strong>Platform</strong><span>Privacy</span><span>Terms</span><span>Support</span></div><small>© {new Date().getFullYear()} ALLEGRO VIBEZ · An IZAKHONO-owned platform</small></footer>
+  </>
 }
 
-function Shell({session,children}){
-  async function signOut(){if(supabase)await supabase.auth.signOut();window.location.assign('/')}
-  return <><header className="site-header"><Link className="brand" to="/"><span>ALLEGRO</span><b>VIBEZ</b></Link><nav><a href="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/izakhono-payment-result/ai/?utm_source=allegro&utm_medium=portfolio&utm_campaign=ai_core_launch">IZAKHONO AI</a><a href={staticUrl("studio/index.html")}>Studio</a>{nav.map(([label,to])=><NavLink key={to} to={to}>{label}</NavLink>)}</nav><div className="account-links"><ShareButton/>{session?<><Link to="/dashboard">Dashboard</Link><Link to="/profile">Profile</Link><button className="text-button" onClick={signOut}>Log out</button></>:<><Link to="/login">Log in</Link><Link className="pill" to="/register">Join</Link></>}</div></header>{children}<footer><span>ALLEGRO-VIBEZ · More Than Music. A Movement.</span><span className="footer-links"><a href="https://yfawrenhudjomhnglfhq.supabase.co/functions/v1/izakhono-payment-result/ai/?utm_source=allegro&utm_medium=footer&utm_campaign=ai_core_launch">IZAKHONO AI</a><a href={staticUrl("terms.html")}>Terms</a><a href={staticUrl("privacy.html")}>Privacy</a></span></footer></>
+function Home({ onPlay, onArtist }) {
+  return <div className="page">
+    <section className="hero">
+      <div className="hero-grid" />
+      <div className="hero-copy"><span className="eyebrow">AFRICAN-BORN · GLOBAL ARTIST PROSPERITY</span><h1>YOUR SOUND.<br /><em>YOUR STAGE.</em><br />YOUR FUTURE.</h1><p>ALLEGRO VIBEZ is a creator-first music ecosystem for discovery, radio, artist identity, releases, rights, bookings and prosperity.</p><div className="hero-actions"><Link className="btn primary" to="/discover">Explore Music <span>→</span></Link><Link className="btn ghost" to="/creator">Build Your Artist Profile</Link></div><div className="hero-stats"><span><b>24/7</b> RADIO</span><span><b>GLOBAL</b> DISCOVERY</span><span><b>CREATOR</b> FIRST</span></div></div>
+      <div className="hero-art"><div className="orb orb-one" /><div className="orb orb-two" /><div className="sound-ring">A</div><div className="floating-card card-top"><span>NOW DISCOVERING</span><b>Nia Mokoena</b><small>Afro-Soul · Johannesburg</small></div><div className="floating-card card-bottom"><span>ALLEGRO RADIO</span><b>LIVE · 24/7</b><small>Music without borders</small></div></div>
+    </section>
+
+    <section className="section"><div className="section-head"><div><span className="eyebrow">LISTEN NOW</span><h2>Music with a point of view.</h2></div><Link to="/discover">View all →</Link></div><div className="track-list">{tracks.slice(0, 4).map(t => <TrackRow key={t.id} track={t} onPlay={onPlay} />)}</div></section>
+
+    <section className="feature-band"><div><span className="eyebrow">ALLEGRO RADIO</span><h2>Turn the volume up.<br /><em>Africa is broadcasting.</em></h2><p>Curated music, artist stories, culture and programmes — with a path for live presenter takeovers and creator-led shows.</p><Link className="btn primary" to="/radio">Listen Live →</Link></div><div className="radio-visual"><div className="live-dot" />LIVE<span>88</span><small>ALLEGRO</small></div></section>
+
+    <section className="section"><div className="section-head"><div><span className="eyebrow">ARTIST DISCOVERY</span><h2>Meet the movement.</h2></div><Link to="/artists">All artists →</Link></div><div className="artist-grid">{artists.slice(0, 4).map(a => <ArtistTile key={a.id} artist={a} onOpen={onArtist} />)}</div></section>
+
+    <section className="creator-banner"><div className="creator-number">01</div><div><span className="eyebrow">FOR ARTISTS</span><h2>Don't just upload music.<br /><em>Build an asset.</em></h2><p>Your artist identity, catalogue, rights, contributors, bookings and creator prosperity — designed to live in one ecosystem.</p><Link className="btn light" to="/creator">Enter Creator Studio →</Link></div><div className="creator-pillars"><span>IDENTITY</span><span>CATALOGUE</span><span>RIGHTS</span><span>BOOKINGS</span><span>PROSPERITY</span></div></section>
+  </div>
 }
 
-function Home(){return <main><section className="hero"><div className="eyebrow">AFRICAN-BORN · GLOBAL BY DESIGN</div><h1>Own your sound.<br/><em>Build your legacy.</em></h1><p>One trusted creator ecosystem to upload, protect, discover, distribute and monetise music.</p><div className="actions"><Link className="primary" to="/join-artists">Artists: Join ALLEGRO</Link><Link className="secondary" to="/revenue">Advertise / Get Featured</Link><Link className="secondary" to="/radio">Listen / Radio</Link></div></section><section className="cards"><article><span>01</span><h3>Create</h3><p>Build your artist identity, catalogue and release pipeline.</p></article><article><span>02</span><h3>Protect</h3><p>Rights declarations, controlled media and auditable workflows.</p></article><article><span>03</span><h3>Prosper</h3><p>Royalty visibility, wallet controls and creator growth.</p></article></section></main>}
+function Discover({ onPlay, onArtist }) {
+  const params = new URLSearchParams(useLocation().search)
+  const [genre, setGenre] = useState('All')
+  const [query, setQuery] = useState(params.get('q') || '')
+  const genres = ['All', ...new Set(tracks.map(t => t.genre))]
+  const filtered = useMemo(() => tracks.filter(t => (genre === 'All' || t.genre === genre) && `${t.title} ${t.artist}`.toLowerCase().includes(query.toLowerCase())), [genre, query])
+  return <div className="page"><section className="page-hero"><span className="eyebrow">DISCOVER</span><h1>Find your next <em>favourite.</em></h1><p>Explore music and artists from Africa and beyond.</p><div className="big-search"><span>⌕</span><input value={query} onChange={e => setQuery(e.target.value)} placeholder="Search the ALLEGRO catalogue..." /></div></section><section className="section compact"><div className="chips">{genres.map(g => <button key={g} className={genre === g ? 'selected' : ''} onClick={() => setGenre(g)}>{g}</button>)}</div><div className="track-list">{filtered.map(t => <TrackRow key={t.id} track={t} onPlay={onPlay} />)}{filtered.length === 0 && <div className="empty">No releases match that search yet.</div>}</div><div className="section-head artists-head"><div><span className="eyebrow">ARTISTS</span><h2>Creator identities</h2></div></div><div className="artist-grid">{artists.map(a => <ArtistTile key={a.id} artist={a} onOpen={onArtist} />)}</div></section></div>
+}
 
-function Discover(){const[releases,setReleases]=useState([]);const[loading,setLoading]=useState(true);useEffect(()=>{let active=true;(async()=>{if(!supabase){setLoading(false);return}const{data}=await supabase.from('releases').select('id,title,release_type,created_at').eq('status','published').order('created_at',{ascending:false}).limit(24);if(active){setReleases(data||[]);setLoading(false)}})();return()=>{active=false}},[]);return <Page title="Discover"><p>Approved releases from the ALLEGRO-VIBEZ catalogue.</p>{loading?<div className="empty">Loading catalogue…</div>:releases.length?<div className="release-grid">{releases.map(r=><article key={r.id}><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleDateString()}</small></article>)}</div>:<div className="empty">The global discovery engine is ready for the first published release.</div>}</Page>}
+function Radio() {
+  const schedule = [['06:00', 'Sunrise Africa', 'Morning music & stories'], ['09:00', 'ALLEGRO Select', 'Curated global sounds'], ['12:00', 'The Culture Hour', 'Artists, culture & conversations'], ['15:00', 'Vibe Check', 'New releases & discoveries'], ['18:00', 'Africa After Dark', 'Prime-time music'], ['22:00', 'Night Frequency', 'Deep sounds until sunrise']]
+  return <div className="page"><section className="radio-hero"><div><span className="eyebrow">ALLEGRO RADIO · LIVE</span><h1>24/7.<br /><em>Music without borders.</em></h1><p>A continuous audio home for discovery, culture, presenters and artists.</p><button className="btn primary" onClick={() => document.querySelector('#radio-player')?.scrollIntoView({ behavior: 'smooth' })}>Open Radio Player →</button></div><div className="big-disc"><span>ALLEGRO</span><b>RADIO</b><i /></div></section><section className="section" id="radio-player"><div className="live-player"><div className="live-eq"><i/><i/><i/><i/><i/></div><div><span>NOW PLAYING</span><h2>ALLEGRO Radio</h2><p>Curated music stream · Presenter takeover ready</p></div><button className="circle-play">▶</button></div><div className="section-head"><div><span className="eyebrow">PROGRAMME CLOCK</span><h2>What's on</h2></div></div><div className="schedule">{schedule.map(([time, name, desc]) => <div className="schedule-row" key={time}><b>{time}</b><strong>{name}</strong><span>{desc}</span><i>›</i></div>)}</div></section></div>
+}
 
-function Artists(){const[profiles,setProfiles]=useState([]);useEffect(()=>{let active=true;(async()=>{if(!supabase)return;const{data}=await supabase.from('profiles').select('id,display_name,stage_name,account_type,country,home_region,primary_genres,available_for_international_bookings').order('created_at',{ascending:false}).limit(24);if(active)setProfiles(data||[])})();return()=>{active=false}},[]);return <Page title="Artists"><p>Meet the creators shaping the next generation of music.</p>{profiles.length?<div className="release-grid">{profiles.map(p=><Link key={p.id} to={`/artist/${p.id}`}><article><div className="eyebrow">{p.home_region||p.account_type||'GLOBAL'}</div><h3>{p.stage_name||p.display_name||'ALLEGRO-VIBEZ Creator'}</h3><small>{p.country||'Global creator'}{p.primary_genres?.length?' · '+p.primary_genres.slice(0,2).join(' / '):''}</small>{p.available_for_international_bookings&&<span className="global-booking-badge">GLOBAL BOOKINGS OPEN</span>}</article></Link>)}</div>:<div className="empty">Verified artist profiles will appear here. <Link to="/join-artists">Become a founding creator.</Link></div>}</Page>}
+function Artists({ onArtist }) {
+  return <div className="page"><section className="page-hero"><span className="eyebrow">ARTISTS</span><h1>Creators are the <em>centre.</em></h1><p>Discover the people shaping the sound of a continent — and the world.</p></section><section className="section compact"><div className="artist-grid large">{artists.map(a => <ArtistTile key={a.id} artist={a} onOpen={onArtist} />)}</div><div className="join-strip"><div><span className="eyebrow">ARE YOU AN ARTIST?</span><h2>Own your identity. Grow your audience.</h2></div><Link className="btn primary" to="/creator">Join ALLEGRO →</Link></div></section></div>
+}
 
-function CreatorHub({session}){return session?<Page title="Creator Hub"><div className="cards hub-cards"><article><h3>Upload music</h3><p>Create Singles, EPs, Albums and DJ Mixes.</p><Link to="/upload">Open upload</Link></article><article><h3>My Music</h3><p>Manage your private and published catalogue.</p><Link to="/my-music">View catalogue</Link></article><article><h3>Rights</h3><p>Keep ownership and contributor records attached to releases.</p><Link to="/my-music">Choose a release</Link></article><article><h3>Career Engine</h3><p>Choose Launch, Grow, Revive or Relaunch and align ALLEGRO + KORA around the next chapter.</p><Link to="/career">Build career path</Link></article><article><h3>Screen Studio</h3><p>Send rights-cleared music videos, documentaries, movies, concert films and tour stories to KORA.</p><Link to="/screen">Open Screen Studio</Link></article><article><h3>Marketing Space</h3><p>Manage your public artist story, booking contact and marketing links.</p><Link to="/profile">Build marketing space</Link></article><article><h3>Booking Desk</h3><p>Receive performance enquiries, qualify promoters, issue transparent quotes and manage confirmed engagements.</p><Link to="/bookings">Manage bookings</Link></article><article><h3>Musician Marketplace</h3><p>Find vetted singers, musicians, producers and collaborators. Paid marketplace work carries ALLEGRO's fixed 10% platform fee.</p><Link to="/marketplace">Open marketplace</Link></article><article><h3>Prosperity</h3><p>Track transparent royalties and platform fees.</p><Link to="/prosperity">View earnings</Link></article><article><h3>Wallet</h3><p>See available funds and request auditable payouts.</p><Link to="/wallet">Open wallet</Link></article><article><h3>Plans</h3><p>Manage your creator operating plan and fee level.</p><Link to="/billing">Plans & billing</Link></article><article><h3>Moderation</h3><p>Admin-only release review and publishing controls.</p><Link to="/admin/review">Release moderation</Link></article><article><h3>Commercial Ops</h3><p>Admin-only payout operations and controls.</p><Link to="/admin/commercial">Payout operations</Link></article><article><h3>SHELTON PROTOCOL™ SA</h3><p>Build your South African governance, rights, protection and commercial-readiness passport.</p><Link to="/sa/protocol">Open Protocol Passport</Link></article><article><h3>Music Academy</h3><p>Learn instruments, voice, theory and sight reading from foundation to performance.</p><Link to="/music-academy">Open Music Academy</Link> · <Link to="/music-academy/my-learning">My Learning</Link></article><article><h3>Radio Academy</h3><p>Train for presenting, production, technical operations, advertising, rights and station management.</p><Link to="/radio-academy">Open Radio Academy</Link> · <Link to="/radio-academy/my-learning">My Learning</Link></article></div></Page>:<RequireLogin/>}
+function Creator() {
+  const [form, setForm] = useState({ name: '', email: '', country: '', genre: '' })
+  const [status, setStatus] = useState('')
+  const [session, setSession] = useState(null)
+  const [busy, setBusy] = useState(false)
+  useEffect(() => { supabase.auth.getSession().then(({ data }) => setSession(data.session)).catch(() => {}) }, [])
+  async function submit(e) {
+    e.preventDefault(); setBusy(true); setStatus('')
+    try {
+      if (form.email) {
+        const { error } = await supabase.auth.signUp({ email: form.email, password: `${crypto.randomUUID()}A!9`, options: { data: { artist_name: form.name, country: form.country, genre: form.genre } } })
+        if (error && !/already registered/i.test(error.message)) throw error
+      }
+      localStorage.setItem('allegro_creator_interest', JSON.stringify({ ...form, submitted_at: new Date().toISOString() }))
+      setStatus('Your creator profile request is captured. Check your email if account confirmation is required.')
+    } catch (error) { setStatus(error.message || 'We could not complete that request yet. Please try again.') } finally { setBusy(false) }
+  }
+  return <div className="page"><section className="creator-hero"><div><span className="eyebrow">CREATOR STUDIO</span><h1>Your music.<br /><em>Your business.</em></h1><p>ALLEGRO gives independent artists a professional home for identity, releases, rights, bookings and prosperity.</p><div className="creator-metrics"><span><b>01</b> Artist identity</span><span><b>02</b> Catalogue</span><span><b>03</b> Rights</span><span><b>04</b> Prosperity</span></div></div><div className="creator-console"><div className="console-top"><span>CREATOR OS</span><b>{session ? 'CONNECTED' : 'READY'}</b></div><div className="console-stat"><strong>R 0.00</strong><span>Creator balance</span></div><div className="mini-bars"><i/><i/><i/><i/><i/><i/><i/></div><div className="console-links"><span>Releases</span><span>Rights</span><span>Bookings</span><span>Analytics</span></div></div></section><section className="section creator-layout"><div><span className="eyebrow">START HERE</span><h2>Build your creator identity.</h2><p className="lead">Join the platform now. Payment and payout features are activated only when the required production provider configuration and verification are present.</p><div className="feature-list"><div><b>01</b><span><strong>Artist profile</strong><small>Your public identity, bio, genres and links.</small></span></div><div><b>02</b><span><strong>Release workspace</strong><small>Prepare music and artwork for review.</small></span></div><div><b>03</b><span><strong>Rights records</strong><small>Keep contributors and ownership evidence organised.</small></span></div><div><b>04</b><span><strong>Prosperity</strong><small>Track revenue, royalties and payout requests.</small></span></div></div></div><form className="creator-form" onSubmit={submit}><h3>Creator application</h3><label>Artist / stage name<input required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} /></label><label>Email<input required type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} /></label><div className="two"><label>Country<input value={form.country} onChange={e => setForm({ ...form, country: e.target.value })} /></label><label>Primary genre<input value={form.genre} onChange={e => setForm({ ...form, genre: e.target.value })} /></label></div><button className="btn primary full" disabled={busy}>{busy ? 'Creating...' : 'Create Creator Profile →'}</button>{status && <p className="form-status">{status}</p>}<small>By continuing you agree to ALLEGRO's platform terms and privacy policy.</small></form></section><section className="section"><div className="section-head"><div><span className="eyebrow">CREATOR PLANS</span><h2>Start lean. Grow with us.</h2></div></div><div className="plan-grid">{plans.map(plan => <div className={`plan ${plan.featured ? 'featured' : ''}`} key={plan.name}>{plan.featured && <span className="plan-badge">INTRODUCTION</span>}<h3>{plan.name}</h3><div className="price">{plan.price}<small>{plan.suffix}</small></div>{plan.features.map(f => <span key={f}>✓ {f}</span>)}<button className="btn ghost full">Choose {plan.name}</button></div>)}</div></section></div>
+}
 
-function Dashboard({session}){const[count,setCount]=useState(null);useEffect(()=>{let active=true;(async()=>{if(!supabase||!session)return;const{count:total}=await supabase.from('releases').select('*',{count:'exact',head:true}).eq('owner_id',session.user.id);if(active)setCount(total||0)})();return()=>{active=false}},[session]);return session?<Page title="Dashboard"><p>Welcome back, {session.user.email}.</p><div className="cards"><article><h3>Release pipeline</h3><strong>{count===null?'—':count}</strong><p>Total releases in your catalogue.</p><Link to="/my-music">Manage releases</Link></article><article><h3>Prosperity</h3><strong>Royalty ledger</strong><p>See gross, fees and net creator earnings.</p><Link to="/prosperity">View earnings</Link></article><article><h3>Creator wallet</h3><strong>Payout ready</strong><p>Track available funds and payout requests.</p><Link to="/wallet">Open wallet</Link></article><article><h3>SHELTON PROTOCOL™ SA</h3><strong>Governance passport</strong><p>Move from registered to verified, protected and commercial-ready.</p><Link to="/sa/protocol">Open Protocol</Link></article></div></Page>:<RequireLogin/>}
+function Rights() {
+  const principles = [['CONTENT', 'Who created or supplied it?'], ['OWNER', 'Who controls the rights?'], ['LICENCE', 'What permission exists?'], ['TERRITORY', 'Where can it be used?'], ['TERM', 'When does permission expire?'], ['EVIDENCE', 'Can the claim be proven?']]
+  return <div className="page"><section className="page-hero"><span className="eyebrow">RIGHTS & TRUST</span><h1>Protect the music.<br /><em>Protect the people.</em></h1><p>ALLEGRO is designed around rights-aware publishing instead of treating rights as an afterthought.</p></section><section className="section"><div className="rights-grid">{principles.map(([title, text], i) => <div className="rights-card" key={title}><span>0{i + 1}</span><strong>{title}</strong><p>{text}</p></div>)}</div><div className="rights-rule"><b>NO RIGHTS RECORD</b><span>→</span><strong>NO PUBLICATION</strong><p>Evidence-first workflows reduce accidental misuse and give creators a clearer record of what has been approved.</p></div></section></div>
+}
 
-function Upload({session}){const nav=useNavigate();const[title,setTitle]=useState('');const[releaseType,setReleaseType]=useState('Single');const[audio,setAudio]=useState(null);const[artwork,setArtwork]=useState(null);const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function uploadAsset(file,folder){if(!file)return null;const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_');const path=`${session.user.id}/${folder}/${crypto.randomUUID()}-${safe}`;const{error}=await supabase.storage.from('release-assets').upload(path,file,{upsert:false});if(error)throw error;return path}async function submit(e){e.preventDefault();if(!supabase){setMessage('Supabase is not configured.');return}setSaving(true);setMessage('');try{const audioPath=await uploadAsset(audio,'audio');const artworkPath=await uploadAsset(artwork,'artwork');const{error}=await supabase.from('releases').insert({owner_id:session.user.id,title:title.trim(),release_type:releaseType,status:'draft',audio_path:audioPath,artwork_path:artworkPath});if(error)throw error;setMessage('Draft saved successfully.');setTimeout(()=>nav('/my-music'),450)}catch(error){setMessage(error.message||'Could not save this release.')}finally{setSaving(false)}}return session?<Page title="Upload"><p>Create a secure draft release. Audio and artwork are stored privately under your account.</p><form className="panel" onSubmit={submit}><label>Release title<input value={title} onChange={e=>setTitle(e.target.value)} maxLength="180" required/></label><label>Release type<select value={releaseType} onChange={e=>setReleaseType(e.target.value)}>{releaseTypes.map(type=><option key={type}>{type}</option>)}</select></label><label>Audio master<input type="file" accept="audio/*" onChange={e=>setAudio(e.target.files?.[0]||null)}/></label><label>Artwork<input type="file" accept="image/*" onChange={e=>setArtwork(e.target.files?.[0]||null)}/></label>{message&&<div className="notice">{message}</div>}<button className="primary" disabled={saving}>{saving?'Saving…':'Save draft release'}</button></form></Page>:<RequireLogin/>}
+function Bookings() {
+  return <div className="page"><section className="page-hero"><span className="eyebrow">ARTIST BOOKINGS</span><h1>Put great artists<br /><em>on great stages.</em></h1><p>Structured booking enquiries for festivals, venues, brands, media and private events.</p></section><section className="section booking-layout"><div className="booking-art"><span>BOOK</span><b>THE<br />VIBE.</b></div><form className="booking-form" onSubmit={e => { e.preventDefault(); setTimeout(() => alert('Booking enquiry captured for follow-up.'), 0) }}><h2>Booking enquiry</h2><div className="two"><label>Contact name<input required /></label><label>Company / organisation<input /></label></div><div className="two"><label>Email<input required type="email" /></label><label>Phone<input /></label></div><label>Artist / genre<input placeholder="Who would you like to book?" /></label><div className="two"><label>Event date<input type="date" /></label><label>Country / city<input /></label></div><label>Tell us about the event<textarea rows="5" placeholder="Venue, audience, performance type, budget range and requirements..." /></label><button className="btn primary full">Send Booking Enquiry →</button><small>Final booking, contracts, fees and rights remain subject to artist/management approval.</small></form></section></div>
+}
 
-function MyMusic({session}){const[releases,setReleases]=useState([]);const[loading,setLoading]=useState(true);const load=useCallback(async()=>{if(!supabase||!session){setLoading(false);return}setLoading(true);const{data}=await supabase.from('releases').select('id,title,release_type,status,created_at,review_note').eq('owner_id',session.user.id).order('created_at',{ascending:false});setReleases(data||[]);setLoading(false)},[session]);useEffect(()=>{load()},[load]);return session?<Page title="My Music"><p>Your private release catalogue, submission status and rights records.</p>{loading?<div className="empty">Loading your catalogue…</div>:releases.length?<div className="release-list">{releases.map(r=><article key={r.id}><div><div className="eyebrow">{r.release_type}</div><h3>{r.title}</h3><small>{new Date(r.created_at).toLocaleString()}</small>{r.review_note&&<p className="review-note">Review note: {r.review_note}</p>}<div className="release-links"><Link to={`/rights/${r.id}`}>Rights & contributors</Link></div><SubmitReleaseButton release={r} onSubmitted={load}/></div><span className={`status status-${r.status}`}>{r.status}</span></article>)}</div>:<div className="empty">No releases yet. <Link to="/upload">Create your first release.</Link></div>}</Page>:<RequireLogin/>}
+function Account() { return <div className="page"><section className="page-hero"><span className="eyebrow">ACCOUNT</span><h1>Your ALLEGRO<br /><em>workspace.</em></h1><p>Sign-in and account management are powered by the configured authentication service.</p><Link className="btn primary" to="/creator">Go to Creator Studio →</Link></section></div> }
 
-function Login({onSession}){const nav=useNavigate();const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);const{data,error}=await supabase.auth.signInWithPassword({email,password});setSaving(false);if(error){setMessage(error.message);return}onSession(data.session);nav('/dashboard')}return <Auth title="Log in" message={message}><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><label>Password<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Logging in…':'Log in'}</button></form><p><Link to="/reset-password">Forgot password?</Link></p><p>New here? <Link to="/register">Create account</Link></p></Auth>}
+function App() {
+  const [activeTrack, setActiveTrack] = useState(null)
+  const [artist, setArtist] = useState(null)
+  const location = useLocation()
+  const audioRef = useRef(null)
+  const play = track => { setActiveTrack(active => active?.id === track.id ? null : track); if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0 } }
+  useEffect(() => { document.title = 'ALLEGRO VIBEZ — Music. Radio. Artists. Rights.'; window.scrollTo({ top: 0, behavior: 'instant' }) }, [location.pathname])
+  let content
+  if (location.pathname === '/') content = <Home onPlay={play} onArtist={setArtist} />
+  else if (location.pathname.startsWith('/discover')) content = <Discover onPlay={play} onArtist={setArtist} />
+  else if (location.pathname.startsWith('/radio')) content = <Radio />
+  else if (location.pathname.startsWith('/artists')) content = <Artists onArtist={setArtist} />
+  else if (location.pathname.startsWith('/creator')) content = <Creator />
+  else if (location.pathname.startsWith('/rights')) content = <Rights />
+  else if (location.pathname.startsWith('/bookings')) content = <Bookings />
+  else content = <Account />
+  return <Shell><>{content}{activeTrack && <div className="player"><button className="player-play" onClick={() => setActiveTrack(null)}>Ⅱ</button><div className="player-art">{activeTrack.title[0]}</div><div><strong>{activeTrack.title}</strong><span>{activeTrack.artist}</span></div><div className="player-progress"><i /></div><span>{activeTrack.duration}</span><button className="player-next">♡</button></div>}{artist && <div className="modal-backdrop" onClick={() => setArtist(null)}><div className="artist-modal" onClick={e => e.stopPropagation()}><button className="close" onClick={() => setArtist(null)}>×</button><div className={`portrait huge ${artist.color}`}><span>{initials(artist.name)}</span><i /></div><span className="eyebrow">ARTIST</span><h2>{artist.name}</h2><p>{artist.bio}</p><div className="modal-tags"><span>{artist.genre}</span><span>{artist.country}</span></div><Link className="btn primary full" to="/bookings" onClick={() => setArtist(null)}>Enquire for booking →</Link></div></div>}<audio ref={audioRef} /></></Shell>
+}
 
-function ResetPassword(){const[email,setEmail]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);const{error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:`${window.location.origin}/update-password`});setSaving(false);setMessage(error?error.message:'Password-reset instructions have been sent if this account exists.')}return <Auth title="Reset password" message={message}><form onSubmit={submit}><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Sending…':'Send reset link'}</button></form><p><Link to="/login">Back to log in</Link></p></Auth>}
-
-function UpdatePassword(){const nav=useNavigate();const[password,setPassword]=useState('');const[confirmPassword,setConfirmPassword]=useState('');const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);const[ready,setReady]=useState(false);useEffect(()=>{if(!supabase)return;let active=true;supabase.auth.getSession().then(({data})=>{if(active&&data.session)setReady(true)});const{data}=supabase.auth.onAuthStateChange((event,session)=>{if(active&&session&&(event==='PASSWORD_RECOVERY'||event==='SIGNED_IN'))setReady(true)});return()=>{active=false;data.subscription.unsubscribe()}},[]);async function submit(e){e.preventDefault();if(!supabase){setMessage('Production authentication is not configured yet.');return}if(password.length<8){setMessage('Use at least 8 characters for your new password.');return}if(password!==confirmPassword){setMessage('The passwords do not match.');return}setSaving(true);const{error}=await supabase.auth.updateUser({password});setSaving(false);if(error){setMessage(error.message);return}setMessage('Password updated successfully. Taking you to your dashboard…');setTimeout(()=>nav('/dashboard'),800)}return <Auth title="Choose a new password" message={message}>{ready?<form onSubmit={submit}><label>New password<input type="password" minLength="8" value={password} onChange={e=>setPassword(e.target.value)} required/></label><label>Confirm new password<input type="password" minLength="8" value={confirmPassword} onChange={e=>setConfirmPassword(e.target.value)} required/></label><button className="primary" disabled={saving}>{saving?'Updating…':'Update password'}</button></form>:<div className="notice">Open the password-reset link sent to your email. If the link has expired, request a new one.</div>}<p><Link to="/reset-password">Request another reset link</Link></p></Auth>}
-
-function Register(){const nav=useNavigate();const[displayName,setDisplayName]=useState('');const[stageName,setStageName]=useState('');const[accountType,setAccountType]=useState('artist');const[email,setEmail]=useState('');const[password,setPassword]=useState('');const[accepted,setAccepted]=useState(false);const[message,setMessage]=useState('');const[saving,setSaving]=useState(false);const[verificationEmail,setVerificationEmail]=useState('');const[resending,setResending]=useState(false);async function submit(e){e.preventDefault();if(!accepted){setMessage('Please accept the Terms of Use and Privacy Notice to create an account.');return}if(!supabase){setMessage('Production authentication is not configured yet.');return}setSaving(true);setMessage('');const normalizedEmail=email.trim().toLowerCase();const{data,error}=await supabase.auth.signUp({email:normalizedEmail,password,options:{emailRedirectTo:`${window.location.origin}/login`,data:{display_name:displayName.trim(),stage_name:stageName.trim(),account_type:accountType,terms_accepted_at:new Date().toISOString()}}});setSaving(false);if(error){setMessage(error.message);return}if(data.session){nav('/dashboard');return}setVerificationEmail(normalizedEmail)}async function resend(){if(!supabase||!verificationEmail)return;setResending(true);setMessage('');const{error}=await supabase.auth.resend({type:'signup',email:verificationEmail,options:{emailRedirectTo:`${window.location.origin}/login`}});setResending(false);setMessage(error?error.message:'Verification email sent again. Check your inbox and spam folder.')}if(verificationEmail)return <Auth title="Verify your email" message={message}><p>We created your ALLEGRO-VIBEZ account for <strong>{verificationEmail}</strong>.</p><p>Open the verification email and confirm your address. After confirmation, return here and log in.</p><div className="actions"><button className="secondary" onClick={resend} disabled={resending}>{resending?'Sending…':'Resend verification email'}</button><Link className="primary inline" to="/login">Go to login</Link></div></Auth>;return <Auth title="Join ALLEGRO-VIBEZ" message={message}><form onSubmit={submit}><label>Your name<input value={displayName} onChange={e=>setDisplayName(e.target.value)} required/></label><label>Stage / creator name<input value={stageName} onChange={e=>setStageName(e.target.value)} placeholder="Optional"/></label><label>Account type<select value={accountType} onChange={e=>setAccountType(e.target.value)}><option value="artist">Artist</option><option value="dj">DJ</option><option value="producer">Producer</option><option value="songwriter">Songwriter</option><option value="band">Band</option><option value="choir">Choir</option><option value="label">Record Label</option></select></label><label>Email<input type="email" value={email} onChange={e=>setEmail(e.target.value)} autoComplete="email" required/></label><label>Password<input type="password" minLength="8" value={password} onChange={e=>setPassword(e.target.value)} autoComplete="new-password" required/></label><label className="consent"><input type="checkbox" checked={accepted} onChange={e=>setAccepted(e.target.checked)} required/><span>I agree to the <a href={staticUrl("terms.html")} target="_blank" rel="noreferrer">Terms of Use</a> and acknowledge the <a href={staticUrl("privacy.html")} target="_blank" rel="noreferrer">Privacy Notice</a>.</span></label><button className="primary" disabled={saving||!accepted}>{saving?'Creating account…':'Create account'}</button></form></Auth>}
-function Auth({title,message,children}){return <main className="auth"><section><div className="eyebrow">SECURE CREATOR ACCESS</div><h2>{title}</h2>{!isSupabaseConfigured&&<div className="notice">Supabase environment variables are required for live authentication.</div>}{message&&<div className="notice">{message}</div>}{children}</section></main>}
-
-export default function App(){const[session,setSession]=useState(null);useEffect(()=>{if(!supabase)return;supabase.auth.getSession().then(({data})=>setSession(data.session));const{data}=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return()=>data.subscription.unsubscribe()},[]);return <Shell session={session}><Routes><Route path="/" element={<HomeGlobal/>}/><Route path="/stream" element={<Stream/>}/><Route path="/radio" element={<Radio/>}/><Route path="/revenue" element={<Revenue/>}/><Route path="/join-artists" element={<ArtistJoin/>}/><Route path="/career" element={<CareerEngine session={session}/>}/><Route path="/screen" element={<ScreenStudio session={session}/>}/><Route path="/artist/:artistId" element={<ArtistSpace/>}/><Route path="/artist/:artistId/book" element={<ArtistBookingRequest/>}/><Route path="/music-academy" element={<MusicAcademy/>}/><Route path="/music-academy/my-learning" element={<MusicAcademyLearner/>}/><Route path="/music-academy/payment-success" element={<MusicAcademyPaymentSuccess/>}/><Route path="/music-academy/payment-failed" element={<MusicAcademyPaymentFailed/>}/><Route path="/music-academy/payment-cancelled" element={<MusicAcademyPaymentCancelled/>}/><Route path="/radio-academy" element={<RadioAcademy session={session}/>}/><Route path="/radio-academy/my-learning" element={<RadioAcademyLearner session={session}/>}/><Route path="/discover" element={<Discover/>}/><Route path="/artists" element={<Artists/>}/><Route path="/marketplace" element={<MusicianMarketplace session={session}/>}/><Route path="/merch" element={<MerchStore session={session}/>}/><Route path="/login" element={<Login onSession={setSession}/>}/><Route path="/reset-password" element={<ResetPassword/>}/><Route path="/update-password" element={<UpdatePassword/>}/><Route path="/register" element={<Register/>}/><Route path="/dashboard" element={<Dashboard session={session}/>}/><Route path="/creator-hub" element={<CreatorHub session={session}/>}/><Route path="/sa/protocol" element={<SheltonProtocol session={session}/>}/><Route path="/bookings" element={<ArtistBookingDesk session={session}/>}/><Route path="/bookings/:bookingId/contract" element={<BookingContractShield session={session}/>}/><Route path="/upload" element={<Upload session={session}/>}/><Route path="/my-music" element={<MyMusic session={session}/>}/><Route path="/rights/:releaseId" element={<Rights session={session}/>}/><Route path="/profile" element={<ProfilePage session={session}/>}/><Route path="/prosperity" element={<ProsperityPage session={session}/>}/><Route path="/billing" element={<BillingPage session={session}/>}/><Route path="/wallet" element={<WalletPage session={session}/>}/><Route path="/admin/review" element={<AdminReviewPage session={session}/>}/><Route path="/admin/commercial" element={<AdminCommercialPage session={session}/>}/><Route path="*" element={<Page title="Page not found"><Link to="/">Return home</Link></Page>}/></Routes></Shell>}
+export default App
