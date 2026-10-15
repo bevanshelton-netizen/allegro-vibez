@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient'
 import { ArtistBookingRequest } from './pages/ArtistBooking.jsx'
+import BookingContractShield from './pages/BookingContractShield.jsx'
 
 const artists = [
   { id: 'a1', name: 'Nia Mokoena', genre: 'Afro-Soul', country: 'South Africa', color: 'coral', bio: 'Warm vocals, African rhythms and modern soul.' },
@@ -153,8 +154,18 @@ function Account() { return <div className="page"><section className="page-hero"
 function App() {
   const [activeTrack, setActiveTrack] = useState(null)
   const [artist, setArtist] = useState(null)
+  const [session, setSession] = useState(null)
   const location = useLocation()
   const audioRef = useRef(null)
+  useEffect(() => {
+    if (!supabase) { setSession(null); return }
+    let active = true
+    supabase.auth.getSession().then(({ data }) => { if (active) setSession(data.session || null) }).catch(() => {})
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, nextSession) => {
+      if (active) setSession(nextSession || null)
+    })
+    return () => { active = false; subscription.unsubscribe() }
+  }, [])
   const play = track => { setActiveTrack(active => active?.id === track.id ? null : track); if (audioRef.current) { audioRef.current.pause(); audioRef.current.currentTime = 0 } }
   useEffect(() => { document.title = 'ALLEGRO VIBEZ — Music. Radio. Artists. Rights.'; window.scrollTo({ top: 0, behavior: 'instant' }) }, [location.pathname])
   let content
@@ -165,6 +176,7 @@ function App() {
   else if (location.pathname.startsWith('/creator')) content = <Creator />
   else if (location.pathname.startsWith('/rights')) content = <Rights />
   else if (/^\/artist\/[^/]+\/book$/.test(location.pathname)) content = <ArtistBookingRequest /> // /artist/:artistId/book
+  else if (/^\/bookings\/[^/]+\/contract$/.test(location.pathname)) content = <BookingContractShield session={session} bookingId={decodeURIComponent(location.pathname.split('/')[2] || '')} />
   else if (location.pathname.startsWith('/bookings')) content = <Bookings />
   else content = <Account />
   return <Shell><>{content}{activeTrack && <div className="player"><button className="player-play" onClick={() => setActiveTrack(null)}>Ⅱ</button><div className="player-art">{activeTrack.title[0]}</div><div><strong>{activeTrack.title}</strong><span>{activeTrack.artist}</span></div><div className="player-progress"><i /></div><span>{activeTrack.duration}</span><button className="player-next">♡</button></div>}{artist && <div className="modal-backdrop" onClick={() => setArtist(null)}><div className="artist-modal" onClick={e => e.stopPropagation()}><button className="close" onClick={() => setArtist(null)}>×</button><div className={`portrait huge ${artist.color}`}><span>{initials(artist.name)}</span><i /></div><span className="eyebrow">ARTIST</span><h2>{artist.name}</h2><p>{artist.bio}</p><div className="modal-tags"><span>{artist.genre}</span><span>{artist.country}</span></div><Link className="btn primary full" to="/bookings" onClick={() => setArtist(null)}>Enquire for booking →</Link></div></div>}<audio ref={audioRef} /></></Shell>
