@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { supabase } from './lib/supabaseClient'
 import { ArtistBookingRequest } from './pages/ArtistBooking.jsx'
 import BookingContractShield from './pages/BookingContractShield.jsx'
+import SheltonProtocol from './pages/SheltonProtocol.jsx'
 
 const artists = [
   { id: 'a1', name: 'Nia Mokoena', genre: 'Afro-Soul', country: 'South Africa', color: 'coral', bio: 'Warm vocals, African rhythms and modern soul.' },
@@ -175,6 +176,7 @@ function App() {
   else if (location.pathname.startsWith('/artists')) content = <Artists onArtist={setArtist} />
   else if (location.pathname.startsWith('/creator')) content = <Creator />
   else if (location.pathname.startsWith('/rights')) content = <Rights />
+  else if (location.pathname === '/sa/protocol' || location.pathname.startsWith('/sa/protocol/')) content = <SheltonProtocol session={session} />
   else if (/^\/artist\/[^/]+\/book$/.test(location.pathname)) content = <ArtistBookingRequest /> // /artist/:artistId/book
   else if (/^\/bookings\/[^/]+\/contract$/.test(location.pathname)) content = <BookingContractShield session={session} bookingId={decodeURIComponent(location.pathname.split('/')[2] || '')} />
   else if (location.pathname.startsWith('/bookings')) content = <Bookings />
