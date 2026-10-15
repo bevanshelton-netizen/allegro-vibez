@@ -11,8 +11,9 @@ function moneyMinor(value,currency='ZAR'){
 
 function yesNo(value){return value===true?'Yes':value===false?'No':'Not specified'}
 
-export default function BookingContractShield({session}){
-  const{bookingId}=useParams()
+export default function BookingContractShield({session, bookingId: bookingIdProp}){
+  const params = useParams()
+  const bookingId = bookingIdProp || params.bookingId
   const[booking,setBooking]=useState(null)
   const[profile,setProfile]=useState(null)
   const[settings,setSettings]=useState(null)
