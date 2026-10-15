@@ -95,6 +95,18 @@ function Home({ onPlay, onArtist }) {
       <div className="hero-art"><div className="orb orb-one" /><div className="orb orb-two" /><div className="sound-ring">A</div><div className="floating-card card-top"><span>NOW DISCOVERING</span><b>Nia Mokoena</b><small>Afro-Soul · Johannesburg</small></div><div className="floating-card card-bottom"><span>ALLEGRO RADIO</span><b>LIVE · 24/7</b><small>Music without borders</small></div></div>
     </section>
 
+    <section className="section" aria-labelledby="what-allegro-does">
+      <div className="section-head"><div><span className="eyebrow">WHAT IS ALLEGRO VIBEZ?</span><h2 id="what-allegro-does">One platform. The whole music journey.</h2></div></div>
+      <p className="section-intro">ALLEGRO VIBEZ connects listeners, artists and music businesses in one place — from discovering new sounds to building an artist career, protecting music rights and finding performance opportunities.</p>
+      <div className="artist-grid">
+        <article className="feature-card"><span className="eyebrow">01 · FOR LISTENERS</span><h3>Discover and listen</h3><p>Explore music, find new artists and tune into ALLEGRO Radio for sounds and stories from Africa and around the world.</p><Link to="/discover">Explore music →</Link></article>
+        <article className="feature-card"><span className="eyebrow">02 · FOR ARTISTS</span><h3>Build your music career</h3><p>Create your artist presence, showcase releases, organise your catalogue and give fans and industry partners a clear place to find you.</p><Link to="/creator">Enter Creator Studio →</Link></article>
+        <article className="feature-card"><span className="eyebrow">03 · RIGHTS & CONTROL</span><h3>Keep track of your work</h3><p>Organise music ownership information, contributors and rights records so important details are easier to manage and review.</p><Link to="/rights">Explore rights tools →</Link></article>
+        <article className="feature-card"><span className="eyebrow">04 · OPPORTUNITIES</span><h3>Turn visibility into opportunity</h3><p>Make it easier for event organisers and partners to discover artists and submit booking requests through the platform.</p><Link to="/bookings">Explore bookings →</Link></article>
+      </div>
+      <div className="join-strip"><div><span className="eyebrow">MADE FOR THE MUSIC COMMUNITY</span><h2>Listen. Create. Protect. Connect.</h2><p>Whether you love music, make it or work in the industry, start with the part that matters to you.</p></div><Link className="btn primary" to="/artists">Meet the artists →</Link></div>
+    </section>
+
     <section className="section"><div className="section-head"><div><span className="eyebrow">LISTEN NOW</span><h2>Music with a point of view.</h2></div><Link to="/discover">View all →</Link></div><div className="track-list">{tracks.slice(0, 4).map(t => <TrackRow key={t.id} track={t} onPlay={onPlay} />)}</div></section>
 
     <section className="feature-band"><div><span className="eyebrow">ALLEGRO RADIO</span><h2>Turn the volume up.<br /><em>Africa is broadcasting.</em></h2><p>Curated music, artist stories, culture and programmes — with a path for live presenter takeovers and creator-led shows.</p><Link className="btn primary" to="/radio">Listen Live →</Link></div><div className="radio-visual"><div className="live-dot" />LIVE<span>88</span><small>ALLEGRO</small></div></section>
