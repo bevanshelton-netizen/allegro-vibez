@@ -4,6 +4,8 @@ import { supabase } from './lib/supabaseClient'
 import { ArtistBookingRequest } from './pages/ArtistBooking.jsx'
 import BookingContractShield from './pages/BookingContractShield.jsx'
 import SheltonProtocol from './pages/SheltonProtocol.jsx'
+import MusicAcademy from './pages/MusicAcademy.jsx'
+import MusicAcademyLearner from './pages/MusicAcademyLearner.jsx'
 
 const artists = [
   { id: 'a1', name: 'Nia Mokoena', genre: 'Afro-Soul', country: 'South Africa', color: 'coral', bio: 'Warm vocals, African rhythms and modern soul.' },
@@ -150,6 +152,20 @@ function Bookings() {
   return <div className="page"><section className="page-hero"><span className="eyebrow">ARTIST BOOKINGS</span><h1>Put great artists<br /><em>on great stages.</em></h1><p>Structured booking enquiries for festivals, venues, brands, media and private events.</p></section><section className="section booking-layout"><div className="booking-art"><span>BOOK</span><b>THE<br />VIBE.</b></div><form className="booking-form" onSubmit={e => { e.preventDefault(); setTimeout(() => alert('Booking enquiry captured for follow-up.'), 0) }}><h2>Booking enquiry</h2><div className="two"><label>Contact name<input required /></label><label>Company / organisation<input /></label></div><div className="two"><label>Email<input required type="email" /></label><label>Phone<input /></label></div><label>Artist / genre<input placeholder="Who would you like to book?" /></label><div className="two"><label>Event date<input type="date" /></label><label>Country / city<input /></label></div><label>Tell us about the event<textarea rows="5" placeholder="Venue, audience, performance type, budget range and requirements..." /></label><button className="btn primary full">Send Booking Enquiry →</button><small>Final booking, contracts, fees and rights remain subject to artist/management approval.</small></form></section></div>
 }
 
+
+function MusicAcademyPaymentResult() {
+  const location = useLocation()
+  const success = location.pathname === '/music-academy/payment-success'
+  const cancelled = location.pathname === '/music-academy/payment-cancelled'
+  const title = success ? 'Payment submitted for verification' : cancelled ? 'Checkout cancelled' : 'Payment not completed'
+  const message = success
+    ? 'Your payment provider has returned you to ALLEGRO. Learner access is only activated after the server verifies the payment.'
+    : cancelled
+      ? 'No learner access has been granted. You can return to the Music Academy and try again when ready.'
+      : 'We could not confirm a completed payment. No learner access has been granted; check the payment provider status before retrying.'
+  return <div className="page"><section className="page-hero"><span className="eyebrow">ALLEGRO MUSIC ACADEMY</span><h1>{title}</h1><p>{message}</p><div className="hero-actions"><Link className="btn primary" to="/music-academy/learn">Check learner access</Link><Link className="btn ghost" to="/music-academy">Back to Music Academy</Link></div></section></div>
+}
+
 function Account() { return <div className="page"><section className="page-hero"><span className="eyebrow">ACCOUNT</span><h1>Your ALLEGRO<br /><em>workspace.</em></h1><p>Sign-in and account management are powered by the configured authentication service.</p><Link className="btn primary" to="/creator">Go to Creator Studio →</Link></section></div> }
 
 function App() {
@@ -176,6 +192,11 @@ function App() {
   else if (location.pathname.startsWith('/artists')) content = <Artists onArtist={setArtist} />
   else if (location.pathname.startsWith('/creator')) content = <Creator />
   else if (location.pathname.startsWith('/rights')) content = <Rights />
+  else if (location.pathname === '/music-academy/payment-success') content = <MusicAcademyPaymentResult />
+  else if (location.pathname === '/music-academy/payment-failed') content = <MusicAcademyPaymentResult />
+  else if (location.pathname === '/music-academy/payment-cancelled') content = <MusicAcademyPaymentResult />
+  else if (location.pathname === '/music-academy/learn') content = <MusicAcademyLearner />
+  else if (location.pathname === '/music-academy' || location.pathname.startsWith('/music-academy/')) content = <MusicAcademy />
   else if (location.pathname === '/sa/protocol' || location.pathname.startsWith('/sa/protocol/')) content = <SheltonProtocol session={session} />
   else if (/^\/artist\/[^/]+\/book$/.test(location.pathname)) content = <ArtistBookingRequest /> // /artist/:artistId/book
   else if (/^\/bookings\/[^/]+\/contract$/.test(location.pathname)) content = <BookingContractShield session={session} bookingId={decodeURIComponent(location.pathname.split('/')[2] || '')} />
