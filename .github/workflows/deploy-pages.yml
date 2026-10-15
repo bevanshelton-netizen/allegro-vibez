@@ -18,9 +18,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+      # The repository does not currently track a package-lock.json, so npm ci fails.
+      - run: npm install --no-audit --no-fund
+      - run: npm run build -- --base=/allegro-vibez/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
