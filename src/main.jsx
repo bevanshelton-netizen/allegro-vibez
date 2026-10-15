@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import ErrorBoundary from './components/ErrorBoundary.jsx'
 import './styles/allegro-rebuild.css'
+import './styles/shelton-protocol.css'
 
 const basePath = import.meta.env.BASE_URL === '/' ? '' : import.meta.env.BASE_URL.replace(/\/$/, '')
 
