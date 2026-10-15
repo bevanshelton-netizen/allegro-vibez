@@ -92,7 +92,17 @@ function Home({ onPlay, onArtist }) {
     <section className="hero">
       <div className="hero-grid" />
       <div className="hero-copy"><span className="eyebrow">AFRICAN-BORN · GLOBAL ARTIST PROSPERITY</span><h1>YOUR SOUND.<br /><em>YOUR STAGE.</em><br />YOUR FUTURE.</h1><p>ALLEGRO VIBEZ is a creator-first music ecosystem for discovery, radio, artist identity, releases, rights, bookings and prosperity.</p><div className="hero-actions"><Link className="btn primary" to="/discover">Explore Music <span>→</span></Link><Link className="btn ghost" to="/creator">Build Your Artist Profile</Link></div><div className="hero-stats"><span><b>24/7</b> RADIO</span><span><b>GLOBAL</b> DISCOVERY</span><span><b>CREATOR</b> FIRST</span></div></div>
-      <div className="hero-art"><div className="orb orb-one" /><div className="orb orb-two" /><div className="sound-ring">A</div><div className="floating-card card-top"><span>NOW DISCOVERING</span><b>Nia Mokoena</b><small>Afro-Soul · Johannesburg</small></div><div className="floating-card card-bottom"><span>ALLEGRO RADIO</span><b>LIVE · 24/7</b><small>Music without borders</small></div></div>
+      <div className="hero-art allegro-workspace" aria-label="ALLEGRO artist workspace showing music releases, rights, bookings and audience growth">
+        <div className="workspace-top"><span className="workspace-live"><i /> ARTIST WORKSPACE</span><span className="workspace-window">ALLEGRO CREATOR OS</span></div>
+        <div className="workspace-profile"><div className="profile-avatar">AM</div><div><span className="workspace-label">ARTIST PROFILE</span><b>Build your artist identity</b><small>Bio · Releases · Press kit · Links</small></div><span className="workspace-check">✓</span></div>
+        <div className="workspace-grid">
+          <div className="workspace-module module-release"><span className="module-icon">♫</span><small>MUSIC RELEASES</small><b>Catalogue</b><span className="module-bars"><i/><i/><i/><i/><i/><i/><i/><i/></span><em>Organise your work</em></div>
+          <div className="workspace-module module-rights"><span className="module-icon">◇</span><small>RIGHTS & IP</small><b>Ownership records</b><div className="rights-line"><i/> Contributors <b>+</b></div><div className="rights-line"><i/> Song credits <b>+</b></div></div>
+          <div className="workspace-module module-bookings"><span className="module-icon">↗</span><small>LIVE OPPORTUNITIES</small><b>Artist bookings</b><em>Events · Enquiries · Partners</em></div>
+          <div className="workspace-module module-growth"><span className="module-icon">◎</span><small>AUDIENCE GROWTH</small><b>Creator tools</b><em>Campaigns · Promotion</em></div>
+        </div>
+        <div className="workspace-footer"><span>LISTENERS</span><span>ARTISTS</span><span>INDUSTRY PARTNERS</span><b>CONNECTED</b></div>
+      </div>
     </section>
 
     <section className="section" aria-labelledby="what-allegro-does">
