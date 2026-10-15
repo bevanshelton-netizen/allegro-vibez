@@ -24,6 +24,6 @@ for(const token of ['IZAKHONO Revenue','ARTIST PROTECT','CLEARSET']){
 }
 
 const app=fs.readFileSync('src/App.jsx','utf8')
-if(!app.includes('/bookings/:bookingId/contract'))throw new Error('Contract Shield booking route missing.')
+if(!app.includes('contract$/.test(location.pathname)')||!app.includes('<BookingContractShield session={session}'))throw new Error('Contract Shield booking route missing or not wired to the authenticated session.')
 
 console.log('ALLEGRO_IZAKHONO_CREATOR_OS=PASS')
