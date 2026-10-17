@@ -27,7 +27,7 @@ jobs:
       - name: Build for GitHub Pages
         run: npm run build
         env:
-          VITE_PUBLIC_BASE: /allegro-vibez/
+          VITE_PUBLIC_BASE: /
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
