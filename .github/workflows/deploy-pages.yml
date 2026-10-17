@@ -20,7 +20,8 @@ jobs:
           node-version: 22
       # The repository does not currently track a package-lock.json, so npm ci fails.
       - run: npm install --no-audit --no-fund
-      - run: npm run build -- --base=/allegro-vibez/
+      # Keep the alternate Pages release root-domain compatible. Canonical production remains IZAKHONO-owned.
+      - run: npm run build -- --base=/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
