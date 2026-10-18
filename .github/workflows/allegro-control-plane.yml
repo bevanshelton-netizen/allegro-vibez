@@ -1,0 +1,58 @@
+name: ALLEGRO Control Plane Worker
+
+on:
+  workflow_dispatch:
+  issues:
+    types: [opened, labeled]
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: write
+  issues: write
+  actions: read
+
+jobs:
+  worker:
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'schedule' || (github.event.issue.pull_request == null && contains(github.event.issue.labels.*.name, 'P0'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout dedicated ALLEGRO source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Claim control-plane work order
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh issue comment 136 --body "CONTROL-PLANE WORKER: claimed by GitHub Actions runner $GITHUB_RUN_ID. Starting automated verification/execution pass from dedicated ALLEGRO source."
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run build and project verification
+        id: verify
+        run: |
+          set -o pipefail
+          npm run verify:all 2>&1 | tee control-plane-verify.log
+
+      - name: Run production smoke contract
+        id: smoke
+        continue-on-error: true
+        run: |
+          npm run smoke:production 2>&1 | tee control-plane-smoke.log
+
+      - name: Publish worker result and handoff
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERIFY="${{ steps.verify.outcome }}"
+          SMOKE="${{ steps.smoke.outcome }}"
+          gh issue comment 136 --body "CONTROL-PLANE RESULT: run=$GITHUB_RUN_ID verify=$VERIFY smoke=$SMOKE. Commit=$GITHUB_SHA. Next handoff: inspect any failed verification/smoke contract, replace the failing delivery/build dependency, commit the fix, then rerun this worker. No public deployment is claimed by this workflow unless a verified deployment endpoint is produced."
+
+      - name: Fail when verification fails
+        if: steps.verify.outcome != 'success'
+        run: exit 1
