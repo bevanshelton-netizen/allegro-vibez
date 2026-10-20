@@ -1,5 +1,5 @@
 {
-  "version": 3,
+  "version": 4,
   "name": "ALLEGRO VIBEZ",
   "slug": "allegro-vibez",
   "operator": "IZAKHONO AFRICA (PTY) LTD",
@@ -12,10 +12,9 @@
   "infrastructure": {
     "policy": "owned-first-externally-reversible",
     "authoritative_source": "IZAKHONO CODE / Forge; GitHub mirror bevanshelton-netizen/allegro-vibez",
-    "owned_target": "IZAKHONO Runtime Fabric via resilient NODE targets and IZAKHONO EDGE/TLS",
-    "current_public_route": "https://allegro-vibez.vercel.app/",
-    "external_fallback": "https://allegro-vibez-kznhajott-bevan2.vercel.app/",
-    "status_label": "EXTERNAL LIVE VERIFIED",
+    "owned_target": "IZAKHONO NODE Fabric via resilient NODE targets and IZAKHONO EDGE/TLS",
+    "external_fallback": "preserved only as a reversible recovery path; not the authoritative production target",
+    "status_label": "OWNED NODE TARGET",
     "data_dependencies": [
       "REQUIRES_CURRENT_VERIFICATION"
     ],
@@ -27,7 +26,8 @@
     ],
     "backup_evidence": "PENDING",
     "restore_evidence": "PENDING",
-    "rollback_evidence": "Verified external resilience route retained; owned rollback/failover evidence remains promotion-gated"
+    "rollback_evidence": "Container-level rollback implemented in production cutover; multi-node failover evidence remains promotion-gated",
+    "public_cutover": "promotion-gated; must pass Core, canary, local production, public HTTPS and route acceptance checks"
   },
   "alpha": {
     "preflight": true,
