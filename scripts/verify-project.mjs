@@ -2,7 +2,6 @@ import { existsSync, readFileSync } from 'node:fs'
 
 const required = [
   'index.html',
-  'netlify.toml',
   'src/main.jsx',
   'src/App.jsx',
   'src/lib/supabaseClient.js',
@@ -27,23 +26,6 @@ if (missing.length) {
   process.exit(1)
 }
 
-const netlify = readFileSync('netlify.toml', 'utf8')
-for (const token of [
-  'to = "/index.html"',
-  'status = 200',
-  'X-Content-Type-Options = "nosniff"',
-  'X-Frame-Options = "DENY"',
-  'Strict-Transport-Security',
-  'Content-Security-Policy',
-  "frame-ancestors 'none'",
-  'Cache-Control = "public, max-age=31536000, immutable"',
-]) {
-  if (!netlify.includes(token)) {
-    console.error(`Netlify production safeguard missing: ${token}`)
-    process.exit(1)
-  }
-}
-
 const index = readFileSync('index.html', 'utf8')
 for (const token of ['ALLEGRO VIBEZ', 'og:title', 'twitter:card', 'canonical']) {
   if (!index.includes(token)) {
@@ -53,9 +35,20 @@ for (const token of ['ALLEGRO VIBEZ', 'og:title', 'twitter:card', 'canonical']) 
 }
 
 const readiness = readFileSync('LAUNCH_READINESS.md', 'utf8')
-if (!readiness.includes('Netlify') || readiness.includes('GitHub Pages deployment')) {
-  console.error('Launch readiness documentation does not match the production host.')
+for (const token of [
+  'IZAKHONO-owned-first',
+  'IZAKHONO APP FABRIC / NODE01 runtime',
+  'SOURCE → BUILD → IMAGE → NODE01 → CORE → EDGE/TLS → PUBLIC HTTPS → END-TO-END ACCEPTANCE',
+]) {
+  if (!readiness.includes(token)) {
+    console.error(`Owned-runtime launch contract missing: ${token}`)
+    process.exit(1)
+  }
+}
+
+if (readiness.includes('GitHub Pages deployment')) {
+  console.error('Launch readiness documentation must not advertise GitHub Pages deployment.')
   process.exit(1)
 }
 
-console.log('ALLEGRO VIBEZ publishing structure and production host safeguards verified.')
+console.log('ALLEGRO VIBEZ publishing structure and IZAKHONO-owned runtime safeguards verified.')
