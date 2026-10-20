@@ -1,5 +1,6 @@
 name: IZAKHONO Production Cutover
 
+# Owned-node production cutover: this workflow intentionally targets only the IZAKHONO self-hosted node fabric.
 on:
   workflow_dispatch:
   push:
