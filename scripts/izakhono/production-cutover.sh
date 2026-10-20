@@ -23,10 +23,18 @@ short_revision="$(printf '%s' "$revision" | cut -c1-12)"
 image="${app_name}:izakhono-${short_revision}"
 canary_port="${IZAKHONO_CANARY_PORT:-18080}"
 production_port="${IZAKHONO_PRODUCTION_PORT:-8080}"
+node_id="${IZAKHONO_NODE_ID:-${RUNNER_NAME:-unknown-node}}"
+receipt_dir="${IZAKHONO_RECEIPT_DIR:-/var/lib/izakhono/receipts}"
+
+if [ "$node_id" = "unknown-node" ]; then
+  echo "IZAKHONO_NODE_ID or RUNNER_NAME is required on the owned runtime." >&2
+  exit 1
+fi
 
 core_base="${VITE_IZAKHONO_CORE_URL%/}"
 public_base="${IZAKHONO_PUBLIC_APP_URL%/}"
 
+echo "Deploying ALLEGRO-VIBEZ on owned IZAKHONO node: $node_id"
 echo "Checking owner-controlled IZAKHONO Core..."
 curl --fail --silent --show-error "$core_base/healthz" >/dev/null
 curl --fail --silent --show-error "$core_base/readyz" >/dev/null
@@ -44,6 +52,7 @@ docker build \
   --build-arg "VITE_IZAKHONO_PUBLIC_KEY=$VITE_IZAKHONO_PUBLIC_KEY" \
   --label "za.co.izakhono.product=ALLEGRO VIBEZ" \
   --label "za.co.izakhono.commit=$revision" \
+  --label "za.co.izakhono.node=$node_id" \
   --label "za.co.izakhono.channel=production-candidate" \
   -t "$image" .
 
@@ -121,4 +130,25 @@ if ! curl --fail --silent --show-error "$public_base/radio" | grep -q 'id="root"
   exit 1
 fi
 
-echo "ALLEGRO-VIBEZ promoted successfully on owner-controlled IZAKHONO infrastructure."
+mkdir -p "$receipt_dir"
+receipt="$receipt_dir/${app_name}-${short_revision}.json"
+cat > "$receipt" <<EOF
+{
+  "product": "ALLEGRO VIBEZ",
+  "project": "$core_project",
+  "commit": "$revision",
+  "image": "$image",
+  "node": "$node_id",
+  "public_url": "$public_base",
+  "core_url": "$core_base",
+  "status": "PROMOTED",
+  "health": "PASSED",
+  "canary": "PASSED",
+  "public_acceptance": "PASSED",
+  "rollback_image": "${old_image}",
+  "timestamp_utc": "$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+}
+EOF
+
+echo "ALLEGRO-VIBEZ promoted successfully on owned IZAKHONO node $node_id."
+echo "Deployment receipt: $receipt"
