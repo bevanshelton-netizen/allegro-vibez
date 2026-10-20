@@ -32,7 +32,12 @@ jobs:
           gh issue comment 136 --body "CONTROL-PLANE WORKER: claimed by GitHub Actions runner $GITHUB_RUN_ID. Starting automated verification/execution pass from dedicated ALLEGRO source."
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci
+          else
+            npm install --no-audit --no-fund
+          fi
 
       - name: Run build and project verification
         id: verify
