@@ -13,8 +13,9 @@
     "policy": "owned-first-externally-reversible",
     "authoritative_source": "IZAKHONO CODE / Forge; GitHub mirror bevanshelton-netizen/allegro-vibez",
     "owned_target": "IZAKHONO NODE Fabric via resilient NODE targets and IZAKHONO EDGE/TLS",
+    "current_public_route": "https://allegrovibez.com",
     "external_fallback": "preserved only as a reversible recovery path; not the authoritative production target",
-    "status_label": "OWNED NODE TARGET",
+    "status_label": "BUILT / VERIFIED LOCALLY",
     "data_dependencies": [
       "REQUIRES_CURRENT_VERIFICATION"
     ],
