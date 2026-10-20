@@ -20,13 +20,13 @@ export function credentials() {
 }
 
 export function origin() {
-  const candidate = (process.env.ALLEGRO_PUBLIC_ORIGIN || process.env.URL || 'https://allegro-vibez.netlify.app').trim()
+  const candidate = (process.env.ALLEGRO_PUBLIC_ORIGIN || 'https://allegrovibez.com').trim()
   try {
     const parsed = new URL(candidate)
     if (parsed.protocol !== 'https:') throw new Error('HTTPS required')
     return parsed.origin
   } catch {
-    return 'https://allegro-vibez.netlify.app'
+    return 'https://allegrovibez.com'
   }
 }
 
