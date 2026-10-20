@@ -35,5 +35,13 @@ jobs:
           VITE_IZAKHONO_PUBLIC_KEY: ${{ secrets.ALLEGRO_IZAKHONO_PUBLIC_KEY }}
           IZAKHONO_PUBLIC_APP_URL: ${{ vars.ALLEGRO_PUBLIC_URL }}
           IZAKHONO_NODE_ID: ${{ runner.name }}
-          IZAKHONO_RECEIPT_DIR: /var/lib/izakhono/receipts
+          IZAKHONO_RECEIPT_DIR: ${{ github.workspace }}/artifacts/izakhono
         run: sh scripts/izakhono/production-cutover.sh
+      - name: Publish deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allegro-izakhono-deployment-receipt-${{ github.run_id }}
+          path: artifacts/izakhono/*.json
+          if-no-files-found: warn
+          retention-days: 30
