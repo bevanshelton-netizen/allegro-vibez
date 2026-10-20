@@ -5,13 +5,15 @@ on:
   push:
     branches: [main]
     paths:
-      - 'deploy/IZAKHONO_PRODUCTION'
-      - 'src/pages/MerchStore.jsx'
-      - 'src/components/MovementSizzle.jsx'
-      - 'src/styles/movement-sizzle.css'
-      - 'src/styles/merch-store.css'
-      - 'src/lib/merchCheckout.js'
-      - 'public/runtime/merch-checkout.json'
+      - 'src/**'
+      - 'public/**'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.izakhono.json'
+      - 'deploy/**'
+      - 'scripts/izakhono/**'
+      - '.github/workflows/izakhono-production-cutover.yml'
 
 permissions:
   contents: read
@@ -22,14 +24,16 @@ concurrency:
 
 jobs:
   cutover:
-    name: Canary, promote and verify
+    name: Canary, promote and verify on owned node
     runs-on: [self-hosted, linux, x64, izakhono]
     timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
-      - name: Deploy through owner-controlled IZAKHONO host
+      - name: Deploy through owner-controlled IZAKHONO node fabric
         env:
           VITE_IZAKHONO_CORE_URL: ${{ secrets.IZAKHONO_CORE_URL }}
           VITE_IZAKHONO_PUBLIC_KEY: ${{ secrets.ALLEGRO_IZAKHONO_PUBLIC_KEY }}
           IZAKHONO_PUBLIC_APP_URL: ${{ vars.ALLEGRO_PUBLIC_URL }}
+          IZAKHONO_NODE_ID: ${{ runner.name }}
+          IZAKHONO_RECEIPT_DIR: /var/lib/izakhono/receipts
         run: sh scripts/izakhono/production-cutover.sh
