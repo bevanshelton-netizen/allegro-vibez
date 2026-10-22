@@ -1,36 +1,8 @@
-FROM node:22-alpine AS build
-
-WORKDIR /app
-
-COPY package.json ./
-RUN npm install --ignore-scripts --no-audit --no-fund
-
-COPY . .
-
-ARG VITE_IZAKHONO_CORE_URL
-ARG VITE_IZAKHONO_PROJECT=allegro-vibez
-ARG VITE_IZAKHONO_PUBLIC_KEY
-ARG VITE_IZAKHONO_ANALYTICS_URL
-ENV VITE_IZAKHONO_CORE_URL=$VITE_IZAKHONO_CORE_URL
-ENV VITE_IZAKHONO_PROJECT=$VITE_IZAKHONO_PROJECT
-ENV VITE_IZAKHONO_PUBLIC_KEY=$VITE_IZAKHONO_PUBLIC_KEY
-ENV VITE_IZAKHONO_ANALYTICS_URL=$VITE_IZAKHONO_ANALYTICS_URL
-
-RUN npm run verify:all
-
-FROM nginx:1.27-alpine AS runtime
-
-ARG IZAKHONO_RELEASE_ID=UNATTESTED
-LABEL org.opencontainers.image.title="ALLEGRO VIBEZ" \
-      org.opencontainers.image.revision="$IZAKHONO_RELEASE_ID" \
-      izakhono.product="allegro-vibez"
-
-COPY deploy/nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
-
-RUN printf '{"ok":true,"product":"allegro-vibez","release_id":"%s","runtime_class":"owned","health_schema":"izakhono.runtime.health.v1"}\n' "$IZAKHONO_RELEASE_ID" > /usr/share/nginx/html/healthz.json
-
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html/index.html
+COPY styles.css /usr/share/nginx/html/styles.css
+COPY app.js /usr/share/nginx/html/app.js
 EXPOSE 8080
-
-HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget -q -O /dev/null http://127.0.0.1:8080/healthz || exit 1
+RUN sed -i 's/listen       80;/listen       8080;/' /etc/nginx/conf.d/default.conf
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://127.0.0.1:8080/ >/dev/null || exit 1
+CMD ["nginx","-g","daemon off;"]

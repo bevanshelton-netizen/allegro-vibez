@@ -1,70 +1,15 @@
-# ALLEGRO VIBEZ
+# ALLEGRO VIBEZ — Clean Build
 
-**More Than Music. A Movement. The African-born Global Artist Prosperity Platform.**
+This is a clean ALLEGRO VIBEZ foundation. It intentionally contains no application code or deployment configuration from the previous build.
 
-ALLEGRO VIBEZ is a creator-first music ecosystem for artist identity, catalogue management, protected media, rights-aware release workflows, discovery, creator prosperity and auditable commercial operations.
+Canonical contact: contact@allegrovibez.com
 
-## Publishing build
+## First release
+- Brand and public landing experience
+- Discover, Artists and Radio entry points
+- Contact Us via `mailto:contact@allegrovibez.com`
+- Minimal dependency-free frontend
+- Container-ready runtime on port 8080
 
-The current release candidate includes:
-
-- Cinematic artist-first Home, Discover and Artists experiences
-- Responsive mobile navigation and conversion-first creator signup journey
-- React + Vite application shell with Netlify SPA routing
-- Supabase authentication with session persistence and password recovery
-- Creator registration, profile and public creator identity
-- Creator Hub, Dashboard, Upload and My Music routes
-- Private release audio/artwork storage and controlled release workflow
-- Rights and contributor records attached to releases
-- Administrator moderation, approval and publishing workflow
-- Published-release discovery and public artist directory
-- ALLEGRO Radio 24/7 online station shell with rights-aware autopilot scheduling, programme clocks, advertising inventory and live presenter takeover model
-- Royalty ledger, creator prosperity dashboard and wallet visibility
-- Payout requests and administrator payout operations
-- Creator subscription plans and PayFast hosted checkout
-- PayFast notification validation, amount checks and idempotent subscription activation
-- Terms, Privacy, SEO/social metadata, robots and sitemap
-- GitHub publishing gate with lint, security verification and production build
-- Netlify security headers, SPA fallback and immutable caching for hashed assets
-- Safe production smoke probing that reports configuration state without printing provider keys
-
-## Local development
-
-```bash
-npm install
-npm run dev
-```
-
-Create `.env.local` in the project root:
-
-```env
-VITE_SUPABASE_URL=https://YOUR_PROJECT.supabase.co
-VITE_SUPABASE_ANON_KEY=YOUR_PUBLIC_ANON_KEY
-```
-
-Never commit `.env.local`, service-role keys, PayFast secrets or other server-only credentials.
-
-## Production activation
-
-Follow `PRODUCTION_SETUP.md` for the database migration order, Auth redirect configuration, PayFast Edge Functions, secrets and end-to-end launch acceptance test.
-
-## Launch verification
-
-```bash
-npm run verify:all
-```
-
-The launch gate checks project structure, Netlify production safeguards, secret boundaries, PayFast security guards, ESLint and the production Vite build. Production secrets are supplied through the hosting/service environment, never through committed browser source.
-
-To probe the currently published Netlify site without revealing any key values:
-
-```bash
-npm run smoke:production
-```
-
-The smoke probe checks the production origin, important routes, security headers and whether a browser-safe Supabase key is actually embedded in the deployed frontend. It reports only pass/fail state; it never prints the key.
-
-
-## Official IZAKHONO Africa public apps
-
-Customer-facing production platforms are listed in [PUBLIC_APPS.md](./PUBLIC_APPS.md), including KORA, WorkNow, FAISReady, AUTO AI, YenzaNow, SoundLab AI, ProofForge AI, IZAKHONO Growth OS, The Chancellor and Allegro-Vibez.
+## Rule
+Production is not declared live until the actual public HTTPS route and health check pass.
