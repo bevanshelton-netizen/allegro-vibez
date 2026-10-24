@@ -1,2 +1,3 @@
 document.getElementById('year').textContent=new Date().getFullYear();
-document.querySelector('.play').addEventListener('click',()=>alert('ALLEGRO RADIO is being prepared for launch.'));
+const play=document.querySelector('.play');
+if(play){play.addEventListener('click',()=>{play.innerHTML='SOON <span>↗</span>';play.setAttribute('aria-label','ALLEGRO Radio is being prepared for launch');});}
