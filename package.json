@@ -1,1 +1,10 @@
-{"name":"allegro-vibez","version":"1.0.0","private":true,"scripts":{"test":"node --check app.js && node scripts/site-check.mjs"},"description":"ALLEGRO-VIBEZ — More Than Music. A Movement. The Global Artist Prosperity Platform."}
+{
+  "name": "allegro-vibez",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "node --check app.js && node scripts/site-check.mjs",
+    "test:security": "node scripts/security-check.mjs"
+  },
+  "description": "ALLEGRO-VIBEZ — More Than Music. A Movement. The Global Artist Prosperity Platform."
+}
