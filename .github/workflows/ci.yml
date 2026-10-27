@@ -23,3 +23,5 @@ jobs:
         run: npm test
       - name: Verify frontend security baseline
         run: npm run test:security
+      - name: Verify portable server boundary
+        run: npm run test:server
