@@ -21,3 +21,5 @@ jobs:
           node-version: 20
       - name: Verify site
         run: npm test
+      - name: Verify frontend security baseline
+        run: npm run test:security
