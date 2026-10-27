@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "test": "node --check app.js && node scripts/site-check.mjs",
-    "test:security": "node scripts/security-check.mjs"
+    "test:security": "node scripts/security-check.mjs",
+    "test:server": "node --check server/app.mjs && node --check server/domain/state.mjs && node --check server/adapters/index.mjs",
+    "start:server": "node server/app.mjs"
   },
   "description": "ALLEGRO-VIBEZ — More Than Music. A Movement. The Global Artist Prosperity Platform."
 }
