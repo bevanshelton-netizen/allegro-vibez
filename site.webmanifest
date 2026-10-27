@@ -1,0 +1,10 @@
+{
+  "name": "ALLEGRO-VIBEZ",
+  "short_name": "ALLEGRO-VIBEZ",
+  "description": "African-born, global-by-design music, creator and culture platform.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#070707",
+  "theme_color": "#070707",
+  "lang": "en-ZA"
+}
