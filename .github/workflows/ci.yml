@@ -1,0 +1,23 @@
+name: ALLEGRO-VIBEZ CI
+
+on:
+  push:
+    branches:
+      - 'rebuild/allegro-vibez-clean-2026-10-27'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Verify site
+        run: npm test
