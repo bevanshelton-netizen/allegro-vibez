@@ -7,6 +7,7 @@ import { register, login, currentUser } from './services/identity.mjs';
 import { createArtist, listArtists, getArtist, updateArtist } from './services/artists.mjs';
 import { createRelease, getRelease, submitRelease } from './services/releases.mjs';
 import { setRightsSplits, getRightsSplits } from './services/rights.mjs';
+import { getEarnings, requestPayout } from './services/earnings.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
@@ -25,7 +26,7 @@ function sendJson(res, status, body, extraHeaders = {}) {
 
 function route(req) {
   const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`);
-  return { method: req.method ?? 'GET', path: url.pathname };
+  return { method: req.method ?? 'GET', path: url.pathname, search: url.searchParams };
 }
 
 function bearerToken(req) {
@@ -52,7 +53,7 @@ async function requireUser(req) {
 }
 
 const server = http.createServer(async (req, res) => {
-  const { method, path } = route(req);
+  const { method, path, search } = route(req);
   try {
     if (method === 'GET' && (path === '/healthz' || path === '/api/v1/health')) {
       return sendJson(res, 200, { ok: true, service: 'allegro-vibez-api', mode: 'foundation', persistence: persistenceConfigured ? 'SUPABASE' : 'NOT_CONFIGURED' });
@@ -87,6 +88,15 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { data: await setRightsSplits({ repository, userId: user.id, releaseId: path.split('/')[4], splits: body.splits }) });
     }
     if (method === 'GET' && /^\/api\/v1\/releases\/[^/]+\/splits$/.test(path)) return sendJson(res, 200, { data: await getRightsSplits({ repository, releaseId: path.split('/')[4] }) });
+
+    if (method === 'GET' && path === '/api/v1/earnings') {
+      const user = await requireUser(req);
+      return sendJson(res, 200, { data: await getEarnings({ repository, userId: user.id, currency: search.get('currency') ?? 'ZAR' }) });
+    }
+    if (method === 'POST' && path === '/api/v1/earnings/payouts') {
+      const user = await requireUser(req);
+      return sendJson(res, 201, { data: await requestPayout({ repository, userId: user.id, body: await jsonBody(req) }) });
+    }
 
     if (path.startsWith('/api/v1/')) return sendJson(res, 501, { error: { code: 'NOT_CONFIGURED', message: 'Production service adapter is not configured yet.', path, method, adapters: Object.fromEntries(Object.entries(adapters).map(([name, adapter]) => [name, adapter.status])) } });
     return sendJson(res, 404, { error: { code: 'NOT_FOUND', message: 'Route not found.' } });
