@@ -11,6 +11,7 @@ import { getEarnings, requestPayout } from './services/earnings.mjs';
 import { createOrder, getOrder, verifyPayment } from './services/payments.mjs';
 import { createSignedUpload, completeUpload, getAsset, getPlaybackUrl, getPublicReleasePlaybackUrl } from './services/media.mjs';
 import { approveRelease, publishRelease } from './services/publication.mjs';
+import { createCommunityPost, listCommunityFeed, deleteCommunityPost } from './services/community.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
@@ -36,7 +37,7 @@ const server = http.createServer(async (req, res) => {
   if (rateLimited(req)) return sendJson(res, 429, { error: { code: 'RATE_LIMITED', message: 'Too many requests. Try again shortly.', requestId: rid } }, { 'retry-after': '60' });
   const { method, path, search } = route(req);
   try {
-    if (method === 'OPTIONS') return sendNoContent(res, { 'access-control-allow-origin': process.env.ALLEGRO_ALLOWED_ORIGIN || 'null', 'access-control-allow-methods': 'GET,POST,PUT,PATCH,OPTIONS', 'access-control-allow-headers': 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Allegro-Release-Approval-Secret,X-Allegro-Reconciliation-Secret', 'vary': 'Origin' });
+    if (method === 'OPTIONS') return sendNoContent(res, { 'access-control-allow-origin': process.env.ALLEGRO_ALLOWED_ORIGIN || 'null', 'access-control-allow-methods': 'GET,POST,DELETE,PUT,PATCH,OPTIONS', 'access-control-allow-headers': 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Allegro-Release-Approval-Secret,X-Allegro-Reconciliation-Secret', 'vary': 'Origin' });
     const allowedOrigin = process.env.ALLEGRO_ALLOWED_ORIGIN;
     if (allowedOrigin && req.headers.origin === allowedOrigin) { res.setHeader('access-control-allow-origin', allowedOrigin); res.setHeader('vary', 'Origin'); }
     if (method === 'GET' && (path === '/healthz' || path === '/api/v1/health')) return sendJson(res, 200, { ok: true, service: 'allegro-vibez-api', mode: 'foundation', persistence: persistenceConfigured ? 'SUPABASE' : 'NOT_CONFIGURED' });
@@ -61,6 +62,9 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/api/v1/orders') { const user = await requireUser(req); return sendJson(res, 201, { data: await createOrder({ repository, userId: user.id, body: await jsonBody(req), requestId: rid }) }); }
     if (method === 'GET' && /^\/api\/v1\/orders\/[^/]+$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await getOrder({ repository, userId: user.id, orderId: path.split('/').pop() }) }); }
     if (method === 'POST' && /^\/api\/v1\/payments\/[^/]+\/verify$/.test(path)) { const body = await jsonBody(req); return sendJson(res, 200, { data: await verifyPayment({ repository, paymentId: path.split('/')[4], providerReference: body.providerReference, verified: body.verified, amountMinor: body.amountMinor, currency: body.currency, requestId: rid, reconciliationSecret: req.headers['x-allegro-reconciliation-secret'] ?? null }) }); }
+    if (method === 'GET' && path === '/api/v1/community/feed') return sendJson(res, 200, { data: await listCommunityFeed({ repository, limit: Number(search.get('limit') ?? 50) }) });
+    if (method === 'POST' && path === '/api/v1/community/posts') { const user = await requireUser(req); return sendJson(res, 201, { data: await createCommunityPost({ repository, userId: user.id, body: await jsonBody(req) }) }); }
+    if (method === 'DELETE' && /^\/api\/v1\/community\/posts\/[^/]+$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await deleteCommunityPost({ repository, userId: user.id, postId: path.split('/').pop() }) }); }
     if (method === 'POST' && path === '/api/v1/media/upload-intents') { const user = await requireUser(req); return sendJson(res, 201, { data: await createSignedUpload({ repository, userId: user.id, body: await jsonBody(req) }) }); }
     if (method === 'POST' && /^\/api\/v1\/media\/[^/]+\/complete$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await completeUpload({ repository, userId: user.id, assetId: path.split('/')[4] }) }); }
     if (method === 'GET' && /^\/api\/v1\/media\/[^/]+\/play$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await getPlaybackUrl({ repository, userId: user.id, assetId: path.split('/')[4], expiresIn: Number(search.get('expiresIn') ?? 900) }) }); }
