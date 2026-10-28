@@ -34,7 +34,7 @@ export async function getEarnings({ repository, userId, currency = 'ZAR' }) {
   const earnedMinor = sum(credits);
   const debitedMinor = sum(debits);
   const reservedMinor = sum(currencyPayouts.filter((payout) => ['REQUESTED', 'PROCESSING', 'COMPLETED', 'PAID'].includes(payout.status)));
-  const paidOutMinor = sum(currencyPayouts.filter((payout) => ['COMPLETED', 'PAID'].includes(payout.status)));
+  const paidOutMinor = sum(currencyPayouts.filter((payout) => ['COMPLETED', 'PAID'].includes(payout.status));
   const availableMinor = earnedMinor - debitedMinor - reservedMinor;
   return {
     currency: normalizedCurrency,
@@ -76,6 +76,9 @@ export async function requestPayout({ repository, userId, body, idempotencyKey =
       error.code = 'CONFLICT';
       throw error;
     }
+  }
+  if (typeof repository.requestPayoutAtomic === 'function') {
+    return repository.requestPayoutAtomic({ userId, amountMinor, currency, idempotencyKey: key || null, requestId });
   }
   const earnings = await getEarnings({ repository, userId, currency });
   if (amountMinor > earnings.availableMinor) {
