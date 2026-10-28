@@ -8,7 +8,7 @@ This document defines the first stable server boundary for ALLEGRO-VIBEZ. The br
 
 - JSON over HTTPS.
 - Authentication is server-issued; no private credentials in browser code.
-- Every mutating request requires an authenticated actor and server-side authorization.
+- Every mutating user request requires an authenticated actor and server-side authorization.
 - Financial and rights mutations are idempotent and auditable.
 - Uploads use short-lived signed upload URLs; media processing is asynchronous.
 - Payment status is derived from verified provider callbacks/server queries, never browser claims.
@@ -19,11 +19,11 @@ This document defines the first stable server boundary for ALLEGRO-VIBEZ. The br
 
 `POST /api/v1/auth/register`
 
-Creates a pending account. Production implementation must verify email and apply abuse/rate controls.
+Creates an account. Production implementation must verify email and apply abuse/rate controls.
 
 `POST /api/v1/auth/login`
 
-Authenticates an account and returns a short-lived session/access credential.
+Authenticates an account and returns a session/access credential.
 
 `GET /api/v1/me`
 
@@ -47,15 +47,15 @@ Updates an artist profile after ownership authorization.
 
 `POST /api/v1/releases`
 
-Creates a release in `draft` state.
+Creates a release in `DRAFT` state.
 
 `POST /api/v1/releases/:id/assets/upload-url`
 
-Returns a short-lived upload destination for an authorized owner.
+Reserved production boundary for a short-lived signed upload destination.
 
 `POST /api/v1/releases/:id/submit`
 
-Moves a complete release from `draft` to `submitted` after server validation.
+Moves a complete release from draft to submitted only after server validation and rights readiness.
 
 `GET /api/v1/releases/:id`
 
@@ -65,41 +65,39 @@ Returns release metadata and state.
 
 `PUT /api/v1/releases/:id/splits`
 
-Replaces contributor splits. The server must require a valid total of exactly 100% and preserve an immutable audit record of accepted versions.
+Replaces contributor splits. The server requires a valid total of exactly 100% and preserves auditability.
 
 `GET /api/v1/releases/:id/splits`
 
 Returns the currently accepted split version.
 
-## Earnings & Payments
+## Earnings
 
 `GET /api/v1/earnings`
 
 Returns ledger-derived balances and transactions for the authenticated creator.
 
-`POST /api/v1/payouts`
+`POST /api/v1/earnings/payouts`
 
-Creates a payout request only when the creator is eligible and the available balance is sufficient.
+Creates a payout request only when the creator is eligible and available balance is sufficient.
 
-`GET /api/v1/payments/:id`
-
-Returns payment state such as `pending`, `authorized`, `paid`, `failed`, or `refunded` based on verified server-side evidence.
-
-Provider webhooks must be authenticated, idempotent and recorded before financial state changes are committed.
-
-## Commerce
+## Commerce & Payments
 
 `POST /api/v1/orders`
 
-Creates an order from server-priced products. Client-supplied totals are advisory only.
-
-`POST /api/v1/orders/:id/checkout`
-
-Creates a payment attempt through the configured merchant adapter.
+Creates an order and a `PENDING` payment attempt. An idempotency key is mandatory. Payment-provider credentials are never accepted from the browser.
 
 `GET /api/v1/orders/:id`
 
-Returns order and fulfillment state.
+Returns the authenticated user's order and its current payment state.
+
+`POST /api/v1/payments/:id/verify`
+
+Internal reconciliation boundary. It is disabled unless `ALLEGRO_PAYMENT_RECONCILIATION_SECRET` is configured and must only be called by a trusted provider adapter/reconciliation worker. A verified payment transitions the payment to `VERIFIED`, the order to `PAID`, and posts one idempotent ledger capture.
+
+The initial order path is provider-agnostic and defaults to the preferred `iKhokha` provider name, but this does **not** mean an iKhokha merchant integration is live. Live provider operation requires real merchant credentials, authenticated callbacks/provider queries, reconciliation and end-to-end verification.
+
+Provider callbacks must be authenticated, idempotent and recorded before financial state changes are committed.
 
 ## Community
 
@@ -133,7 +131,7 @@ Returns provider-independent distribution state. Provider adapters remain implem
 }
 ```
 
-Common codes: `UNAUTHENTICATED`, `FORBIDDEN`, `VALIDATION_ERROR`, `CONFLICT`, `NOT_FOUND`, `RATE_LIMITED`, `PAYMENT_PENDING`, `PROVIDER_UNAVAILABLE`, `INTERNAL_ERROR`.
+Common codes: `UNAUTHORIZED`, `FORBIDDEN`, `INVALID_REQUEST`, `CONFLICT`, `NOT_FOUND`, `PAYMENT_PENDING`, `PROVIDER_UNAVAILABLE`, `NOT_CONFIGURED`, `INTERNAL_ERROR`.
 
 ## Production Gate
 
