@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <meta name="description" content="ALLEGRO-VIBEZ Creator Studio — build your artist profile, releases and creative catalogue.">
+  <meta name="description" content="ALLEGRO-VIBEZ Creator Studio — authenticated creator workspace for profiles and releases.">
   <meta name="theme-color" content="#070707">
   <title>Creator Studio — ALLEGRO-VIBEZ</title>
   <link rel="stylesheet" href="/styles.css">
   <style>
-    .studio{max-width:1180px;margin:0 auto;padding:64px 28px 90px}.studio-head{display:flex;justify-content:space-between;gap:32px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:34px}.studio-head h1{font-size:clamp(42px,7vw,88px);line-height:.95;margin:10px 0}.studio-head p{max-width:560px;color:#aaa}.studio-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:28px}.studio-card{border:1px solid var(--line);padding:26px;min-height:190px;background:#0b0b0b}.studio-card span{color:var(--gold);font-size:10px;font-weight:800;letter-spacing:.18em}.studio-card h2{font-size:25px;margin:22px 0 10px}.studio-card p{color:#999;line-height:1.6}.studio-steps{margin-top:48px;border-top:1px solid var(--line)}.step{display:grid;grid-template-columns:70px 1fr auto;gap:20px;align-items:center;padding:22px 0;border-bottom:1px solid var(--line)}.step b{color:var(--gold)}.step strong{font-size:18px}.step small{color:#888;text-transform:uppercase;letter-spacing:.12em}.studio-actions{margin-top:34px;display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-block}.back{color:#aaa}.notice{margin-top:24px;padding:18px;border:1px solid var(--line);color:#999;font-size:13px}.notice strong{color:#eee}@media(max-width:760px){.studio{padding:40px 20px 70px}.studio-head{display:block}.studio-grid{grid-template-columns:1fr}.step{grid-template-columns:45px 1fr}.step small{grid-column:2}.step strong{font-size:16px}}
+    .studio{max-width:1180px;margin:0 auto;padding:64px 28px 90px}.studio-head{display:flex;justify-content:space-between;gap:32px;align-items:end;border-bottom:1px solid var(--line);padding-bottom:34px}.studio-head h1{font-size:clamp(42px,7vw,88px);line-height:.95;margin:10px 0}.studio-head p{max-width:560px;color:#aaa}.auth-panel,.workspace{margin-top:28px;border:1px solid var(--line);background:#0b0b0b;padding:28px}.auth-panel h2,.workspace h2{margin:0 0 8px;font-size:28px}.muted{color:#999;line-height:1.6}.auth-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px}.field{display:flex;flex-direction:column;gap:8px}.field label{font-size:11px;text-transform:uppercase;letter-spacing:.13em;color:#999}.field input,.field textarea,.field select{width:100%;box-sizing:border-box;background:#070707;border:1px solid #2a2a2a;color:#fff;padding:13px;font:inherit}.field textarea{min-height:110px;resize:vertical}.auth-actions,.studio-actions{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}.button{display:inline-block;cursor:pointer;border:0}.button.primary{background:var(--gold);color:#080808;padding:13px 18px;font-weight:800}.button.ghost{background:transparent;color:#fff;border:1px solid #333;padding:12px 18px}.status{margin-top:14px;font-size:13px;color:#aaa}.status strong{color:#fff}.hidden{display:none!important}.dashboard{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:24px}.card{border:1px solid var(--line);padding:22px}.profile-summary{display:flex;justify-content:space-between;gap:20px;align-items:start}.profile-name{font-size:28px;font-weight:800}.pill{display:inline-block;border:1px solid #333;padding:6px 9px;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#aaa}.release-list{margin-top:18px;border-top:1px solid #222}.release{padding:16px 0;border-bottom:1px solid #222;display:flex;justify-content:space-between;gap:16px}.release strong{display:block}.release small{color:#777}.empty{padding:24px 0;color:#777}.notice{margin-top:24px;padding:18px;border:1px solid var(--line);color:#999;font-size:13px}.notice strong{color:#eee}@media(max-width:760px){.studio{padding:40px 20px 70px}.studio-head{display:block}.auth-grid,.dashboard{grid-template-columns:1fr}.release{display:block}.release .pill{margin-top:8px}}
   </style>
 </head>
 <body>
@@ -19,23 +19,127 @@
 <main class="studio">
   <section class="studio-head">
     <div><p class="eyebrow">ALLEGRO-VIBEZ · CREATOR OS</p><h1>Creator<br><i>Studio.</i></h1></div>
-    <p>Your creative home for building an artist profile, preparing releases, managing credits and moving toward publishing review.</p>
+    <p>Your authenticated creative workspace for building an artist profile, preparing releases, managing credits and moving toward publishing review.</p>
   </section>
-  <section class="studio-grid" aria-label="Creator Studio areas">
-    <article class="studio-card"><span>01 · IDENTITY</span><h2>Your Artist Profile</h2><p>Stage name, bio, country, genre and creator identity.</p></article>
-    <article class="studio-card"><span>02 · CATALOGUE</span><h2>Releases</h2><p>Create and organise singles, EPs and albums with artwork and release metadata.</p></article>
-    <article class="studio-card"><span>03 · RIGHTS</span><h2>Credits & Splits</h2><p>Keep contributor credits and ownership information structured for review.</p></article>
+
+  <section id="authPanel" class="auth-panel">
+    <h2>Enter the Studio.</h2>
+    <p class="muted">Create a creator account or sign in. Your workspace is protected by Supabase authentication and Creator OS row-level security.</p>
+    <div class="auth-grid">
+      <div class="field"><label for="email">Email</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="field"><label for="password">Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Minimum 6 characters"></div>
+    </div>
+    <div class="auth-actions">
+      <button id="signIn" class="button primary" type="button">Sign in →</button>
+      <button id="signUp" class="button ghost" type="button">Create creator account</button>
+    </div>
+    <div id="authStatus" class="status" role="status"></div>
   </section>
-  <section class="studio-steps" aria-label="Creator workflow">
-    <div class="step"><b>01</b><strong>Build your profile</strong><small>Identity</small></div>
-    <div class="step"><b>02</b><strong>Create a release</strong><small>Catalogue</small></div>
-    <div class="step"><b>03</b><strong>Add tracks & credits</strong><small>Rights</small></div>
-    <div class="step"><b>04</b><strong>Attach audio assets</strong><small>Production</small></div>
-    <div class="step"><b>05</b><strong>Run publishing-readiness review</strong><small>Quality gate</small></div>
+
+  <section id="workspace" class="workspace hidden" aria-live="polite">
+    <div class="profile-summary">
+      <div><span class="pill">Authenticated Creator</span><div id="profileName" class="profile-name">Creator</div><p id="profileMeta" class="muted"></p></div>
+      <button id="signOut" class="button ghost" type="button">Sign out</button>
+    </div>
+
+    <div class="dashboard">
+      <article class="card">
+        <h2>Artist Profile</h2>
+        <div class="auth-grid">
+          <div class="field"><label for="stageName">Stage name</label><input id="stageName" type="text" placeholder="Your artist name"></div>
+          <div class="field"><label for="country">Country</label><input id="country" type="text" value="South Africa" placeholder="Country"></div>
+          <div class="field"><label for="genre">Primary genre</label><input id="genre" type="text" placeholder="e.g. Afrobeat, Hip-Hop"></div>
+          <div class="field"><label for="avatarUrl">Avatar URL</label><input id="avatarUrl" type="url" placeholder="https://..."></div>
+        </div>
+        <div class="field" style="margin-top:16px"><label for="bio">Bio</label><textarea id="bio" placeholder="Tell the world what you create."></textarea></div>
+        <div class="auth-actions"><button id="saveProfile" class="button primary" type="button">Save profile</button></div>
+        <div id="profileStatus" class="status" role="status"></div>
+      </article>
+
+      <article class="card">
+        <h2>Release Catalogue</h2>
+        <p class="muted">Your releases are loaded from Creator OS. Readiness remains separate from actual distribution.</p>
+        <div id="releaseList" class="release-list"><div class="empty">Loading releases…</div></div>
+      </article>
+    </div>
+
+    <div class="notice"><strong>Publishing control.</strong> A release can only move toward review when its required metadata, credits, ownership split and audio assets are complete. Distribution is a separate verified provider workflow.</div>
   </section>
-  <div class="studio-actions"><a class="button primary" href="mailto:contact@allegrovibez.com?subject=ALLEGRO%20Creator%20Studio%20Access">Request Creator Access →</a><a class="button ghost" href="/#artists">Learn about Creator Partnerships</a></div>
-  <div class="notice"><strong>Creator-first infrastructure.</strong> Publishing readiness is separate from actual distribution. Distribution provider credentials and verification are required before any release can be represented as delivered.</div>
 </main>
 <footer><div class="footer-brand">ALLEGRO<span>-VIBEZ</span></div><p>AFRICAN-BORN · GLOBAL BY DESIGN</p></footer>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.76.1/dist/umd/supabase.min.js" integrity="sha384-REPLACE_WITH_VERIFIED_SRI" crossorigin="anonymous"></script>
+<script>
+(() => {
+  const SUPABASE_URL = 'https://yfawrenhudjomhnglfhq.supabase.co';
+  const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_3KY--8Y_uuKEdfdumC2txg__OWTRo2p';
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+  const $ = (id) => document.getElementById(id);
+  const authPanel = $('authPanel'), workspace = $('workspace'), authStatus = $('authStatus');
+  const setStatus = (el, message) => { el.innerHTML = message; };
+  const escapeHtml = (value) => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+
+  async function loadProfile(user) {
+    const { data, error } = await client.from('creator_profiles').select('stage_name,bio,country,genre,avatar_url').eq('user_id', user.id).maybeSingle();
+    if (error) throw error;
+    $('stageName').value = data?.stage_name || '';
+    $('bio').value = data?.bio || '';
+    $('country').value = data?.country || 'South Africa';
+    $('genre').value = data?.genre || '';
+    $('avatarUrl').value = data?.avatar_url || '';
+    $('profileName').textContent = data?.stage_name || 'New Creator';
+    $('profileMeta').textContent = data ? `${data.country || 'Country not set'}${data.genre ? ' · ' + data.genre : ''}` : 'Complete your creator profile to begin.';
+  }
+
+  async function loadReleases(user) {
+    const { data, error } = await client.from('allegro_creator_release_readiness').select('id,title,status,release_date,track_count,ready_for_publishing_review').eq('creator_id', user.id).order('release_date', { ascending: false, nullsFirst: false });
+    if (error) throw error;
+    const list = $('releaseList');
+    if (!data?.length) { list.innerHTML = '<div class="empty">No releases yet. Your first release workspace is the next catalogue layer.</div>'; return; }
+    list.innerHTML = data.map(r => `<div class="release"><div><strong>${escapeHtml(r.title || 'Untitled release')}</strong><small>${escapeHtml(r.release_date || 'No release date')} · ${Number(r.track_count || 0)} track(s)</small></div><span class="pill">${r.ready_for_publishing_review ? 'Ready for review' : escapeHtml(r.status || 'Draft')}</span></div>`).join('');
+  }
+
+  async function renderSession() {
+    const { data: { session } } = await client.auth.getSession();
+    if (!session?.user) { authPanel.classList.remove('hidden'); workspace.classList.add('hidden'); return; }
+    authPanel.classList.add('hidden'); workspace.classList.remove('hidden');
+    $('profileMeta').textContent = session.user.email || '';
+    try { await loadProfile(session.user); await loadReleases(session.user); }
+    catch (error) { setStatus(authStatus, `<strong>Workspace error:</strong> ${escapeHtml(error.message)}`); }
+  }
+
+  $('signIn').onclick = async () => {
+    setStatus(authStatus, 'Signing in…');
+    const { error } = await client.auth.signInWithPassword({ email: $('email').value.trim(), password: $('password').value });
+    if (error) { setStatus(authStatus, `<strong>Sign-in failed:</strong> ${escapeHtml(error.message)}`); return; }
+    setStatus(authStatus, ''); await renderSession();
+  };
+
+  $('signUp').onclick = async () => {
+    setStatus(authStatus, 'Creating your creator account…');
+    const email = $('email').value.trim(), password = $('password').value;
+    const { data, error } = await client.auth.signUp({ email, password });
+    if (error) { setStatus(authStatus, `<strong>Account creation failed:</strong> ${escapeHtml(error.message)}`); return; }
+    if (data.session) { setStatus(authStatus, ''); await renderSession(); }
+    else setStatus(authStatus, '<strong>Account created.</strong> Check your email to confirm your account, then return to sign in.');
+  };
+
+  $('saveProfile').onclick = async () => {
+    const { data: { user } } = await client.auth.getUser();
+    if (!user) return;
+    setStatus($('profileStatus'), 'Saving…');
+    const payload = { user_id: user.id, stage_name: $('stageName').value.trim(), bio: $('bio').value.trim(), country: $('country').value.trim(), genre: $('genre').value.trim(), avatar_url: $('avatarUrl').value.trim(), updated_at: new Date().toISOString() };
+    const { error } = await client.from('creator_profiles').upsert(payload, { onConflict: 'user_id' });
+    if (error) { setStatus($('profileStatus'), `<strong>Save failed:</strong> ${escapeHtml(error.message)}`); return; }
+    $('profileName').textContent = payload.stage_name || 'New Creator';
+    $('profileMeta').textContent = `${payload.country || 'Country not set'}${payload.genre ? ' · ' + payload.genre : ''}`;
+    setStatus($('profileStatus'), '<strong>Profile saved.</strong>');
+  };
+
+  $('signOut').onclick = async () => { await client.auth.signOut(); await renderSession(); };
+  client.auth.onAuthStateChange(() => renderSession());
+  renderSession();
+})();
+</script>
 </body>
 </html>
