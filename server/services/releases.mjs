@@ -12,6 +12,28 @@ function releaseInput(body) {
   };
 }
 
+async function assertReleaseAudioReady({ repository, release }) {
+  const tracks = await repository.list('tracks', { releaseId: release.id });
+  if (!tracks.length) {
+    const error = new Error('At least one track with READY audio is required before submission');
+    error.code = 'INVALID_REQUEST';
+    throw error;
+  }
+  for (const track of tracks) {
+    if (!track.audioAssetId) {
+      const error = new Error('Every release track must reference an audio asset');
+      error.code = 'INVALID_REQUEST';
+      throw error;
+    }
+    const asset = await repository.get('audio_assets', { id: track.audioAssetId });
+    if (!asset || asset.status !== 'READY') {
+      const error = new Error('Every release track must reference an audio asset in READY state');
+      error.code = 'INVALID_REQUEST';
+      throw error;
+    }
+  }
+}
+
 export async function createRelease({ repository, userId, artistId, body }) {
   const artist = await repository.get('artists', { id: id(artistId, 'artistId') });
   if (!artist || artist.userId !== userId) {
@@ -42,6 +64,9 @@ export async function submitRelease({ repository, userId, releaseId }) {
     error.code = 'INVALID_REQUEST';
     throw error;
   }
+  await assertReleaseAudioReady({ repository, release });
   assertTransition(release.status, 'SUBMITTED', RELEASE_TRANSITIONS);
   return repository.update('releases', release.id, { status: 'SUBMITTED' });
 }
+
+export { assertReleaseAudioReady };
