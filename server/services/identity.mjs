@@ -1,9 +1,18 @@
 import { hashPassword, verifyPassword, issueSessionToken, hashSessionToken } from '../domain/auth.mjs';
 import { email, requiredString, assertObject } from '../domain/validation.mjs';
 
+const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
 async function createSession(repository, userId) {
   const token = issueSessionToken();
-  await repository.create('sessions', { tokenHash: hashSessionToken(token), userId });
+  const now = new Date();
+  await repository.create('sessions', {
+    tokenHash: hashSessionToken(token),
+    userId,
+    createdAt: now.toISOString(),
+    expiresAt: new Date(now.getTime() + SESSION_TTL_MS).toISOString(),
+    revokedAt: null
+  });
   return token;
 }
 
@@ -48,16 +57,23 @@ export async function currentUser({ repository, token }) {
     throw error;
   }
   const session = await repository.get('sessions', { tokenHash });
-  if (!session) {
-    const error = new Error('Invalid session');
+  if (!session || session.revokedAt || !session.expiresAt || new Date(session.expiresAt).getTime() <= Date.now()) {
+    const error = new Error('Invalid or expired session');
     error.code = 'UNAUTHORIZED';
     throw error;
   }
   const user = await repository.get('users', { id: session.userId });
-  if (!user) {
-    const error = new Error('Account not found');
+  if (!user || user.status !== 'ACTIVE') {
+    const error = new Error('Account not available');
     error.code = 'UNAUTHORIZED';
     throw error;
   }
   return { id: user.id, email: user.email, status: user.status };
+}
+
+export async function logout({ repository, token }) {
+  const tokenHash = hashSessionToken(token);
+  if (!tokenHash) return { ok: true };
+  await repository.update('sessions', { tokenHash }, { revokedAt: new Date().toISOString() });
+  return { ok: true };
 }
