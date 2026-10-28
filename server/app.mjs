@@ -22,7 +22,10 @@ const MAX_REQUESTS = 120;
 const requestCounts = new Map();
 
 function requestId(req) { return String(req.headers['x-request-id'] || crypto.randomUUID()).slice(0, 128); }
-function clientKey(req) { return String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim(); }
+function clientKey(req) {
+  if (process.env.ALLEGRO_TRUST_PROXY === 'true') return String(req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown').split(',')[0].trim();
+  return String(req.socket.remoteAddress || 'unknown');
+}
 function rateLimited(req) {
   const now = Date.now();
   const key = `${clientKey(req)}:${Math.floor(now / WINDOW_MS)}`;
@@ -44,6 +47,10 @@ function sendJson(res, status, body, extraHeaders = {}) {
   res.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...securityHeaders(), ...extraHeaders });
   res.end(JSON.stringify(body));
 }
+function sendNoContent(res, extraHeaders = {}) {
+  res.writeHead(204, { 'cache-control': 'no-store', ...securityHeaders(), ...extraHeaders });
+  res.end();
+}
 function route(req) { const url = new URL(req.url ?? '/', `http://${req.headers.host ?? 'localhost'}`); return { method: req.method ?? 'GET', path: url.pathname, search: url.searchParams }; }
 function bearerToken(req) { const header = req.headers.authorization ?? ''; return header.startsWith('Bearer ') ? header.slice(7).trim() : null; }
 function statusFor(error) { if (error instanceof RepositoryNotConfiguredError || error.code === 'NOT_CONFIGURED') return 501; if (error.code === 'INVALID_REQUEST' || error.code === 'INVALID_JSON') return 400; if (error.code === 'PAYLOAD_TOO_LARGE') return 413; if (error.code === 'UNAUTHORIZED') return 401; if (error.code === 'FORBIDDEN') return 403; if (error.code === 'NOT_FOUND') return 404; if (error.code === 'CONFLICT') return 409; if (error.code === 'RATE_LIMITED') return 429; return 500; }
@@ -56,9 +63,12 @@ const server = http.createServer(async (req, res) => {
   if (rateLimited(req)) return sendJson(res, 429, { error: { code: 'RATE_LIMITED', message: 'Too many requests. Try again shortly.', requestId: rid } }, { 'retry-after': '60' });
   const { method, path, search } = route(req);
   try {
-    if (method === 'OPTIONS') return sendJson(res, 204, null, { 'access-control-allow-origin': process.env.ALLEGRO_ALLOWED_ORIGIN || 'null', 'access-control-allow-methods': 'GET,POST,PUT,PATCH,OPTIONS', 'access-control-allow-headers': 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Allegro-Release-Approval-Secret,X-Allegro-Reconciliation-Secret' });
+    if (method === 'OPTIONS') return sendNoContent(res, { 'access-control-allow-origin': process.env.ALLEGRO_ALLOWED_ORIGIN || 'null', 'access-control-allow-methods': 'GET,POST,PUT,PATCH,OPTIONS', 'access-control-allow-headers': 'Authorization,Content-Type,Idempotency-Key,X-Request-Id,X-Allegro-Release-Approval-Secret,X-Allegro-Reconciliation-Secret', 'vary': 'Origin' });
     const allowedOrigin = process.env.ALLEGRO_ALLOWED_ORIGIN;
-    if (allowedOrigin && req.headers.origin === allowedOrigin) res.setHeader('access-control-allow-origin', allowedOrigin);
+    if (allowedOrigin && req.headers.origin === allowedOrigin) {
+      res.setHeader('access-control-allow-origin', allowedOrigin);
+      res.setHeader('vary', 'Origin');
+    }
     if (method === 'GET' && (path === '/healthz' || path === '/api/v1/health')) return sendJson(res, 200, { ok: true, service: 'allegro-vibez-api', mode: 'foundation', persistence: persistenceConfigured ? 'SUPABASE' : 'NOT_CONFIGURED' });
     if (method === 'POST' && path === '/api/v1/auth/register') return sendJson(res, 201, { data: await register({ repository, body: await jsonBody(req) }) });
     if (method === 'POST' && path === '/api/v1/auth/login') return sendJson(res, 200, { data: await login({ repository, body: await jsonBody(req) }) });
