@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { createAdapterRegistry } from './adapters/index.mjs';
 import { createRepository, RepositoryNotConfiguredError } from './domain/repository.mjs';
+import { createSupabaseRepository } from './adapters/supabase-repository.mjs';
 import { jsonBody, id } from './domain/validation.mjs';
 import { register, login, currentUser } from './services/identity.mjs';
 import { createArtist, listArtists, getArtist, updateArtist } from './services/artists.mjs';
@@ -9,7 +10,8 @@ import { setRightsSplits, getRightsSplits } from './services/rights.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
-const repository = createRepository();
+const persistenceConfigured = Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+const repository = persistenceConfigured ? createSupabaseRepository() : createRepository();
 
 function sendJson(res, status, body, extraHeaders = {}) {
   res.writeHead(status, {
@@ -53,7 +55,7 @@ const server = http.createServer(async (req, res) => {
   const { method, path } = route(req);
   try {
     if (method === 'GET' && (path === '/healthz' || path === '/api/v1/health')) {
-      return sendJson(res, 200, { ok: true, service: 'allegro-vibez-api', mode: 'foundation', persistence: 'NOT_CONFIGURED' });
+      return sendJson(res, 200, { ok: true, service: 'allegro-vibez-api', mode: 'foundation', persistence: persistenceConfigured ? 'SUPABASE' : 'NOT_CONFIGURED' });
     }
     if (method === 'POST' && path === '/api/v1/auth/register') return sendJson(res, 201, { data: await register({ repository, body: await jsonBody(req) }) });
     if (method === 'POST' && path === '/api/v1/auth/login') return sendJson(res, 200, { data: await login({ repository, body: await jsonBody(req) }) });
