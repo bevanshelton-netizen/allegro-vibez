@@ -1,5 +1,11 @@
-import { hashPassword, verifyPassword, issueSessionToken } from '../domain/auth.mjs';
+import { hashPassword, verifyPassword, issueSessionToken, hashSessionToken } from '../domain/auth.mjs';
 import { email, requiredString, assertObject } from '../domain/validation.mjs';
+
+async function createSession(repository, userId) {
+  const token = issueSessionToken();
+  await repository.create('sessions', { tokenHash: hashSessionToken(token), userId });
+  return token;
+}
 
 export async function register({ repository, body }) {
   assertObject(body);
@@ -16,8 +22,7 @@ export async function register({ repository, body }) {
     passwordHash: hashPassword(password),
     status: 'ACTIVE'
   });
-  const token = issueSessionToken();
-  await repository.create('sessions', { token, userId: user.id });
+  const token = await createSession(repository, user.id);
   return { user: { id: user.id, email: user.email, status: user.status }, token };
 }
 
@@ -31,18 +36,18 @@ export async function login({ repository, body }) {
     error.code = 'UNAUTHORIZED';
     throw error;
   }
-  const token = issueSessionToken();
-  await repository.create('sessions', { token, userId: user.id });
+  const token = await createSession(repository, user.id);
   return { user: { id: user.id, email: user.email, status: user.status }, token };
 }
 
 export async function currentUser({ repository, token }) {
-  if (!token) {
+  const tokenHash = hashSessionToken(token);
+  if (!tokenHash) {
     const error = new Error('Authentication required');
     error.code = 'UNAUTHORIZED';
     throw error;
   }
-  const session = await repository.get('sessions', { token });
+  const session = await repository.get('sessions', { tokenHash });
   if (!session) {
     const error = new Error('Invalid session');
     error.code = 'UNAUTHORIZED';
