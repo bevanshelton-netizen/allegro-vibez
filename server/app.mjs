@@ -8,6 +8,7 @@ import { createArtist, listArtists, getArtist, updateArtist } from './services/a
 import { createRelease, getRelease, submitRelease } from './services/releases.mjs';
 import { setRightsSplits, getRightsSplits } from './services/rights.mjs';
 import { getEarnings, requestPayout } from './services/earnings.mjs';
+import { createOrder, getOrder, verifyPayment } from './services/payments.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
@@ -39,6 +40,7 @@ function statusFor(error) {
   if (error.code === 'INVALID_REQUEST' || error.code === 'INVALID_JSON') return 400;
   if (error.code === 'PAYLOAD_TOO_LARGE') return 413;
   if (error.code === 'UNAUTHORIZED') return 401;
+  if (error.code === 'NOT_FOUND') return 404;
   if (error.code === 'CONFLICT') return 409;
   return 500;
 }
@@ -96,6 +98,26 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/api/v1/earnings/payouts') {
       const user = await requireUser(req);
       return sendJson(res, 201, { data: await requestPayout({ repository, userId: user.id, body: await jsonBody(req) }) });
+    }
+
+    if (method === 'POST' && path === '/api/v1/orders') {
+      const user = await requireUser(req);
+      return sendJson(res, 201, { data: await createOrder({ repository, userId: user.id, body: await jsonBody(req), requestId: req.headers['x-request-id'] ?? null }) });
+    }
+    if (method === 'GET' && /^\/api\/v1\/orders\/[^/]+$/.test(path)) {
+      const user = await requireUser(req);
+      return sendJson(res, 200, { data: await getOrder({ repository, userId: user.id, orderId: path.split('/').pop() }) });
+    }
+    if (method === 'POST' && /^\/api\/v1\/payments\/[^/]+\/verify$/.test(path)) {
+      const body = await jsonBody(req);
+      return sendJson(res, 200, { data: await verifyPayment({
+        repository,
+        paymentId: path.split('/')[4],
+        providerReference: body.providerReference,
+        verified: body.verified,
+        requestId: req.headers['x-request-id'] ?? null,
+        reconciliationSecret: req.headers['x-allegro-reconciliation-secret'] ?? null
+      }) });
     }
 
     if (path.startsWith('/api/v1/')) return sendJson(res, 501, { error: { code: 'NOT_CONFIGURED', message: 'Production service adapter is not configured yet.', path, method, adapters: Object.fromEntries(Object.entries(adapters).map(([name, adapter]) => [name, adapter.status])) } });
