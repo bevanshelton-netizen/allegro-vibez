@@ -103,11 +103,15 @@ Provider callbacks must be authenticated, idempotent and recorded before financi
 
 `GET /api/v1/community/feed`
 
-Returns moderated, authorized feed content.
+Returns published community posts newest-first, capped by a server-side maximum.
 
 `POST /api/v1/community/posts`
 
-Creates a post subject to validation, rate limits and moderation policy.
+Creates an authenticated community post. Body text is validated server-side and capped at 4,000 characters. New posts enter `PUBLISHED` state in the current foundation; production moderation can transition them to hidden/review states before broader launch.
+
+`DELETE /api/v1/community/posts/:id`
+
+Deletes a post only when the authenticated user owns it. This endpoint is intentionally separate from financial/audit deletion rules.
 
 ## Distribution
 
