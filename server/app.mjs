@@ -10,6 +10,7 @@ import { setRightsSplits, getRightsSplits } from './services/rights.mjs';
 import { getEarnings, requestPayout } from './services/earnings.mjs';
 import { createOrder, getOrder, verifyPayment } from './services/payments.mjs';
 import { createSignedUpload, completeUpload, getAsset, getPlaybackUrl } from './services/media.mjs';
+import { approveRelease, publishRelease } from './services/publication.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
@@ -36,6 +37,8 @@ const server = http.createServer(async (req, res) => {
     if (method === 'POST' && path === '/api/v1/releases') { const user = await requireUser(req); const body = await jsonBody(req); return sendJson(res, 201, { data: await createRelease({ repository, userId: user.id, artistId: id(body.artistId, 'artistId'), body }) }); }
     if (method === 'GET' && /^\/api\/v1\/releases\/[^/]+$/.test(path)) return sendJson(res, 200, { data: await getRelease({ repository, releaseId: path.split('/').pop() }) });
     if (method === 'POST' && /^\/api\/v1\/releases\/[^/]+\/submit$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await submitRelease({ repository, userId: user.id, releaseId: path.split('/')[4] }) }); }
+    if (method === 'POST' && /^\/api\/v1\/releases\/[^/]+\/approve$/.test(path)) return sendJson(res, 200, { data: await approveRelease({ repository, releaseId: path.split('/')[4], approvalSecretValue: req.headers['x-allegro-release-approval-secret'] ?? null, requestId: req.headers['x-request-id'] ?? null }) });
+    if (method === 'POST' && /^\/api\/v1\/releases\/[^/]+\/publish$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await publishRelease({ repository, userId: user.id, releaseId: path.split('/')[4], requestId: req.headers['x-request-id'] ?? null }) }); }
     if (method === 'PUT' && /^\/api\/v1\/releases\/[^/]+\/splits$/.test(path)) { const user = await requireUser(req); const body = await jsonBody(req); return sendJson(res, 200, { data: await setRightsSplits({ repository, userId: user.id, releaseId: path.split('/')[4], splits: body.splits }) }); }
     if (method === 'GET' && /^\/api\/v1\/releases\/[^/]+\/splits$/.test(path)) return sendJson(res, 200, { data: await getRightsSplits({ repository, releaseId: path.split('/')[4] }) });
     if (method === 'GET' && path === '/api/v1/earnings') { const user = await requireUser(req); return sendJson(res, 200, { data: await getEarnings({ repository, userId: user.id, currency: search.get('currency') ?? 'ZAR' }) }); }
