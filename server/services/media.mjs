@@ -104,8 +104,7 @@ export async function completeUpload({ repository, userId, assetId }) {
   });
 }
 
-export async function getPlaybackUrl({ repository, userId, assetId, expiresIn = 900 }) {
-  const asset = await getAsset({ repository, userId, assetId });
+async function signAsset(asset, expiresIn) {
   if (asset.status !== 'READY') throw error('Media asset is not ready for playback', 'CONFLICT');
   const seconds = Number(expiresIn);
   if (!Number.isInteger(seconds) || seconds < 60 || seconds > 3600) throw error('expiresIn must be between 60 and 3600 seconds');
@@ -115,6 +114,24 @@ export async function getPlaybackUrl({ repository, userId, assetId, expiresIn = 
     body: JSON.stringify({ expiresIn: seconds })
   });
   return { asset, signedUrl: payload?.signedURL ?? payload?.signedUrl ?? payload?.url ?? payload?.data?.signedUrl, expiresIn: seconds };
+}
+
+export async function getPlaybackUrl({ repository, userId, assetId, expiresIn = 900 }) {
+  const asset = await getAsset({ repository, userId, assetId });
+  return signAsset(asset, expiresIn);
+}
+
+export async function getPublicReleasePlaybackUrl({ repository, releaseId, trackId, expiresIn = 900 }) {
+  const release = await repository.get('releases', { id: releaseId });
+  if (!release) throw error('Release not found', 'NOT_FOUND');
+  if (release.status !== 'PUBLISHED') throw error('Release is not publicly available', 'NOT_FOUND');
+  const tracks = await repository.list('tracks', { releaseId: release.id });
+  const track = trackId ? tracks.find((item) => item.id === trackId) : tracks[0];
+  if (!track) throw error('Track not found', 'NOT_FOUND');
+  if (!track.audioAssetId) throw error('Track has no playable audio asset', 'NOT_FOUND');
+  const asset = await repository.get('audio_assets', { id: track.audioAssetId });
+  if (!asset) throw error('Audio asset not found', 'NOT_FOUND');
+  return { releaseId: release.id, trackId: track.id, ...(await signAsset(asset, expiresIn)) };
 }
 
 export async function getAsset({ repository, userId, assetId }) {
