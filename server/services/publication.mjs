@@ -28,7 +28,7 @@ export async function approveRelease({ repository, releaseId, approvalSecretValu
   const release = await repository.get('releases', { id: id(releaseId, 'releaseId') });
   if (!release) throw error('Release not found', 'NOT_FOUND');
   assertTransition(release.status, 'APPROVED', RELEASE_TRANSITIONS);
-  const updated = await repository.update('releases', release.id, { status: 'APPROVED', approvedAt: new Date().toISOString() });
+  const updated = await repository.update('releases', { id: release.id }, { status: 'APPROVED', approvedAt: new Date().toISOString() });
   await audit(repository, {
     actorId: 'release-approval-control',
     action: 'APPROVE_RELEASE',
@@ -71,7 +71,7 @@ export async function publishRelease({ repository, userId, releaseId, requestId 
   await assertRightsComplete(repository, release.id);
   await assertPublishableAudio(repository, release.id);
 
-  const updated = await repository.update('releases', release.id, { status: 'PUBLISHED', publishedAt: new Date().toISOString() });
+  const updated = await repository.update('releases', { id: release.id }, { status: 'PUBLISHED', publishedAt: new Date().toISOString() });
   await audit(repository, {
     actorId: userId,
     action: 'PUBLISH_RELEASE',
