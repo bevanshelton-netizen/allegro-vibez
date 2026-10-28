@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { assertTransition, RELEASE_TRANSITIONS } from '../domain/state.mjs';
 import { id } from '../domain/validation.mjs';
+import { normalizeSplits } from '../domain/rights.mjs';
 
 function error(message, code = 'INVALID_REQUEST') {
   const e = new Error(message);
@@ -51,12 +52,23 @@ async function assertPublishableAudio(repository, releaseId) {
   }
 }
 
+async function assertRightsComplete(repository, releaseId) {
+  const splits = await repository.list('rights_splits', { releaseId });
+  if (!splits.length) throw error('A release must have rights splits before publication', 'CONFLICT');
+  try {
+    normalizeSplits(splits);
+  } catch (e) {
+    throw error(`Release rights are not valid for publication: ${e.message}`, 'CONFLICT');
+  }
+}
+
 export async function publishRelease({ repository, userId, releaseId, requestId }) {
   const release = await repository.get('releases', { id: id(releaseId, 'releaseId') });
   if (!release) throw error('Release not found', 'NOT_FOUND');
   const artist = await repository.get('artists', { id: release.artistId });
   if (!artist || artist.userId !== userId) throw error('You do not own this release', 'UNAUTHORIZED');
   if (release.status !== 'APPROVED') throw error('Only an approved release can be published', 'CONFLICT');
+  await assertRightsComplete(repository, release.id);
   await assertPublishableAudio(repository, release.id);
 
   const updated = await repository.update('releases', release.id, { status: 'PUBLISHED', publishedAt: new Date().toISOString() });
