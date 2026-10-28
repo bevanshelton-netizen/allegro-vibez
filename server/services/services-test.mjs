@@ -24,23 +24,27 @@ test('creator onboarding to release submission and rights ownership', async () =
   assert.ok(registration.token);
   const me = await currentUser({ repository, token: registration.token });
   assert.equal(me.email, 'nia@example.com');
-
   const artist = await createArtist({ repository, userId: me.id, body: { stageName: 'Nia Kade', bio: 'Afrobeat creator', country: 'Nigeria', city: 'Lagos' } });
   assert.equal(artist.stageName, 'Nia Kade');
   assert.equal((await getArtist({ repository, artistId: artist.id })).id, artist.id);
-
   const release = await createRelease({ repository, userId: me.id, artistId: artist.id, body: { title: 'Sunrise Over Lagos', releaseType: 'SINGLE', genre: 'Afrobeat' } });
   assert.equal(release.status, 'DRAFT');
-
   await setRightsSplits({ repository, userId: me.id, releaseId: release.id, splits: [
     { partyId: me.id, partyType: 'USER', sharePercent: 80, role: 'ARTIST' },
     { partyId: 'producer-1', partyType: 'USER', sharePercent: 20, role: 'PRODUCER' }
   ] });
   const splits = await getRightsSplits({ repository, releaseId: release.id });
   assert.equal(splits.reduce((sum, item) => sum + item.sharePercent, 0), 100);
-
   const submitted = await submitRelease({ repository, userId: me.id, releaseId: release.id });
   assert.equal(submitted.status, 'SUBMITTED');
+});
+
+test('release cannot be submitted before rights are complete', async () => {
+  const repository = memoryRepository();
+  const registration = await register({ repository, body: { email: 'pending@example.com', password: 'A-strong-password-456' } });
+  const artist = await createArtist({ repository, userId: registration.user.id, body: { stageName: 'Maya Vale' } });
+  const release = await createRelease({ repository, userId: registration.user.id, artistId: artist.id, body: { title: 'After Midnight' } });
+  await assert.rejects(submitRelease({ repository, userId: registration.user.id, releaseId: release.id }), (error) => error.code === 'INVALID_REQUEST');
 });
 
 test('rights cannot accept a non-100% ownership split', async () => {
@@ -48,10 +52,7 @@ test('rights cannot accept a non-100% ownership split', async () => {
   const registration = await register({ repository, body: { email: 'artist2@example.com', password: 'A-strong-password-456' } });
   const artist = await createArtist({ repository, userId: registration.user.id, body: { stageName: 'Kairo Saint' } });
   const release = await createRelease({ repository, userId: registration.user.id, artistId: artist.id, body: { title: 'Gold Dust' } });
-  await assert.rejects(
-    setRightsSplits({ repository, userId: registration.user.id, releaseId: release.id, splits: [{ partyId: registration.user.id, sharePercent: 99 }] }),
-    (error) => error.code === 'INVALID_REQUEST'
-  );
+  await assert.rejects(setRightsSplits({ repository, userId: registration.user.id, releaseId: release.id, splits: [{ partyId: registration.user.id, sharePercent: 99 }] }), (error) => error.code === 'INVALID_REQUEST');
 });
 
 test('login rejects an incorrect password', async () => {
