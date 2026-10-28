@@ -5,6 +5,7 @@ on:
     branches:
       - 'rebuild/allegro-vibez-clean-2026-10-27'
   pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read
