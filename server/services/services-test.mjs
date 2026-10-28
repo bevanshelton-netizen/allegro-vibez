@@ -10,7 +10,7 @@ function memoryRepository() {
   let seq = 0;
   const collection = (name) => { if (!data.has(name)) data.set(name, new Map()); return data.get(name); };
   return {
-    async create(name, input) { const id = `${name}-${++seq}`; const row = { id, createdAt: new Date().toISOString(), ...input }; collection(name).set(id, row); return row; },
+    async create(name, input) { const id = input.id ?? `${name}-${++seq}`; const row = { id, createdAt: new Date().toISOString(), ...input }; collection(name).set(id, row); return row; },
     async get(name, filter = {}) { return [...collection(name).values()].find((row) => Object.entries(filter).every(([key, value]) => row[key] === value)) ?? null; },
     async list(name, filter = {}) { return [...collection(name).values()].filter((row) => Object.entries(filter).every(([key, value]) => row[key] === value)); },
     async update(name, id, patch) { const row = collection(name).get(id); if (!row) return null; const updated = { ...row, ...patch, updatedAt: new Date().toISOString() }; collection(name).set(id, updated); return updated; },
@@ -35,6 +35,8 @@ test('creator onboarding to release submission and rights ownership', async () =
   ] });
   const splits = await getRightsSplits({ repository, releaseId: release.id });
   assert.equal(splits.reduce((sum, item) => sum + item.sharePercent, 0), 100);
+  const audioAsset = await repository.create('audio_assets', { id: 'audio-ready-1', ownerId: me.id, status: 'READY', filename: 'sunrise.mp3', contentType: 'audio/mpeg', sizeBytes: 1000, objectKey: 'audio/test/sunrise.mp3' });
+  await repository.create('tracks', { releaseId: release.id, audioAssetId: audioAsset.id, title: 'Sunrise Over Lagos', durationMs: 180000 });
   const submitted = await submitRelease({ repository, userId: me.id, releaseId: release.id });
   assert.equal(submitted.status, 'SUBMITTED');
 });
@@ -44,6 +46,15 @@ test('release cannot be submitted before rights are complete', async () => {
   const registration = await register({ repository, body: { email: 'pending@example.com', password: 'A-strong-password-456' } });
   const artist = await createArtist({ repository, userId: registration.user.id, body: { stageName: 'Maya Vale' } });
   const release = await createRelease({ repository, userId: registration.user.id, artistId: artist.id, body: { title: 'After Midnight' } });
+  await assert.rejects(submitRelease({ repository, userId: registration.user.id, releaseId: release.id }), (error) => error.code === 'INVALID_REQUEST');
+});
+
+test('release cannot be submitted without ready audio', async () => {
+  const repository = memoryRepository();
+  const registration = await register({ repository, body: { email: 'audio@example.com', password: 'A-strong-password-111' } });
+  const artist = await createArtist({ repository, userId: registration.user.id, body: { stageName: 'Audio Test' } });
+  const release = await createRelease({ repository, userId: registration.user.id, artistId: artist.id, body: { title: 'No Audio Yet' } });
+  await setRightsSplits({ repository, userId: registration.user.id, releaseId: release.id, splits: [{ partyId: registration.user.id, partyType: 'USER', sharePercent: 100, role: 'ARTIST' }] });
   await assert.rejects(submitRelease({ repository, userId: registration.user.id, releaseId: release.id }), (error) => error.code === 'INVALID_REQUEST');
 });
 
