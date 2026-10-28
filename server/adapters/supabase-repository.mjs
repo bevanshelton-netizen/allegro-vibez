@@ -68,12 +68,29 @@ async function request(table, method, { filters = {}, body, limit } = {}) {
   }
   return Array.isArray(payload) ? payload.map(mapOut) : mapOut(payload);
 }
+async function rpc(functionName, body) {
+  const { baseUrl, serviceKey } = assertConfig();
+  const url = `${baseUrl}/rest/v1/rpc/${functionName}`;
+  const headers = { apikey: serviceKey, Authorization: `Bearer ${serviceKey}`, Accept: 'application/json', 'Content-Type': 'application/json', 'Accept-Profile': 'allegro_vibez', 'Content-Profile': 'allegro_vibez' };
+  const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
+  const text = await response.text();
+  let payload = null;
+  try { payload = text ? JSON.parse(text) : null; } catch { payload = null; }
+  if (!response.ok) {
+    const error = new Error(payload?.message || payload?.hint || `Supabase RPC request failed (${response.status})`);
+    error.code = response.status === 409 || response.status === 23505 ? 'CONFLICT' : 'PERSISTENCE_ERROR'; error.status = response.status; throw error;
+  }
+  return mapOut(Array.isArray(payload) ? payload[0] : payload);
+}
 export function createSupabaseRepository() {
   return Object.freeze({
     async create(collection, value) { const rows = await request(collection, 'POST', { body: value }); return Array.isArray(rows) ? rows[0] : rows; },
     async get(collection, filters) { const rows = await request(collection, 'GET', { filters, limit: 1 }); return Array.isArray(rows) ? (rows[0] ?? null) : rows; },
     async list(collection, filters = {}) { const rows = await request(collection, 'GET', { filters }); return Array.isArray(rows) ? rows : []; },
     async update(collection, filters, value) { const rows = await request(collection, 'PATCH', { filters, body: value }); return Array.isArray(rows) ? (rows[0] ?? null) : rows; },
+    async requestPayoutAtomic({ userId, amountMinor, currency, idempotencyKey, requestId }) {
+      return rpc('request_payout_atomic', { p_user_id: userId, p_amount_minor: amountMinor, p_currency: currency, p_idempotency_key: idempotencyKey || null, p_request_id: requestId || null });
+    },
     async delete(collection, filters) {
       if (NON_DELETABLE.has(collection)) {
         const error = new Error(`${collection} records are append-only and cannot be deleted`);
