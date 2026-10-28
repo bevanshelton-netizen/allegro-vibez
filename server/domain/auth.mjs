@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 
 const KEY_LENGTH = 32;
 const SALT_LENGTH = 16;
@@ -33,9 +33,14 @@ export function issueSessionToken() {
   return randomBytes(32).toString('base64url');
 }
 
+export function hashSessionToken(token) {
+  if (typeof token !== 'string' || token.length < 20) return null;
+  return createHash('sha256').update(token, 'utf8').digest('hex');
+}
+
 export const AUTH_CONTRACT = Object.freeze({
   passwordAlgorithm: 'scrypt',
   sessionTokenType: 'opaque-random',
-  sessionStorage: 'server-side',
+  sessionStorage: 'sha256-hash-only',
   productionRequirement: 'persistent-store-plus-secure-cookie-or-equivalent'
 });
