@@ -4,6 +4,8 @@ const TABLES = new Set([
   'distribution_jobs', 'audit_events'
 ]);
 
+const NON_DELETABLE = new Set(['ledger_entries', 'payments', 'payouts', 'orders', 'audit_events']);
+
 const FIELD_MAP = Object.freeze({
   passwordHash: 'password_hash', userId: 'user_id', tokenHash: 'token_hash',
   displayName: 'display_name', stageName: 'stage_name', avatarUrl: 'avatar_url',
@@ -72,6 +74,14 @@ export function createSupabaseRepository() {
     async get(collection, filters) { const rows = await request(collection, 'GET', { filters, limit: 1 }); return Array.isArray(rows) ? (rows[0] ?? null) : rows; },
     async list(collection, filters = {}) { const rows = await request(collection, 'GET', { filters }); return Array.isArray(rows) ? rows : []; },
     async update(collection, filters, value) { const rows = await request(collection, 'PATCH', { filters, body: value }); return Array.isArray(rows) ? (rows[0] ?? null) : rows; },
-    async delete(collection, filters) { await request(collection, 'DELETE', { filters }); return true; }
+    async delete(collection, filters) {
+      if (NON_DELETABLE.has(collection)) {
+        const error = new Error(`${collection} records are append-only and cannot be deleted`);
+        error.code = 'FORBIDDEN';
+        throw error;
+      }
+      await request(collection, 'DELETE', { filters });
+      return true;
+    }
   });
 }
