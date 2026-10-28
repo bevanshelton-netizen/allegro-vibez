@@ -19,11 +19,7 @@ export async function createRelease({ repository, userId, artistId, body }) {
     error.code = 'UNAUTHORIZED';
     throw error;
   }
-  return repository.create('releases', {
-    ...releaseInput(body),
-    artistId: artist.id,
-    status: 'DRAFT'
-  });
+  return repository.create('releases', { ...releaseInput(body), artistId: artist.id, status: 'DRAFT' });
 }
 
 export async function getRelease({ repository, releaseId }) {
@@ -37,6 +33,13 @@ export async function submitRelease({ repository, userId, releaseId }) {
   if (!artist || artist.userId !== userId) {
     const error = new Error('You do not own this release');
     error.code = 'UNAUTHORIZED';
+    throw error;
+  }
+  const splits = await repository.list('rights_splits', { releaseId: release.id });
+  const total = splits.reduce((sum, split) => sum + Number(split.sharePercent || 0), 0);
+  if (Math.abs(total - 100) > 0.000001) {
+    const error = new Error('Rights splits must total exactly 100% before submission');
+    error.code = 'INVALID_REQUEST';
     throw error;
   }
   assertTransition(release.status, 'SUBMITTED', RELEASE_TRANSITIONS);
