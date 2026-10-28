@@ -24,12 +24,14 @@ export async function getEarnings({ repository, userId, currency = 'ZAR' }) {
   const debits = currencyEntries.filter((entry) => ['DEBIT', 'FEE', 'ADJUSTMENT_DEBIT'].includes(entry.entryType));
   const earnedMinor = sum(credits);
   const debitedMinor = sum(debits);
+  const reservedMinor = sum(currencyPayouts.filter((payout) => ['REQUESTED', 'PROCESSING', 'COMPLETED', 'PAID'].includes(payout.status)));
   const paidOutMinor = sum(currencyPayouts.filter((payout) => ['COMPLETED', 'PAID'].includes(payout.status)));
-  const availableMinor = earnedMinor - debitedMinor - paidOutMinor;
+  const availableMinor = earnedMinor - debitedMinor - reservedMinor;
   return {
     currency,
     earnedMinor,
     debitedMinor,
+    reservedMinor,
     paidOutMinor,
     availableMinor,
     entries: currencyEntries,
@@ -37,14 +39,29 @@ export async function getEarnings({ repository, userId, currency = 'ZAR' }) {
   };
 }
 
-export async function requestPayout({ repository, userId, body }) {
+export async function requestPayout({ repository, userId, body, idempotencyKey = null }) {
   assertObject(body);
   const currency = typeof body.currency === 'string' ? body.currency.toUpperCase() : 'ZAR';
   const amountMinor = Number(body.amountMinor);
+  const key = typeof (body.idempotencyKey ?? idempotencyKey) === 'string' ? String(body.idempotencyKey ?? idempotencyKey).trim() : '';
   if (!Number.isSafeInteger(amountMinor) || amountMinor <= 0) {
     const error = new Error('amountMinor must be a positive integer');
     error.code = 'INVALID_REQUEST';
     throw error;
+  }
+  if (key.length > 200) {
+    const error = new Error('idempotencyKey is too long');
+    error.code = 'INVALID_REQUEST';
+    throw error;
+  }
+  if (key) {
+    const existing = await repository.get('payouts', { idempotencyKey: key });
+    if (existing && existing.userId === userId) return existing;
+    if (existing && existing.userId !== userId) {
+      const error = new Error('Idempotency key is already in use');
+      error.code = 'CONFLICT';
+      throw error;
+    }
   }
   const earnings = await getEarnings({ repository, userId, currency });
   if (amountMinor > earnings.availableMinor) {
@@ -57,6 +74,7 @@ export async function requestPayout({ repository, userId, body }) {
     amountMinor,
     currency,
     status: 'REQUESTED',
+    idempotencyKey: key || null,
     requestedAt: new Date().toISOString()
   });
 }
