@@ -1,4 +1,4 @@
-{$ALLEGRO_DOMAIN} {
+{$ALLEGRO_DOMAIN}, www.{$ALLEGRO_DOMAIN} {
     encode zstd gzip
 
     header {
