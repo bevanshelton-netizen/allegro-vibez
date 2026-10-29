@@ -12,6 +12,7 @@ import { createOrder, getOrder, verifyPayment } from './services/payments.mjs';
 import { createSignedUpload, completeUpload, getAsset, getPlaybackUrl, getPublicReleasePlaybackUrl } from './services/media.mjs';
 import { approveRelease, publishRelease } from './services/publication.mjs';
 import { createCommunityPost, listCommunityFeed, deleteCommunityPost } from './services/community.mjs';
+import { followUser, unfollowUser, listFollowing, listFollowers, createConversation, listConversations, listMessages, sendMessage, deleteMessage } from './services/social.mjs';
 
 const port = Number(process.env.PORT || 8787);
 const adapters = createAdapterRegistry();
@@ -65,6 +66,15 @@ const server = http.createServer(async (req, res) => {
     if (method === 'GET' && path === '/api/v1/community/feed') return sendJson(res, 200, { data: await listCommunityFeed({ repository, limit: Number(search.get('limit') ?? 50) }) });
     if (method === 'POST' && path === '/api/v1/community/posts') { const user = await requireUser(req); return sendJson(res, 201, { data: await createCommunityPost({ repository, userId: user.id, body: await jsonBody(req) }) }); }
     if (method === 'DELETE' && /^\/api\/v1\/community\/posts\/[^/]+$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await deleteCommunityPost({ repository, userId: user.id, postId: path.split('/').pop() }) }); }
+    if (method === 'POST' && /^\/api\/v1\/users\/[^/]+\/follow$/.test(path)) { const user = await requireUser(req); return sendJson(res, 201, { data: await followUser({ repository, userId: user.id, targetUserId: path.split('/')[4] }) }); }
+    if (method === 'DELETE' && /^\/api\/v1\/users\/[^/]+\/follow$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await unfollowUser({ repository, userId: user.id, targetUserId: path.split('/')[4] }) }); }
+    if (method === 'GET' && path === '/api/v1/social/following') { const user = await requireUser(req); return sendJson(res, 200, { data: await listFollowing({ repository, userId: user.id, limit: Number(search.get('limit') ?? 100) }) }); }
+    if (method === 'GET' && path === '/api/v1/social/followers') { const user = await requireUser(req); return sendJson(res, 200, { data: await listFollowers({ repository, userId: user.id, limit: Number(search.get('limit') ?? 100) }) }); }
+    if (method === 'POST' && path === '/api/v1/conversations') { const user = await requireUser(req); const body = await jsonBody(req); return sendJson(res, 201, { data: await createConversation({ repository, userId: user.id, otherUserId: body.otherUserId }) }); }
+    if (method === 'GET' && path === '/api/v1/conversations') { const user = await requireUser(req); return sendJson(res, 200, { data: await listConversations({ repository, userId: user.id, limit: Number(search.get('limit') ?? 50) }) }); }
+    if (method === 'GET' && /^\/api\/v1\/conversations\/[^/]+\/messages$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await listMessages({ repository, userId: user.id, conversationId: path.split('/')[4], limit: Number(search.get('limit') ?? 100) }) }); }
+    if (method === 'POST' && /^\/api\/v1\/conversations\/[^/]+\/messages$/.test(path)) { const user = await requireUser(req); return sendJson(res, 201, { data: await sendMessage({ repository, userId: user.id, conversationId: path.split('/')[4], body: await jsonBody(req) }) }); }
+    if (method === 'DELETE' && /^\/api\/v1\/messages\/[^/]+$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await deleteMessage({ repository, userId: user.id, messageId: path.split('/').pop() }) }); }
     if (method === 'POST' && path === '/api/v1/media/upload-intents') { const user = await requireUser(req); return sendJson(res, 201, { data: await createSignedUpload({ repository, userId: user.id, body: await jsonBody(req) }) }); }
     if (method === 'POST' && /^\/api\/v1\/media\/[^/]+\/complete$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await completeUpload({ repository, userId: user.id, assetId: path.split('/')[4] }) }); }
     if (method === 'GET' && /^\/api\/v1\/media\/[^/]+\/play$/.test(path)) { const user = await requireUser(req); return sendJson(res, 200, { data: await getPlaybackUrl({ repository, userId: user.id, assetId: path.split('/')[4], expiresIn: Number(search.get('expiresIn') ?? 900) }) }); }
