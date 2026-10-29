@@ -43,6 +43,46 @@ Returns public artist information.
 
 Updates an artist profile after ownership authorization.
 
+## Social Graph
+
+`POST /api/v1/users/:id/follow`
+
+Follows another user. Self-follow is rejected and repeat follows are idempotent.
+
+`DELETE /api/v1/users/:id/follow`
+
+Removes the authenticated user's follow relationship.
+
+`GET /api/v1/social/following`
+
+Returns the authenticated user's following relationships, newest-first, capped server-side.
+
+`GET /api/v1/social/followers`
+
+Returns the authenticated user's followers, newest-first, capped server-side.
+
+## Direct Messaging
+
+`POST /api/v1/conversations`
+
+Creates or reuses a direct conversation between the authenticated account and another account.
+
+`GET /api/v1/conversations`
+
+Returns conversations in which the authenticated account is a member, ordered by most recently updated.
+
+`GET /api/v1/conversations/:id/messages`
+
+Returns messages only when the authenticated account is a conversation member. Deleted messages are omitted.
+
+`POST /api/v1/conversations/:id/messages`
+
+Sends a message only when the authenticated account is a conversation member. Message text is capped at 4,000 characters.
+
+`DELETE /api/v1/messages/:id`
+
+Soft-deletes a message only when the authenticated account is its sender.
+
 ## Releases & Media
 
 `POST /api/v1/releases`
