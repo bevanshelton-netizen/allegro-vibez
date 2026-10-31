@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url>
-    <loc>https://allegrovibez.com/</loc>
-  </url>
+  <url><loc>https://allegrovibez.com/</loc></url>
+  <url><loc>https://allegrovibez.com/artist-os/</loc></url>
+  <url><loc>https://allegrovibez.com/artist-showcase.html</loc></url>
+  <url><loc>https://allegrovibez.com/artist-onboarding.html</loc></url>
+  <url><loc>https://allegrovibez.com/charts.html</loc></url>
+  <url><loc>https://allegrovibez.com/collaborate/</loc></url>
+  <url><loc>https://allegrovibez.com/management/</loc></url>
+  <url><loc>https://allegrovibez.com/creator-studio/</loc></url>
 </urlset>
