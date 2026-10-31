@@ -1,0 +1,58 @@
+name: ALLEGRO — IZAKHONO Owned Production
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'Dockerfile'
+      - 'healthz'
+      - 'robots.txt'
+      - 'sitemap.xml'
+      - '404.html'
+      - 'site.webmanifest'
+      - 'public/**'
+      - 'deploy/izakhono/**'
+      - 'scripts/izakhono/**'
+      - '.github/workflows/izakhono-owned-production.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: allegro-owned-production
+  cancel-in-progress: false
+
+env:
+  ALLEGRO_DOMAIN: allegrovibez.com
+  ACME_EMAIL: ${{ vars.ALLEGRO_ACME_EMAIL }}
+  IZAKHONO_NODE_ID: ${{ vars.IZAKHONO_NODE_ID }}
+  IZAKHONO_RECEIPT_DIR: ${{ vars.IZAKHONO_RECEIPT_DIR }}
+
+jobs:
+  cutover:
+    name: Promote ALLEGRO on IZAKHONO NODE01
+    runs-on: [self-hosted, linux, x64, izakhono]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout release
+        uses: actions/checkout@v4
+
+      - name: Verify sovereign runner identity
+        shell: sh
+        run: |
+          test -n "${IZAKHONO_NODE_ID}" || { echo 'IZAKHONO_NODE_ID is not configured'; exit 1; }
+          echo "IZAKHONO node: ${IZAKHONO_NODE_ID}"
+
+      - name: Build, promote and accept
+        shell: sh
+        run: sh scripts/izakhono/production-cutover.sh
+
+      - name: Upload deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allegro-izakhono-deployment-receipt-${{ github.run_id }}
+          path: deploy/izakhono/receipts/*.json
+          if-no-files-found: ignore
