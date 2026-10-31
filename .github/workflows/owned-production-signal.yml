@@ -1,0 +1,42 @@
+name: ALLEGRO Owned Production Signal
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Dockerfile'
+      - 'scripts/izakhono/**'
+      - '.izakhono.json'
+      - '.github/workflows/owned-production-signal.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  owned-production-signal:
+    name: Request owned-runtime cutover
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify owned production contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .izakhono.json
+          test -f scripts/izakhono/production-cutover.sh
+          test -f .github/workflows/izakhono-production-cutover.yml
+          if grep -RniE 'vercel|netlify|github-pages|pages.yml' .izakhono.json scripts/izakhono .github/workflows/izakhono-production-cutover.yml; then
+            echo 'Forbidden external/static production route detected in owned cutover contract.'
+            exit 1
+          fi
+          echo 'Owned production contract verified.'
+      - name: State the physical promotion boundary
+        run: |
+          echo 'Application build contract is verified.'
+          echo 'Physical NODE01 promotion remains the authoritative production gate.'
+          echo 'No public-live claim is emitted by this workflow.'
