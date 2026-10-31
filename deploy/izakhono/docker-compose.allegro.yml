@@ -1,5 +1,6 @@
 services:
   allegro-vibez:
+    image: ${ALLEGRO_IMAGE:-allegro-vibez:izakhono-local}
     build:
       context: ../..
       dockerfile: Dockerfile
