@@ -42,7 +42,8 @@ done
 printf '%s\n' "[3/7] Starting the owned runtime and TLS edge"
 cd "$project_dir"
 export ALLEGRO_DOMAIN="$domain"
-docker compose -f "$compose_file" up -d --build
+export ALLEGRO_IMAGE="$image"
+docker compose -f "$compose_file" up -d
 
 echo "[4/7] Waiting for application health"
 i=0
