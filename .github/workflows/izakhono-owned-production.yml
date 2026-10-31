@@ -5,16 +5,21 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.*'
       - 'Dockerfile'
       - 'healthz'
       - 'robots.txt'
       - 'sitemap.xml'
       - '404.html'
       - 'site.webmanifest'
-      - 'public/**'
       - 'deploy/izakhono/**'
       - 'scripts/izakhono/**'
       - '.github/workflows/izakhono-owned-production.yml'
+      - '.izakhono.json'
   workflow_dispatch:
 
 permissions:
@@ -38,6 +43,15 @@ jobs:
     steps:
       - name: Checkout release
         uses: actions/checkout@v4
+
+      - name: Reject external hosting paths
+        shell: sh
+        run: |
+          if grep -RniE 'vercel|netlify|github pages' . --exclude-dir=.git --exclude='package-lock.json'; then
+            echo 'External hosting reference detected in the production workspace.'
+            exit 1
+          fi
+          echo 'External hosting paths: rejected'
 
       - name: Verify sovereign runner identity
         shell: sh
