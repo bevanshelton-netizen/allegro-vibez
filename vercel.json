@@ -1,4 +1,9 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "version": 2,
+  "builds": [
+    { "src": "**/*", "use": "@vercel/static" }
+  ],
   "rewrites": [
     { "source": "/creator-os", "destination": "/public/creator-os/index.html" },
     { "source": "/creator-os/", "destination": "/public/creator-os/index.html" },
