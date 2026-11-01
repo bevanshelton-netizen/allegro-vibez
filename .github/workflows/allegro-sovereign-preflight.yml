@@ -1,0 +1,50 @@
+name: ALLEGRO Sovereign Preflight
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.izakhono.json'
+      - 'scripts/izakhono/**'
+      - 'Dockerfile'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/allegro-sovereign-preflight.yml'
+
+jobs:
+  preflight:
+    name: Validate sovereign release package
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout ALLEGRO
+        uses: actions/checkout@v4
+
+      - name: Verify required production files
+        run: |
+          set -eu
+          test -f .izakhono.json
+          test -f Dockerfile
+          test -f scripts/izakhono/production-cutover.sh
+          test -f .github/workflows/izakhono-production-cutover.yml
+
+      - name: Verify owned-first contract
+        run: |
+          set -eu
+          grep -q 'OWNED' .izakhono.json
+          grep -q 'NODE01' .github/workflows/izakhono-production-cutover.yml
+          grep -q 'self-hosted' .github/workflows/izakhono-production-cutover.yml
+          grep -q 'allegrovibez.com' .github/workflows/izakhono-production-cutover.yml
+
+      - name: Validate cutover shell syntax
+        run: sh -n scripts/izakhono/production-cutover.sh
+
+      - name: Build production image as package validation
+        run: docker build --tag allegro-vibez:preflight-${GITHUB_SHA::12} .
+
+      - name: Report deployment boundary
+        run: |
+          echo 'ALLEGRO sovereign preflight passed.'
+          echo 'Production execution remains restricted to IZAKHONO NODE01.'
+          echo 'This workflow does not publish or claim public live status.'
