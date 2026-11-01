@@ -1,0 +1,43 @@
+name: IZAKHONO Production Cutover
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'Dockerfile'
+      - 'scripts/izakhono/production-cutover.sh'
+      - '.github/workflows/izakhono-production-cutover.yml'
+
+jobs:
+  cutover:
+    name: Promote ALLEGRO on IZAKHONO NODE01
+    runs-on: [self-hosted, linux, x64, izakhono]
+    timeout-minutes: 30
+    env:
+      VITE_IZAKHONO_CORE_URL: ${{ vars.IZAKHONO_CORE_URL }}
+      VITE_IZAKHONO_PUBLIC_KEY: ${{ secrets.IZAKHONO_PUBLIC_KEY }}
+      IZAKHONO_PUBLIC_APP_URL: https://allegrovibez.com
+      IZAKHONO_NODE_ID: NODE01
+      IZAKHONO_RECEIPT_DIR: ./deployment-receipts
+    steps:
+      - name: Checkout ALLEGRO
+        uses: actions/checkout@v4
+      - name: Verify sovereign production contract
+        run: |
+          test -f .izakhono.json
+          test -f scripts/izakhono/production-cutover.sh
+          grep -q 'OWNED' .izakhono.json
+      - name: Execute NODE01 production cutover
+        run: sh scripts/izakhono/production-cutover.sh
+      - name: Upload deployment receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allegro-izakhono-deployment-receipt-${{ github.run_id }}
+          path: deployment-receipts/
+          if-no-files-found: ignore
