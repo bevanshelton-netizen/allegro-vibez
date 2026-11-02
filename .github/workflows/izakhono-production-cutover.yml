@@ -10,34 +10,82 @@ on:
       - 'package.json'
       - 'package-lock.json'
       - 'Dockerfile'
-      - 'scripts/izakhono/production-cutover.sh'
+      - 'scripts/izakhono/**'
+      - '.izakhono.json'
       - '.github/workflows/izakhono-production-cutover.yml'
 
+permissions:
+  contents: write
+
 jobs:
-  cutover:
-    name: Promote ALLEGRO on IZAKHONO NODE01
-    runs-on: [self-hosted, linux, x64, izakhono]
-    timeout-minutes: 30
+  release:
+    name: Publish ALLEGRO release to NODE01
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
-      VITE_IZAKHONO_CORE_URL: ${{ vars.IZAKHONO_CORE_URL }}
-      VITE_IZAKHONO_PUBLIC_KEY: ${{ secrets.IZAKHONO_PUBLIC_KEY }}
       IZAKHONO_PUBLIC_APP_URL: https://allegrovibez.com
       IZAKHONO_NODE_ID: NODE01
-      IZAKHONO_RECEIPT_DIR: ./deployment-receipts
+      IZAKHONO_RELEASE_DIR: release-contracts/allegro-vibez
     steps:
       - name: Checkout ALLEGRO
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: Verify sovereign production contract
         run: |
           test -f .izakhono.json
           test -f scripts/izakhono/production-cutover.sh
+          test -f scripts/izakhono/node01-release-contract.sh
           grep -q 'OWNED' .izakhono.json
-      - name: Execute NODE01 production cutover
-        run: sh scripts/izakhono/production-cutover.sh
-      - name: Upload deployment receipt
-        if: always()
+
+      - name: Create NODE01 release contract
+        run: |
+          set -eu
+          mkdir -p "$IZAKHONO_RELEASE_DIR"
+          contract="$IZAKHONO_RELEASE_DIR/${GITHUB_SHA}.json"
+          cat > "$contract" <<EOF
+          {
+            "schema": "izakhono.node01/release/v1",
+            "state": "ready",
+            "app": "allegro-vibez",
+            "revision": "${GITHUB_SHA}",
+            "branch": "${GITHUB_REF_NAME}",
+            "public_url": "${IZAKHONO_PUBLIC_APP_URL}",
+            "node_id": "${IZAKHONO_NODE_ID}",
+            "source_repository": "${GITHUB_REPOSITORY}",
+            "source_commit_url": "https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}",
+            "executor": "NODE01",
+            "production_claim": "NOT_YET_PUBLIC",
+            "required_gates": [
+              "source-integrity",
+              "build",
+              "application-health",
+              "canary",
+              "public-https",
+              "dns-tls",
+              "backup-restore",
+              "rollback",
+              "post-rollback-health"
+            ]
+          }
+          EOF
+
+          git config user.name "izakhono-release-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add "$contract"
+          git commit -m "chore(release): publish ALLEGRO NODE01 contract ${GITHUB_SHA}" || exit 0
+          git push origin HEAD:main
+
+      - name: Upload release contract
         uses: actions/upload-artifact@v4
         with:
-          name: allegro-izakhono-deployment-receipt-${{ github.run_id }}
-          path: deployment-receipts/
-          if-no-files-found: ignore
+          name: allegro-node01-release-contract-${{ github.sha }}
+          path: release-contracts/allegro-vibez/${{ github.sha }}.json
+          if-no-files-found: error
+
+      - name: Report handoff boundary
+        run: |
+          echo "ALLEGRO release contract published for NODE01 software runtime."
+          echo "NODE01 must consume the contract and issue the verified deployment receipt."
+          echo "No public-live claim is made by GitHub Actions."
