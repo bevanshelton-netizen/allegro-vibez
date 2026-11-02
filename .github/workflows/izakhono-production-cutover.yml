@@ -11,6 +11,7 @@ on:
       - 'package-lock.json'
       - 'Dockerfile'
       - 'scripts/izakhono/**'
+      - 'infra/izakhono/**'
       - '.izakhono.json'
       - '.github/workflows/izakhono-production-cutover.yml'
 
@@ -34,11 +35,16 @@ jobs:
 
       - name: Verify sovereign production contract
         run: |
+          set -eu
           test -f .izakhono.json
           test -f scripts/izakhono/production-cutover.sh
           test -f scripts/izakhono/node01-release-contract.sh
           test -f scripts/izakhono/node01-release-poller.sh
+          test -f infra/izakhono/runtime-binding.NODE01.json
           grep -q 'OWNED' .izakhono.json
+          grep -q '"logical_node_id": "NODE01"' infra/izakhono/runtime-binding.NODE01.json
+          grep -q '"schema": "izakhono.runtime-binding/v1"' infra/izakhono/runtime-binding.NODE01.json
+          grep -q '"live": false' infra/izakhono/runtime-binding.NODE01.json
 
       - name: Create NODE01 logical runtime release contract
         run: |
