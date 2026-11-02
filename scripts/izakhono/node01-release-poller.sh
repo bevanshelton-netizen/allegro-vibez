@@ -1,18 +1,18 @@
 #!/bin/sh
 set -eu
 
-# NODE01 is the IZAKHONO sovereign software runtime.
-# This poller consumes GitHub release contracts and executes the existing
-# owned-first production cutover only when the logical runtime binding is valid.
-# It never changes the public-live truth boundary itself.
+# ALLEGRO consumes the IZAKHONO App Fabric runtime contract.
+# NODE01 is a logical software runtime; the actual runtime host executes the
+# App Fabric release authority. This poller never fabricates LIVE evidence.
 
 APP="allegro-vibez"
 REPO="${IZAKHONO_SOURCE_REPOSITORY:-bevanshelton-netizen/allegro-vibez}"
 BRANCH="${IZAKHONO_RELEASE_BRANCH:-main}"
 PUBLIC_URL="${IZAKHONO_PUBLIC_APP_URL:-https://allegrovibez.com}"
 NODE_ID="${IZAKHONO_NODE_ID:-NODE01}"
-STATE_DIR="${IZAKHONO_NODE01_STATE_DIR:-./.node01-state/$APP}"
-WORK_DIR="${IZAKHONO_NODE01_WORK_DIR:-./.node01-work/$APP}"
+STATE_DIR="${IZAKHONO_NODE01_STATE_DIR:-/opt/izakhono/state/$APP}"
+WORK_DIR="${IZAKHONO_NODE01_WORK_DIR:-/opt/izakhono/work/$APP}"
+RELEASE_AUTHORITY="${IZAKHONO_RELEASE_AUTHORITY:-/opt/izakhono/bin/izakhono-release}"
 POLL_SECONDS="${IZAKHONO_NODE01_POLL_SECONDS:-30}"
 EXECUTE="${IZAKHONO_NODE01_EXECUTE:-false}"
 CURRENT_URL="https://raw.githubusercontent.com/$REPO/$BRANCH/release-contracts/$APP/CURRENT.json"
@@ -58,34 +58,26 @@ while :; do
     log "execution disabled; contract acknowledged but not promoted"; sleep "$POLL_SECONDS"; continue
   fi
 
-  release="$WORK_DIR/$revision"
-  rm -rf "$release"; mkdir -p "$release"
-  archive="$WORK_DIR/$revision.tar.gz"
-  source_url="https://github.com/$REPO/archive/$revision.tar.gz"
-  if ! curl -fsSL --retry 3 --connect-timeout 15 "$source_url" -o "$archive"; then
-    log "source download failed; retrying"; sleep "$POLL_SECONDS"; continue
-  fi
-  tar -xzf "$archive" --strip-components=1 -C "$release"
-  rm -f "$archive"
-
-  if [ ! -f "$release/scripts/izakhono/production-cutover.sh" ]; then
-    log "release $revision has no production cutover engine; refusing promotion"; sleep "$POLL_SECONDS"; continue
+  if [ ! -x "$RELEASE_AUTHORITY" ]; then
+    log "IZAKHONO release authority unavailable at $RELEASE_AUTHORITY; refusing promotion"
+    sleep "$POLL_SECONDS"
+    continue
   fi
 
-  log "executing owned-first production cutover for $revision"
-  if (
-    cd "$release"
-    export GITHUB_SHA="$revision"
-    export IZAKHONO_NODE_ID="$NODE_ID"
-    export IZAKHONO_PUBLIC_APP_URL="$PUBLIC_URL"
-    export IZAKHONO_RECEIPT_DIR="$STATE_DIR/deployment-receipts/$revision"
-    sh scripts/izakhono/production-cutover.sh
-  ); then
+  log "handing ALLEGRO release to IZAKHONO App Fabric release authority"
+  if "$RELEASE_AUTHORITY" \
+      --application "$APP" \
+      --revision "$revision" \
+      --source-repository "$REPO" \
+      --public-url "$PUBLIC_URL" \
+      --logical-node "$NODE_ID" \
+      --release-contract "$contract" \
+      --state-root "$STATE_DIR"; then
     printf '%s\n' "$revision" > "$STATE_DIR/last-revision"
     rm -f "$STATE_DIR/pending-revision"
-    log "ALLEGRO NODE01 cutover completed for $revision; receipt retained locally"
+    log "ALLEGRO App Fabric release accepted for $revision; independent acceptance remains required"
   else
-    log "ALLEGRO NODE01 cutover failed for $revision; no success state recorded"
+    log "ALLEGRO App Fabric release failed for $revision; no success state recorded"
   fi
   sleep "$POLL_SECONDS"
 done
