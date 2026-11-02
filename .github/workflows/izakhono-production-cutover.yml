@@ -40,7 +40,7 @@ jobs:
           test -f scripts/izakhono/node01-release-poller.sh
           grep -q 'OWNED' .izakhono.json
 
-      - name: Create NODE01 release contract
+      - name: Create NODE01 logical runtime release contract
         run: |
           set -eu
           mkdir -p "$IZAKHONO_RELEASE_DIR"
@@ -48,13 +48,21 @@ jobs:
           current="$IZAKHONO_RELEASE_DIR/CURRENT.json"
           cat > "$contract" <<EOF
           {
-            "schema": "izakhono.node01/release/v1",
+            "schema": "izakhono.node01/release/v2",
             "state": "ready",
             "app": "allegro-vibez",
             "revision": "${GITHUB_SHA}",
             "branch": "${GITHUB_REF_NAME}",
             "public_url": "${IZAKHONO_PUBLIC_APP_URL}",
-            "node_id": "${IZAKHONO_NODE_ID}",
+            "logical_node_id": "${IZAKHONO_NODE_ID}",
+            "identity_type": "software-runtime",
+            "runtime_binding_schema": "izakhono.runtime-binding/v1",
+            "runtime_host_is_separate": true,
+            "runtime_class": "oci-docker",
+            "ownership": "izakhono-owned",
+            "edge_network": "izakhono-edge",
+            "release_authority": "/opt/izakhono/bin/izakhono-release",
+            "artifact_identity": "immutable-image-digest",
             "source_repository": "${GITHUB_REPOSITORY}",
             "source_commit_url": "https://github.com/${GITHUB_REPOSITORY}/commit/${GITHUB_SHA}",
             "executor": "NODE01",
@@ -89,6 +97,6 @@ jobs:
 
       - name: Report handoff boundary
         run: |
-          echo "ALLEGRO release contract published for NODE01 software runtime."
-          echo "NODE01 consumes CURRENT.json and issues the verified deployment receipt."
+          echo "ALLEGRO release contract published for logical NODE01 software runtime."
+          echo "NODE01 consumes CURRENT.json through its approved runtime binding and issues the verified deployment receipt."
           echo "No public-live claim is made by GitHub Actions."
