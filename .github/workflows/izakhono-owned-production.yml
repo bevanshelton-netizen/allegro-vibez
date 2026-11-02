@@ -1,4 +1,4 @@
-name: ALLEGRO — IZAKHONO Owned Production
+name: ALLEGRO — IZAKHONO Release Publisher
 
 on:
   push:
@@ -23,50 +23,92 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 concurrency:
-  group: allegro-owned-production
+  group: allegro-owned-release-publisher
   cancel-in-progress: false
 
 env:
-  ALLEGRO_DOMAIN: allegrovibez.com
-  ACME_EMAIL: ${{ vars.ALLEGRO_ACME_EMAIL }}
-  IZAKHONO_NODE_ID: ${{ vars.IZAKHONO_NODE_ID }}
-  IZAKHONO_RECEIPT_DIR: ${{ vars.IZAKHONO_RECEIPT_DIR }}
+  ALLEGRO_PUBLIC_URL: https://allegrovibez.com
+  NODE_ID: NODE01
+  RUNTIME_BINDING_SCHEMA: izakhono.runtime-binding/v1
+  RELEASE_AUTHORITY: /opt/izakhono/bin/izakhono-release
 
 jobs:
-  cutover:
-    name: Promote ALLEGRO on IZAKHONO NODE01
-    runs-on: [self-hosted, linux, x64, izakhono]
-    timeout-minutes: 20
+  publish-contract:
+    name: Publish NODE01 release contract
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
-      - name: Checkout release
+      - name: Checkout source
         uses: actions/checkout@v4
-
-      - name: Reject external hosting paths
-        shell: sh
-        run: |
-          if grep -RniE 'vercel|netlify|github pages' . --exclude-dir=.git --exclude='package-lock.json'; then
-            echo 'External hosting reference detected in the production workspace.'
-            exit 1
-          fi
-          echo 'External hosting paths: rejected'
-
-      - name: Verify sovereign runner identity
-        shell: sh
-        run: |
-          test -n "${IZAKHONO_NODE_ID}" || { echo 'IZAKHONO_NODE_ID is not configured'; exit 1; }
-          echo "IZAKHONO node: ${IZAKHONO_NODE_ID}"
-
-      - name: Build, promote and accept
-        shell: sh
-        run: sh scripts/izakhono/production-cutover.sh
-
-      - name: Upload deployment receipt
-        if: always()
-        uses: actions/upload-artifact@v4
         with:
-          name: allegro-izakhono-deployment-receipt-${{ github.run_id }}
-          path: deploy/izakhono/receipts/*.json
-          if-no-files-found: ignore
+          fetch-depth: 1
+
+      - name: Validate sovereign production contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -f .izakhono.json
+          test -f scripts/izakhono/production-cutover.sh
+          test -f scripts/izakhono/node01-release-poller.sh
+          test -f infra/izakhono/runtime-binding.NODE01.json
+          test -f scripts/izakhono/allegro-owned-runtime-probe.sh
+          grep -q 'software-runtime' infra/izakhono/runtime-binding.NODE01.json
+          grep -q 'izakhono-owned' infra/izakhono/runtime-binding.NODE01.json
+          grep -q 'izakhono.runtime-binding/v1' infra/izakhono/runtime-binding.NODE01.json
+          grep -q 'NOT_YET_PUBLIC' infra/izakhono/runtime-binding.NODE01.json
+          echo 'Sovereign release contract: PASS'
+
+      - name: Publish immutable NODE01 release contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-contracts/allegro-vibez
+          cat > release-contracts/allegro-vibez/${GITHUB_SHA}.json <<EOF
+          {
+            "schema": "izakhono.node01/release/v2",
+            "state": "READY",
+            "application": "allegro-vibez",
+            "revision": "${GITHUB_SHA}",
+            "branch": "main",
+            "logical_node_id": "NODE01",
+            "identity_type": "software-runtime",
+            "runtime_binding_schema": "${RUNTIME_BINDING_SCHEMA}",
+            "runtime_host_is_separate": true,
+            "runtime_class": "oci-docker",
+            "ownership": "izakhono-owned",
+            "edge_network": "izakhono-edge",
+            "release_authority": "${RELEASE_AUTHORITY}",
+            "artifact_identity": "immutable-image-digest",
+            "source_repository": "bevanshelton-netizen/allegro-vibez",
+            "source_commit": "${GITHUB_SHA}",
+            "public_url": "${ALLEGRO_PUBLIC_URL}",
+            "executor": "NODE01",
+            "production_claim": "NOT_YET_PUBLIC",
+            "required_gates": ["source-integrity","build","application-health","canary","public-https","dns-tls","backup-restore","rollback","post-rollback-health"]
+          }
+          EOF
+          cp release-contracts/allegro-vibez/${GITHUB_SHA}.json release-contracts/allegro-vibez/CURRENT.json
+
+      - name: Commit release contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'IZAKHONO Release Publisher'
+          git config user.email 'izakhono-release@users.noreply.github.com'
+          git add release-contracts/allegro-vibez
+          if git diff --cached --quiet; then
+            echo 'No release-contract changes to publish.'
+            exit 0
+          fi
+          git commit -m "chore(release): publish ALLEGRO NODE01 contract ${GITHUB_SHA}"
+          git push origin HEAD:main
+
+      - name: Release handoff status
+        run: |
+          echo 'ALLEGRO release contract published for NODE01.'
+          echo 'GitHub Actions is the publisher only.'
+          echo 'NODE01 executes through /opt/izakhono/bin/izakhono-release.'
+          echo 'LIVE status remains unclaimed until runtime acceptance evidence exists.'
