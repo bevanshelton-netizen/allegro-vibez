@@ -68,25 +68,32 @@ done
 printf '%s\n' "[6/7] Pinning promoted image"
 docker tag "$image" "$app:izakhono-current"
 
-printf '%s\n' "[7/7] Writing immutable deployment receipt"
+printf '%s\n' "[7/7] Writing deployment handoff receipt"
 timestamp="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 receipt="$receipt_dir/allegro-${revision}.json"
 cat > "$receipt" <<EOF
 {
+  "schema":"izakhono.runtime-handoff/v1",
   "product":"ALLEGRO-VIBEZ",
   "deployment_authority":"IZAKHONO",
   "node_id":"${IZAKHONO_NODE_ID:-unknown}",
+  "node_identity_type":"software-runtime",
+  "runtime_binding_schema":"izakhono.runtime-binding/v1",
   "commit":"$revision",
   "image":"$image",
   "public_url":"https://${domain}",
   "health_url":"https://${domain}/healthz",
-  "status":"OWNED_LIVE_VERIFIED",
+  "status":"PROMOTED_PENDING_ACCEPTANCE",
   "application_health":"PASS",
   "public_https":"PASS",
+  "backup_restore":"PENDING",
+  "rollback_test":"PENDING",
+  "post_rollback_health":"PENDING",
+  "live_claim":false,
   "timestamp":"$timestamp",
   "rollback_image":"${previous_image:-none}"
 }
 EOF
 
-printf '%s\n' "ALLEGRO-VIBEZ OWNED_LIVE_VERIFIED: https://${domain}"
+printf '%s\n' "ALLEGRO-VIBEZ promoted to the IZAKHONO runtime; independent acceptance remains pending."
 printf '%s\n' "Receipt: $receipt"
