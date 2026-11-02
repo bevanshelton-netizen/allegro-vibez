@@ -2,9 +2,9 @@
 set -eu
 
 # NODE01 is the IZAKHONO sovereign software runtime.
-# This poller consumes the release contract produced by GitHub and executes
-# the existing owned-first production cutover only after the release contract
-# is valid. It never changes the public-live truth boundary itself.
+# This poller consumes GitHub release contracts and executes the existing
+# owned-first production cutover only when the logical runtime binding is valid.
+# It never changes the public-live truth boundary itself.
 
 APP="allegro-vibez"
 REPO="${IZAKHONO_SOURCE_REPOSITORY:-bevanshelton-netizen/allegro-vibez}"
@@ -28,12 +28,24 @@ while :; do
   fi
   mv "$tmp" "$contract"
 
-  revision="$(sed -n 's/.*"revision"[[:space:]]*:[[:space:]]*"\([0-9a-f][0-9a-f]*\)".*/\1/p' "$contract" | head -n 1)"
+  revision="$(sed -n 's/.*"revision"[[:space:]]*:[[:space:]]*"\([0-9a-f]\{40\}\)".*/\1/p' "$contract" | head -n 1)"
   state="$(sed -n 's/.*"state"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
   app="$(sed -n 's/.*"app"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  logical_node="$(sed -n 's/.*"logical_node_id"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  identity_type="$(sed -n 's/.*"identity_type"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  binding_schema="$(sed -n 's/.*"runtime_binding_schema"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  ownership="$(sed -n 's/.*"ownership"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  executor="$(sed -n 's/.*"executor"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
+  claim="$(sed -n 's/.*"production_claim"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$contract" | head -n 1)"
 
-  if [ "$app" != "$APP" ] || [ "$state" != "ready" ] || [ -z "$revision" ]; then
-    log "invalid release contract; retrying"; sleep "$POLL_SECONDS"; continue
+  if [ "$app" != "$APP" ] || [ "$state" != "ready" ] || [ -z "$revision" ] \
+    || [ "$logical_node" != "$NODE_ID" ] \
+    || [ "$identity_type" != "software-runtime" ] \
+    || [ "$binding_schema" != "izakhono.runtime-binding/v1" ] \
+    || [ "$ownership" != "izakhono-owned" ] \
+    || [ "$executor" != "$NODE_ID" ] \
+    || [ "$claim" != "NOT_YET_PUBLIC" ]; then
+    log "invalid or unsafe logical NODE01 release contract; refusing promotion"; sleep "$POLL_SECONDS"; continue
   fi
 
   last=""
