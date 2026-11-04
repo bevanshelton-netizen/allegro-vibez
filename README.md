@@ -69,3 +69,40 @@ The Artist Management workspace brings together:
 The authenticated Artist OS is the artist-facing command centre at `/artist-os/`. The management services and legacy revival controls operate against the same artist identity and owner-scoped records. The public ALLEGRO MANAGEMENT page describes the professional management pathway; it is not a separate platform.
 
 Rights and financial integrity remain mandatory: artists/rightsholders retain ownership unless a separate explicit agreement says otherwise; no catalogue rights, royalties, payments, bookings or settlements are represented as verified without the relevant evidence and integrations.
+
+
+## One-platform rule — ALLEGRO VIBEZ
+
+ALLEGRO VIBEZ is the single canonical public platform and product ecosystem. Its public website, service pages and customer-facing workflows are maintained in this repository and deployed through the canonical `allegro-vibez` Vercel project.
+
+### Integrated product areas
+
+- **Music & Discovery** — public music discovery, artist profiles, releases, playlists and charts.
+- **Artist OS & Creator Studio** — the shared artist identity, creator workspace, catalogue, release preparation, rights, publishing review and listener tools.
+- **ALLEGRO STUDIOS** — the creative production arm at `/studios/`, including recording, mixing/mastering, podcast/vodcast, video/content production, bookings and enquiries. Its booking and growth forms continue to use the existing ALLEGRO Supabase functions.
+- **ALLEGRO VIBEZ Radio** — the signed-artist-only radio experience at `/radio/`. Broadcast queue and track playback are gated by the active signed-artist roster, track-specific clearance, published status and a real audio asset.
+- **ALLEGRO LIVE** — live entertainment, events, venues, ticketing readiness, sponsorship and artist booking.
+- **ALLEGRO MANAGEMENT** — artist management, international bookings and career services.
+- **Collaborate & Opportunities** — creator, producer, promoter, brand and partner connections.
+
+### Canonical infrastructure
+
+- Canonical source repository: `bevanshelton-netizen/allegro-vibez`.
+- Canonical public domain: `https://allegrovibez.com`.
+- Canonical Vercel project: `allegro-vibez`.
+- Shared application data and services: the existing ALLEGRO Supabase project `yfawrenhudjomhnglfhq`.
+- Product areas remain modular routes and services, not independent public websites, accounts or competing databases.
+
+### Legacy Studio project consolidation
+
+The former `studio.allegrovibez.com` Vercel project is no longer the canonical Studio experience. Its public hostname has been configured with permanent redirects to the integrated `/studios/` page on the main platform; the former `/radio.html` path redirects to `/radio/`. The corresponding host-based redirects are also staged on the canonical project for the domain cutover.
+
+Do not create another standalone ALLEGRO website or Vercel project for an existing product area. Add new capabilities as routes/modules inside this platform and reuse the shared identity, data, rights and commercial records.
+
+### Integrity gates
+
+- A published artist profile is not proof of an ALLEGRO signing agreement.
+- Radio rotation requires a verified active roster agreement and documented track-specific broadcast permission.
+- Generated demos, unapproved submissions and tracks without real audio assets are excluded from broadcast.
+- Studio bookings, payments, event sales, royalties and settlements are not reported as confirmed until the relevant system records prove them.
+- Do not mark a feature live merely because its UI or API exists; verify the complete customer flow.
