@@ -50,3 +50,22 @@ Production deployment must point to the intended Git commit and must be independ
 Radio streaming, creator accounts, commerce/payment processing, artist services, DSP/distribution providers, live ticketing, event settlement and other platform capabilities should only be marked live after their real integrations and credentials have been connected and verified.
 
 Canonical contact: contact@allegrovibez.com
+
+
+## Artist Management — core ALLEGRO capability
+
+Artist Management is a native capability of ALLEGRO-VIBEZ, delivered through the authenticated Artist OS and its connected management services. It is not a standalone product or a separate artist database.
+
+The Artist Management workspace brings together:
+
+- Artist identity, profile, team and career goals.
+- Catalogue, rights records, releases and publishing readiness through Creator OS.
+- Opportunity discovery, bookings, calendar, EPK, riders and collaboration.
+- Career development and artist growth planning.
+- Legacy Artist Revival, including catalogue recovery, rights review, rebranding, campaign execution and evidence-backed commercial outcomes.
+- Executive action monitoring, intervention tasks, escalation queues, resolution records and evidence-based closure.
+- International booking and touring support through ALLEGRO MANAGEMENT.
+
+The authenticated Artist OS is the artist-facing command centre at `/artist-os/`. The management services and legacy revival controls operate against the same artist identity and owner-scoped records. The public ALLEGRO MANAGEMENT page describes the professional management pathway; it is not a separate platform.
+
+Rights and financial integrity remain mandatory: artists/rightsholders retain ownership unless a separate explicit agreement says otherwise; no catalogue rights, royalties, payments, bookings or settlements are represented as verified without the relevant evidence and integrations.
