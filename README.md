@@ -95,7 +95,7 @@ ALLEGRO VIBEZ is the single canonical public platform and product ecosystem. Its
 
 ### Legacy Studio project consolidation
 
-The former `studio.allegrovibez.com` Vercel project is no longer the canonical Studio experience. Its public hostname has been configured with permanent redirects to the integrated `/studios/` page on the main platform; the former `/radio.html` path redirects to `/radio/`. The corresponding host-based redirects are also staged on the canonical project for the domain cutover.
+The former `studio.allegrovibez.com` Vercel project is no longer the canonical Studio experience. Its public hostname and legacy project aliases have permanent redirects to the integrated `/studios/` page on the main platform; the former `/radio.html` path redirects to `/radio/`. The corresponding host-based redirects are also live on the canonical project for the eventual domain cutover. The duplicate `allegrovibez.com` Vercel project is also configured to redirect to the canonical public website. These legacy project shells remain only as compatibility redirects until their custom-domain assignment and remaining legacy admin surfaces are safely retired.
 
 Do not create another standalone ALLEGRO website or Vercel project for an existing product area. Add new capabilities as routes/modules inside this platform and reuse the shared identity, data, rights and commercial records.
 
