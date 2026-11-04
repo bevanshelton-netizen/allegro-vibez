@@ -116,7 +116,16 @@ jobs:
             exit 0
           fi
           git commit -m "chore(release): publish ALLEGRO NODE01 contract ${GITHUB_SHA}"
-          git push origin HEAD:main
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              exit 0
+            fi
+            echo "Release contract push raced with another main update; retrying ($attempt/3)."
+            sleep $((attempt * 2))
+          done
+          echo "Unable to publish release contract after three attempts." >&2
+          exit 1
 
       - name: Release handoff status
         run: |
