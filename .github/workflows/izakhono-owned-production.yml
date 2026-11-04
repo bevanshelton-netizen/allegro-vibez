@@ -81,8 +81,8 @@ jobs:
           cat > release-contracts/allegro-vibez/${GITHUB_SHA}.json <<EOF
           {
             "schema": "izakhono.node01/release/v2",
-            "state": "READY",
-            "application": "allegro-vibez",
+            "state": "ready",
+            "app": "allegro-vibez",
             "revision": "${GITHUB_SHA}",
             "branch": "main",
             "logical_node_id": "NODE01",
