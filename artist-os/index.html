@@ -164,11 +164,11 @@ $('runLegacyReview').onclick=async()=>{
  try{
   const result=await rest('rpc/allegro_run_legacy_intervention_engine','',{method:'POST',body:{p_artist_id:artist.id}});
   const monitor=result?.monitor||{};
+  await load();
   $('legacyHealth').textContent=(monitor.health_score??'—')+(monitor.health_score===undefined?'':'/100');
   $('legacyHealthLabel').textContent=monitor.status?String(monitor.status).toUpperCase()+' · '+(monitor.next_action||'Review management actions'):'Review refreshed.';
   msg.textContent='Management review completed. Queues refreshed; no work was marked complete and no financial action was taken.';
   msg.className='label success';
-  await load();
  }catch(e){msg.textContent='Management review could not be completed: '+e.message;msg.className='label error'}
  finally{btn.disabled=false;btn.textContent='RUN MANAGEMENT REVIEW'}
 };
