@@ -44,6 +44,23 @@ jobs:
       - name: Build production image as package validation
         run: docker build --tag allegro-vibez:preflight-${GITHUB_SHA::12} .
 
+      - name: Smoke-test packaged platform routes
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run -d --name allegro-preflight -p 127.0.0.1:18080:8080 "allegro-vibez:preflight-${GITHUB_SHA::12}"
+          cleanup() { docker rm -f allegro-preflight >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          for attempt in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:18080/healthz >/dev/null; then break; fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:18080/ | grep -q 'id="platform"'
+          for route in /app/artist-os/ /creator-studio/ /app/catalogue/ /app/rights/ /app/money.html /app/bookings/ /app/opportunities/ /app/profile/ /live/ /studios/ /radio/ /management/ /collaborate/; do
+            echo "Checking $route"
+            curl -fsS "http://127.0.0.1:18080$route" >/dev/null
+          done
+
       - name: Report deployment boundary
         run: |
           echo 'ALLEGRO sovereign preflight passed.'
