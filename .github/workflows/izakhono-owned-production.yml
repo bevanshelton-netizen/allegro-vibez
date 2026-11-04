@@ -58,7 +58,7 @@ jobs:
           grep -q 'software-runtime' infra/izakhono/runtime-binding.NODE01.json
           grep -q 'izakhono-owned' infra/izakhono/runtime-binding.NODE01.json
           grep -q 'izakhono.runtime-binding/v1' infra/izakhono/runtime-binding.NODE01.json
-          grep -q 'NOT_YET_PUBLIC' infra/izakhono/runtime-binding.NODE01.json
+          grep -q '"live": false' infra/izakhono/runtime-binding.NODE01.json
           echo 'Sovereign release contract: PASS'
 
       - name: Publish immutable NODE01 release contract
