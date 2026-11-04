@@ -50,16 +50,28 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          test -f .izakhono.json
-          test -f scripts/izakhono/production-cutover.sh
-          test -f scripts/izakhono/node01-release-poller.sh
-          test -f infra/izakhono/runtime-binding.NODE01.json
-          test -f scripts/izakhono/allegro-owned-runtime-probe.sh
-          grep -q 'software-runtime' infra/izakhono/runtime-binding.NODE01.json
-          grep -q 'izakhono-owned' infra/izakhono/runtime-binding.NODE01.json
-          grep -q 'izakhono.runtime-binding/v1' infra/izakhono/runtime-binding.NODE01.json
-          grep -q '"live": false' infra/izakhono/runtime-binding.NODE01.json
-          echo 'Sovereign release contract: PASS'
+          for file in .izakhono.json scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh infra/izakhono/runtime-binding.NODE01.json scripts/izakhono/allegro-owned-runtime-probe.sh; do
+            if [[ ! -f "$file" ]]; then
+              echo "Required release file missing: $file" >&2
+              exit 1
+            fi
+          done
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          binding = json.loads(Path("infra/izakhono/runtime-binding.NODE01.json").read_text())
+          expected = {
+              "schema": "izakhono.runtime-binding/v1",
+              "logical_node_id": "NODE01",
+              "identity_type": "software-runtime",
+              "ownership": "izakhono-owned",
+              "live": False,
+          }
+          for key, value in expected.items():
+              if binding.get(key) != value:
+                  raise SystemExit(f"Runtime binding mismatch: {key}={binding.get(key)!r}; expected {value!r}")
+          print("Sovereign release contract: PASS")
+          PY
 
       - name: Publish immutable NODE01 release contract
         shell: bash
