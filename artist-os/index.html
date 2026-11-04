@@ -65,7 +65,27 @@
 
 <section id="view-goals" class="view"><div class="section-title"><h2>Goals & Career</h2><span class="status">YOUR PLAN</span></div><div class="grid"><div class="card wide"><div id="goalsList" class="list"></div></div><div class="card"><form id="goalForm" class="form"><div class="field"><label>GOAL</label><input id="goalTitle"></div><div class="field"><label>CATEGORY</label><select id="goalCategory"><option>career</option><option>release</option><option>bookings</option><option>audience</option><option>collaboration</option><option>revenue</option><option>international</option></select></div><div class="field"><label>TARGET DATE</label><input id="goalDate" type="date"></div><div class="field"><label>NOTES</label><textarea id="goalNotes"></textarea></div><button class="btn primary">ADD GOAL</button></form></div></div></section>
 
-<section id="view-management" class="view"><div class="section-title"><h2>ALLEGRO Management</h2><span class="status">GLOBAL PATHWAY</span></div><div class="grid"><div class="card wide"><h2>Take your career to the world.</h2><p class="label">International opportunities originating through ALLEGRO are managed exclusively through ALLEGRO MANAGEMENT. Management handles verification, negotiation, contracts, travel and operational coordination through settlement.</p><div class="actions"><a class="btn gold" href="../management/">OPEN MANAGEMENT</a><a class="btn" href="../management/international-booking/">RULES & DOCUMENTS</a></div></div><div class="card"><div class="label">INTERNATIONAL STATUS</div><h2>Management pathway</h2><p class="label">Your international booking records, contracts and settlements belong in one auditable workflow.</p></div></div></section>
+<section id="view-management" class="view">
+<div class="section-title"><h2>Artist Management</h2><span class="status">BUILT INTO ALLEGRO-VIBEZ</span></div>
+<div class="notice">Your artist profile, catalogue, career plan, opportunities, management activity and verified commercial outcomes belong to one ALLEGRO artist workspace. Legacy Artist Revival is a specialist programme inside this management system—not a separate product.</div>
+<div class="grid" style="margin-top:14px">
+ <div class="card"><div class="label">EXECUTIVE HEALTH</div><div class="metric" id="legacyHealth">—</div><div class="label" id="legacyHealthLabel">Run a management review to refresh.</div></div>
+ <div class="card"><div class="label">OPEN ACTIONS</div><div class="metric" id="legacyActionCount">—</div><div class="label">management actions</div></div>
+ <div class="card"><div class="label">INTERVENTIONS</div><div class="metric" id="legacyInterventionCount">—</div><div class="label">active intervention tasks</div></div>
+ <div class="card"><div class="label">OPEN ESCALATIONS</div><div class="metric" id="legacyEscalationCount">—</div><div class="label">requiring management attention</div></div>
+ <div class="card wide"><div class="label">MANAGEMENT COMMAND</div><h2>Turn career plans into accountable execution.</h2><p class="label">Refresh the executive monitor, create linked interventions for blocked or overdue work, and update the escalation queue. The review does not assign staff, alter deadlines, close tasks or initiate financial actions.</p><div class="actions"><button class="btn primary" id="runLegacyReview">RUN MANAGEMENT REVIEW</button><a class="btn gold" href="../management/">GLOBAL MANAGEMENT</a><a class="btn" href="../management/international-booking/">INTERNATIONAL BOOKING RULES</a></div><div class="label" id="legacyReviewMsg" style="margin-top:10px" aria-live="polite"></div></div>
+ <div class="card wide"><div class="label">EXECUTIVE ACTIONS</div><div id="legacyActionsList" class="list"></div></div>
+ <div class="card wide"><div class="label">INTERVENTION QUEUE</div><div id="legacyInterventionsList" class="list"></div></div>
+ <div class="card wide"><div class="label">ESCALATION QUEUE</div><div id="legacyEscalationsList" class="list"></div></div>
+ <div class="card wide"><div class="label">RESOLUTION & EVIDENCE CLOSURE</div><div id="legacyResolutionsList" class="list"></div></div>
+</div>
+<div class="section-title"><h2>Artist career services</h2></div>
+<div class="grid">
+ <div class="card"><div class="label">CAREER DEVELOPMENT</div><h3>Strategy & growth</h3><p class="label">Career plans, goals, milestones, capability development and professional readiness.</p></div>
+ <div class="card"><div class="label">LEGACY ARTIST REVIVAL</div><h3>Build the next chapter.</h3><p class="label">Catalogue recovery, rights verification, rebranding, new content, radio, charts, live opportunities and audience growth. Artist and rightsholder ownership remains protected.</p></div>
+ <div class="card"><div class="label">GLOBAL MANAGEMENT</div><h3>Take your career to the world.</h3><p class="label">International opportunity verification, negotiation, contracts, touring logistics and settlement oversight.</p></div>
+</div>
+</section>
 
 <div class="footer-note">ALLEGRO Artist OS is designed as a professional operating environment. Commercial, tax, legal and payment outcomes are governed by the applicable agreements, verified transactions and relevant professional advisers. Public-facing pages do not expose confidential financial terms.</div>
 </main></div>
@@ -82,7 +102,25 @@ async function load(){try{me=await current();const uid=me.id;
 const [profiles,arts,tasks,opps,links,tracks,rights,wallets,walletEvents,payouts,bookings,settlements,goals,calendar,docs,team,epk,riders,tax,payMethods,prefs,analytics]=await Promise.all([
  rest('allegro_artist_profiles','?select=*&user_id=eq.'+uid),rest('allegro_artists','?select=*&owner_id=eq.'+uid),rest('allegro_tasks','?select=id,title,status,due_at&user_id=eq.'+uid+'&status=in.(open,in_progress)&order=due_at.asc.nullslast&limit=8'),rest('allegro_opportunities','?select=id,title,category,status,metadata&owner_user_id=eq.'+uid+'&status=in.(discovered,matched,applied,shortlisted,confirmed)&order=created_at.desc&limit=8'),rest('allegro_user_opportunities','?select=opportunity_id,state&user_id=eq.'+uid+'&state=in.(matched,applied,shortlisted,confirmed)&limit=12'),rest('allegro_tracks','?select=id,title,artist_id&artist_id=eq.'+(profiles[0]?.artist_id||'00000000-0000-0000-0000-000000000000')),rest('allegro_track_rights','?select=id,track_id,right_type,claimant_name,share_bps&track_id=in.('+((tracks||[]).map(t=>t.id).join(',')||'00000000-0000-0000-0000-000000000000')+')'),rest('allegro_creator_wallets','?select=*&user_id=eq.'+uid),rest('allegro_artist_wallet_events','?select=*&user_id=eq.'+uid+'&order=created_at.desc&limit=20'),rest('allegro_artist_payout_requests','?select=*&user_id=eq.'+uid+'&order=requested_at.desc&limit=20'),rest('allegro_artist_bookings','?select=*&user_id=eq.'+uid+'&order=event_date.asc.nullslast'),rest('allegro_artist_settlements','?select=*&user_id=eq.'+uid+'&order=created_at.desc'),rest('allegro_artist_goals','?select=*&user_id=eq.'+uid+'&order=target_date.asc.nullslast'),rest('allegro_artist_calendar','?select=*&user_id=eq.'+uid+'&order=starts_at.asc'),rest('allegro_artist_documents','?select=*&user_id=eq.'+uid+'&order=created_at.desc'),rest('allegro_artist_team','?select=*&artist_user_id=eq.'+uid+'&order=created_at.desc'),rest('allegro_artist_epk','?select=*&user_id=eq.'+uid),rest('allegro_artist_riders','?select=*&user_id=eq.'+uid),rest('allegro_artist_tax_profiles','?select=*&user_id=eq.'+uid),rest('allegro_artist_payment_methods','?select=*&user_id=eq.'+uid),rest('allegro_artist_opportunity_preferences','?select=*&user_id=eq.'+uid),rest('allegro_artist_analytics_snapshots','?select=*&user_id=eq.'+uid+'&order=metric_date.desc&limit=30')
 ]);
-artist=arts[0]||{};const profile=profiles[0]||{};const display=artist.stage_name||profile.artist_type||me.email.split('@')[0];$('welcome').innerHTML=esc(display)+'.<br>Your career.';$('sideName').textContent=display;$('sideEmail').textContent=me.email;$('publicName').textContent=display;$('stageName').value=artist.stage_name||'';$('country').value=artist.country_code||profile.country_code||'';$('city').value=artist.city||'';$('artistType').value=profile.artist_type||'solo_artist';$('bio').value=artist.bio||profile.bio||'';
+artist=arts[0]||{};const profile=profiles[0]||{};
+let legacyActions=[],legacyInterventions=[],legacyEscalations=[],legacyResolutions=[];
+if(artist.id){
+ [legacyActions,legacyInterventions,legacyEscalations,legacyResolutions]=await Promise.all([
+  rest('allegro_legacy_command_actions','?select=id,title,priority,status,due_on&owner_id=eq.'+uid+'&artist_id=eq.'+artist.id+'&order=due_on.asc.nullslast&limit=12'),
+  rest('allegro_legacy_intervention_tasks','?select=id,title,priority,status,due_on,assignee_name,evidence_required&owner_id=eq.'+uid+'&artist_id=eq.'+artist.id+'&order=due_on.asc.nullslast&limit=12'),
+  rest('allegro_legacy_intervention_escalations','?select=id,level,escalation_type,status,escalated_to,message,due_on&owner_id=eq.'+uid+'&artist_id=eq.'+artist.id+'&order=created_at.desc&limit=12'),
+  rest('allegro_legacy_operational_resolutions','?select=id,title,status,due_on,verified_at,priority&owner_id=eq.'+uid+'&artist_id=eq.'+artist.id+'&order=created_at.desc&limit=12')
+ ]);
+}
+$('legacyActionCount').textContent=legacyActions.filter(x=>['open','in_progress','blocked'].includes(x.status)).length;
+$('legacyInterventionCount').textContent=legacyInterventions.filter(x=>['open','in_progress','blocked'].includes(x.status)).length;
+$('legacyEscalationCount').textContent=legacyEscalations.filter(x=>['open','acknowledged'].includes(x.status)).length;
+renderList('legacyActionsList',legacyActions,'No executive actions recorded for this artist.',x=>`<div class="item"><span><strong>${esc(x.title)}</strong><span class="label">${esc(x.priority)} · ${esc(x.due_on||'No deadline')}</span></span><span class="status">${esc(x.status)}</span></div>`);
+renderList('legacyInterventionsList',legacyInterventions,'No intervention tasks recorded.',x=>`<div class="item"><span><strong>${esc(x.title)}</strong><span class="label">${esc(x.assignee_name||'Owner not assigned')} · ${esc(x.due_on||'No deadline')}</span></span><span class="status">${esc(x.status)}</span></div>`);
+renderList('legacyEscalationsList',legacyEscalations,'No escalations recorded.',x=>`<div class="item"><span><strong>Level ${esc(x.level)} · ${esc(x.escalation_type)}</strong><span class="label">${esc(x.escalated_to||'Management')} · ${esc(x.message)}</span></span><span class="status">${esc(x.status)}</span></div>`);
+renderList('legacyResolutionsList',legacyResolutions,'No resolution records yet.',x=>`<div class="item"><span><strong>${esc(x.title)}</strong><span class="label">${esc(x.due_on||'No deadline')} · ${x.verified_at?'Verified':'Verification pending'}</span></span><span class="status">${esc(x.status)}</span></div>`);
+$('legacyHealth').textContent='—';$('legacyHealthLabel').textContent='Run a management review to refresh executive health.';
+const display=artist.stage_name||profile.artist_type||me.email.split('@')[0];$('welcome').innerHTML=esc(display)+'.<br>Your career.';$('sideName').textContent=display;$('sideEmail').textContent=me.email;$('publicName').textContent=display;$('stageName').value=artist.stage_name||'';$('country').value=artist.country_code||profile.country_code||'';$('city').value=artist.city||'';$('artistType').value=profile.artist_type||'solo_artist';$('bio').value=artist.bio||profile.bio||'';
 const completion=profile.profile_completion??0;$('profileMetric').textContent=completion+'%';$('profileBar').style.width=completion+'%';$('trackMetric').textContent=tracks.length;$('rightsCount').textContent=rights.length;$('oppMetric').textContent=(opps.length+links.length);$('taskMetric').textContent=tasks.length;
 const wallet=wallets[0]||{currency:'ZAR',available_cents:0,pending_cents:0,paid_cents:0};$('walletAvailable').textContent=money(wallet.available_cents,wallet.currency);$('walletPending').textContent=money(wallet.pending_cents,wallet.currency);$('walletPaid').textContent=money(wallet.paid_cents,wallet.currency);$('moneyAvailable').textContent=money(wallet.available_cents,wallet.currency);$('moneyPending').textContent=money(wallet.pending_cents,wallet.currency);$('moneyPaid').textContent=money(wallet.paid_cents,wallet.currency);$('payoutCount').textContent=payouts.length;
 renderList('nextActions',tasks,'You are clear. Set your next career goal.',x=>`<div class="item"><span><strong>${esc(x.title)}</strong><span class="label">${esc(x.due_at||'No deadline')}</span></span><span class="status">${esc(x.status)}</span></div>`);renderList('nextOpportunities',[...opps,...links.map(x=>({title:'Opportunity match',status:x.state,category:'matched'}))].slice(0,8),'No active opportunities yet.',x=>`<div class="item"><span><strong>${esc(x.title||x.category||'Opportunity')}</strong><span class="label">${esc(x.category||'ALLEGRO')}</span></span><span class="status">${esc(x.status||'MATCHED')}</span></div>`);
@@ -119,6 +157,21 @@ async function saveRider(type,content){await rest('allegro_artist_riders','?user
 $('addDoc').onclick=async()=>{const title=prompt('Document title');if(!title)return;const type=prompt('Document type','contract');if(!type)return;await rest('allegro_artist_documents','',{method:'POST',body:{user_id:me.id,title,document_type:type}});await load()};
 $('requestPayout').onclick=async()=>{const amount=prompt('Enter payout amount in cents');if(!amount)return;const n=Number(amount);if(!Number.isInteger(n)||n<=0){$('payoutMsg').textContent='Enter a valid whole-number amount in cents.';return}try{await rest('allegro_artist_payout_requests','',{method:'POST',body:{user_id:me.id,currency:'ZAR',amount_cents:n}});$('payoutMsg').textContent='Payout request recorded for review.';await load()}catch(e){$('payoutMsg').textContent=e.message;$('payoutMsg').className='error'}};
 $('availabilityAdvert').onclick=()=>{location.href='../collaborate/'};
+$('runLegacyReview').onclick=async()=>{
+ const msg=$('legacyReviewMsg');const btn=$('runLegacyReview');
+ if(!artist?.id){msg.textContent='Complete your artist profile before running management review.';msg.className='label error';return}
+ btn.disabled=true;btn.textContent='REVIEWING…';msg.textContent='Refreshing management controls and escalation queues…';msg.className='label';
+ try{
+  const result=await rest('rpc/allegro_run_legacy_intervention_engine','',{method:'POST',body:{p_artist_id:artist.id}});
+  const monitor=result?.monitor||{};
+  $('legacyHealth').textContent=(monitor.health_score??'—')+(monitor.health_score===undefined?'':'/100');
+  $('legacyHealthLabel').textContent=monitor.status?String(monitor.status).toUpperCase()+' · '+(monitor.next_action||'Review management actions'):'Review refreshed.';
+  msg.textContent='Management review completed. Queues refreshed; no work was marked complete and no financial action was taken.';
+  msg.className='label success';
+  await load();
+ }catch(e){msg.textContent='Management review could not be completed: '+e.message;msg.className='label error'}
+ finally{btn.disabled=false;btn.textContent='RUN MANAGEMENT REVIEW'}
+};
 if(token)load();
 </script>
 </body></html>
