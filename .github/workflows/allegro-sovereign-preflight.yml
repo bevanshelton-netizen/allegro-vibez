@@ -24,18 +24,19 @@ jobs:
       - name: Verify required production files
         run: |
           set -eu
-          test -f .izakhono.json
-          test -f Dockerfile
-          test -f scripts/izakhono/production-cutover.sh
-          test -f .github/workflows/izakhono-production-cutover.yml
+          for file in Dockerfile scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh scripts/izakhono/allegro-owned-runtime-probe.sh infra/izakhono/runtime-binding.NODE01.json deploy/izakhono/docker-compose.allegro.yml deploy/izakhono/Caddyfile; do
+            test -f "$file" || { echo "Missing required production file: $file"; exit 1; }
+          done
+          grep -q '"identity_type": "software-runtime"' infra/izakhono/runtime-binding.NODE01.json
+          grep -q '"ownership": "izakhono-owned"' infra/izakhono/runtime-binding.NODE01.json
+          grep -q '"live": false' infra/izakhono/runtime-binding.NODE01.json
 
-      - name: Verify owned-first contract
+      - name: Verify owned-first release contract
         run: |
           set -eu
-          grep -q 'OWNED' .izakhono.json
-          grep -q 'NODE01' .github/workflows/izakhono-production-cutover.yml
-          grep -q 'self-hosted' .github/workflows/izakhono-production-cutover.yml
-          grep -q 'allegrovibez.com' .github/workflows/izakhono-production-cutover.yml
+          grep -q 'NODE01' .github/workflows/izakhono-owned-production.yml
+          grep -q 'izakhono.runtime-binding/v1' .github/workflows/izakhono-owned-production.yml
+          grep -q 'NOT_YET_PUBLIC' .github/workflows/izakhono-owned-production.yml
 
       - name: Validate cutover shell syntax
         run: sh -n scripts/izakhono/production-cutover.sh
