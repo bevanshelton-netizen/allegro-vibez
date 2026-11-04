@@ -50,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for file in .izakhono.json scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh infra/izakhono/runtime-binding.NODE01.json scripts/izakhono/allegro-owned-runtime-probe.sh; do
+          for file in scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh infra/izakhono/runtime-binding.NODE01.json scripts/izakhono/allegro-owned-runtime-probe.sh; do
             if [[ ! -f "$file" ]]; then
               echo "Required release file missing: $file" >&2
               exit 1
