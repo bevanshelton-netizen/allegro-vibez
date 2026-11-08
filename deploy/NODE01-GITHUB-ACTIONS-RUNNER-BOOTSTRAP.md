@@ -1,50 +1,35 @@
-# ALLEGRO NODE01 — GitHub Actions Runner Bootstrap
+# ALLEGRO — NODE01 Release Publisher and Runtime Execution
 
-## Purpose
+## Architecture rule
 
-This document closes the remaining CI/CD handoff between GitHub and the owned IZAKHONO NODE01 runtime. The production cutover workflow is intentionally pinned to a self-hosted runner with labels:
+**NODE01 is software.** It is the IZAKHONO logical software runtime/control plane. It is not a physical server, computer, laptop, VM, GitHub runner, or hardware asset.
 
-- `self-hosted`
-- `linux`
-- `x64`
-- `izakhono`
+The execution environment is a separate infrastructure concern. Runtime services and workers execute under NODE01's software control through an explicit runtime binding. Never describe the execution environment as NODE01 itself.
 
-The existing IZAKHONO deployment worker is **not** the GitHub Actions runner. A GitHub Actions runner must be installed separately on NODE01.
+## GitHub Actions responsibility
 
-## Required runner registration
+The current workflow `.github/workflows/izakhono-owned-production.yml` runs on GitHub-hosted `ubuntu-latest`. Its role is limited to validating source/release metadata and publishing an immutable NODE01 release contract.
 
-Create a short-lived GitHub Actions runner registration token from the repository's **Settings → Actions → Runners → New self-hosted runner** flow. Never commit the token to this repository, a script, an image, or an environment file stored in Git.
+It is **not** a production deployer, does not prove that NODE01 is running, and does not require installing a GitHub Actions self-hosted runner on NODE01.
 
-On NODE01, install the runner using GitHub's official runner package and configure it with:
+The internal IZAKHONO execution worker and the GitHub-hosted release publisher are separate services with separate responsibilities.
 
-```text
-name: IZAKHONO-NODE01
-labels: self-hosted,linux,x64,izakhono
-work folder: _work
-```
+## Release execution chain
 
-Run the runner as a persistent service so it survives reboots.
+1. GitHub validates source and publishes the immutable release contract.
+2. NODE01 software observes and validates the release contract.
+3. The separately bound IZAKHONO execution environment performs the authorized build and deployment through the release authority.
+4. Application health and canary checks run.
+5. IZAKHONO EDGE/TLS and public HTTPS are verified.
+6. Backup/restore, rollback and post-rollback health evidence are collected.
+7. Only complete, independently verifiable acceptance evidence can authorize an OWNED LIVE VERIFIED claim.
 
-## Production contract
+## Security and status gates
 
-Once the runner is online, the existing workflow:
+- Never commit runner registration tokens, deployment credentials, or secrets.
+- Do not enable execution merely because a release contract was published.
+- Do not change DNS or public traffic as a side effect of source publication.
+- Do not treat a green GitHub publisher workflow as runtime proof.
+- Do not mark the app live while any acceptance gate is pending.
 
-`.github/workflows/izakhono-production-cutover.yml`
-
-will execute the owned-first production cutover against NODE01. It builds the ALLEGRO image locally, performs the canary checks, promotes port 8080, performs the public HTTPS acceptance checks for `https://allegrovibez.com`, and writes the deployment receipt.
-
-## Safety gates
-
-Do not mark ALLEGRO as `OWNED LIVE VERIFIED` merely because the GitHub job is green. The deployment receipt and public-side acceptance evidence must exist. Backup/restore and rollback gates must also be satisfied under the IZAKHONO infrastructure directive.
-
-## Expected first successful signal
-
-The GitHub Actions job named:
-
-`Promote ALLEGRO on IZAKHONO NODE01`
-
-must move from `queued` to `in_progress` and then `success`. Its artifact should contain:
-
-`allegro-izakhono-deployment-receipt-<run_id>`
-
-Only after those acceptance gates pass should the launch advertising automation be allowed to act.
+The current release remains non-live until runtime execution and all public and recovery acceptance gates are proven.
