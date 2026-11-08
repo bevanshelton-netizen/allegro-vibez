@@ -38,8 +38,10 @@ jobs:
           grep -q 'izakhono.runtime-binding/v1' .github/workflows/izakhono-owned-production.yml
           grep -q 'NOT_YET_PUBLIC' .github/workflows/izakhono-owned-production.yml
 
-      - name: Validate cutover shell syntax
-        run: sh -n scripts/izakhono/production-cutover.sh
+      - name: Validate cutover and runtime-probe shell syntax
+        run: |
+          sh -n scripts/izakhono/production-cutover.sh
+          sh -n scripts/izakhono/allegro-owned-runtime-probe.sh
 
       - name: Build production image as package validation
         run: docker build --tag allegro-vibez:preflight-${GITHUB_SHA::12} .
