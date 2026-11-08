@@ -1,27 +1,26 @@
-# NODE01 GitHub Runner Bootstrap
+# NODE01 Software Runtime — Execution Binding
 
-The ALLEGRO production workflow intentionally targets the IZAKHONO self-hosted label:
-`[self-hosted, linux, x64, izakhono]`.
+## Identity
 
-The sovereign NODE01 WSL2 package starts the internal IZAKHONO deployment `runner` container, but that is not the GitHub Actions runner service. Both are required for the current cutover workflow.
+NODE01 is IZAKHONO software: a logical runtime and control-plane identity. It is not a physical computer or a GitHub Actions runner host.
 
-## Required one-time binding
+The infrastructure that executes NODE01-controlled workloads is separate. Its identity and readiness belong in the execution-environment/runtime binding; they must never redefine NODE01's identity.
 
-On NODE01, install/register the GitHub Actions runner for `bevanshelton-netizen/allegro-vibez` with labels:
+## CI/CD separation
 
-- `self-hosted`
-- `linux`
-- `x64`
-- `izakhono`
+The ALLEGRO workflow `.github/workflows/izakhono-owned-production.yml` uses GitHub-hosted `ubuntu-latest` to validate source and publish a release contract. It does not deploy production and does not require a self-hosted GitHub runner installed “on NODE01”.
 
-The registration token must be obtained from GitHub Actions runner settings and supplied only on NODE01. It must never be committed to this repository.
+The IZAKHONO deployment worker is a distinct execution service. NODE01 software validates and authorizes work; the separately bound execution environment carries it out using the IZAKHONO release authority.
 
-After registration, configure the runner as a service and verify that it is online. The existing queued production job will then be eligible for pickup; no workflow change or external hosting provider is required.
+## Required evidence before production
 
-## Security boundary
+- NODE01 software readiness and control-plane health.
+- A valid binding to a separately identified, IZAKHONO-authorized execution environment.
+- Release-authority availability and immutable artifact identity.
+- Application health and canary proof.
+- Public DNS/TLS/HTTPS proof after an explicitly authorized edge cutover.
+- Backup/restore, rollback and post-rollback health proof.
 
-Do not place a runner registration token in Git, workflow YAML, application environment files, or deployment receipts. Use the short-lived GitHub-generated registration token only on the NODE01 host.
+No runner registration token is required for the current GitHub-hosted publisher workflow. Never create or store one unless a future, separately approved workflow genuinely requires a self-hosted runner.
 
-## Release gate
-
-The ALLEGRO release is considered public only after the NODE01 job completes successfully, the deployment receipt exists, and `https://allegrovibez.com` passes external HTTPS acceptance.
+A successful source publisher job is not proof of NODE01 execution and is not permission to claim production live.
