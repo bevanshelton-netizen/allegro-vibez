@@ -17,7 +17,7 @@ POLL_SECONDS="${IZAKHONO_NODE01_POLL_SECONDS:-30}"
 EXECUTE="${IZAKHONO_NODE01_EXECUTE:-false}"
 CURRENT_URL="https://raw.githubusercontent.com/$REPO/$BRANCH/release-contracts/$APP/CURRENT.json"
 
-log() { printf '[NODE01][%s] %s\\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"; }
+log() { printf '[NODE01][%s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"; }
 retry() { sleep "$POLL_SECONDS"; }
 
 command -v curl >/dev/null 2>&1 || { echo '[NODE01] curl is required' >&2; exit 2; }
@@ -71,7 +71,7 @@ while :; do
   if [ "$revision" = "$last" ]; then retry; continue; fi
 
   log "release detected: $revision"
-  printf '%s\\n' "$revision" > "$STATE_DIR/pending-revision"
+  printf '%s\n' "$revision" > "$STATE_DIR/pending-revision"
   if [ "$EXECUTE" != "true" ]; then
     log 'execution disabled; contract validated and acknowledged, not deployed'
     retry
@@ -84,15 +84,15 @@ while :; do
     continue
   }
 
-  if "$RELEASE_AUTHORITY" \\
-      --application "$APP" \\
-      --revision "$revision" \\
-      --source-repository "$REPO" \\
-      --public-url "$PUBLIC_URL" \\
-      --logical-node "$NODE_ID" \\
-      --release-contract "$contract" \\
+  if "$RELEASE_AUTHORITY" \
+      --application "$APP" \
+      --revision "$revision" \
+      --source-repository "$REPO" \
+      --public-url "$PUBLIC_URL" \
+      --logical-node "$NODE_ID" \
+      --release-contract "$contract" \
       --state-root "$STATE_DIR"; then
-    printf '%s\\n' "$revision" > "$STATE_DIR/last-revision"
+    printf '%s\n' "$revision" > "$STATE_DIR/last-revision"
     rm -f "$STATE_DIR/pending-revision"
     log "release handoff completed for $revision; independent acceptance remains required"
   else
