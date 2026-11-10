@@ -37,6 +37,8 @@ jobs:
           grep -q 'NODE01' .github/workflows/izakhono-owned-production.yml
           grep -q 'izakhono.runtime-binding/v1' .github/workflows/izakhono-owned-production.yml
           grep -q 'NOT_YET_PUBLIC' .github/workflows/izakhono-owned-production.yml
+          grep -q 'runtime_host_is_separate' scripts/izakhono/node01-release-poller.sh
+          grep -q 'APPROVED_RUNTIME_HOST' scripts/izakhono/node01-release-poller.sh
 
       - name: Validate cutover and runtime-probe shell syntax
         run: |
