@@ -1,0 +1,22 @@
+{
+  "schema": "izakhono.node01/release/v2",
+  "state": "ready",
+  "app": "allegro-vibez",
+  "revision": "b4b66b1fc212ada99752d162275ea3ee1aa23702",
+  "branch": "main",
+  "logical_node_id": "NODE01",
+  "identity_type": "software-runtime",
+  "runtime_binding_schema": "izakhono.runtime-binding/v1",
+  "runtime_host_is_separate": true,
+  "runtime_class": "oci-docker",
+  "ownership": "izakhono-owned",
+  "edge_network": "izakhono-edge",
+  "release_authority": "/opt/izakhono/bin/izakhono-release",
+  "artifact_identity": "immutable-image-digest",
+  "source_repository": "bevanshelton-netizen/allegro-vibez",
+  "source_commit": "b4b66b1fc212ada99752d162275ea3ee1aa23702",
+  "public_url": "https://allegrovibez.com",
+  "executor": "NODE01",
+  "production_claim": "NOT_YET_PUBLIC",
+  "required_gates": ["source-integrity","build","application-health","canary","public-https","dns-tls","backup-restore","rollback","post-rollback-health"]
+}
