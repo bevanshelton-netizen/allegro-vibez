@@ -13,6 +13,7 @@ Environment=IZAKHONO_NODE_ID=NODE01
 Environment=IZAKHONO_NODE01_EXECUTE=false
 Environment=IZAKHONO_NODE01_POLL_SECONDS=30
 Environment=IZAKHONO_RELEASE_AUTHORITY=/opt/izakhono/bin/izakhono-release
+Environment=IZAKHONO_NODE01_BINDING=/opt/izakhono/config/runtime-binding.NODE01.json
 Environment=IZAKHONO_NODE01_STATE_DIR=/opt/izakhono/state/allegro-vibez
 Environment=IZAKHONO_NODE01_WORK_DIR=/opt/izakhono/work/allegro-vibez
 ExecStart=/opt/izakhono/bin/node01-release-poller
