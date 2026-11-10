@@ -1,0 +1,30 @@
+[Unit]
+Description=IZAKHONO NODE01 software release consumer for ALLEGRO VIBEZ
+Documentation=https://github.com/bevanshelton-netizen/allegro-vibez
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=-/etc/izakhono/node01-allegro.env
+Environment=IZAKHONO_NODE_ID=NODE01
+Environment=IZAKHONO_NODE01_EXECUTE=false
+Environment=IZAKHONO_NODE01_POLL_SECONDS=30
+Environment=IZAKHONO_RELEASE_AUTHORITY=/opt/izakhono/bin/izakhono-release
+Environment=IZAKHONO_NODE01_STATE_DIR=/opt/izakhono/state/allegro-vibez
+Environment=IZAKHONO_NODE01_WORK_DIR=/opt/izakhono/work/allegro-vibez
+ExecStart=/opt/izakhono/bin/node01-release-poller
+Restart=always
+RestartSec=10
+TimeoutStopSec=20
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=full
+ReadWritePaths=/opt/izakhono /etc/izakhono
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
