@@ -13,6 +13,7 @@ NODE_ID="${IZAKHONO_NODE_ID:-NODE01}"
 STATE_DIR="${IZAKHONO_NODE01_STATE_DIR:-/opt/izakhono/state/$APP}"
 WORK_DIR="${IZAKHONO_NODE01_WORK_DIR:-/opt/izakhono/work/$APP}"
 RELEASE_AUTHORITY="${IZAKHONO_RELEASE_AUTHORITY:-/opt/izakhono/bin/izakhono-release}"
+BINDING_FILE="${IZAKHONO_NODE01_BINDING:-/opt/izakhono/config/runtime-binding.NODE01.json}"
 POLL_SECONDS="${IZAKHONO_NODE01_POLL_SECONDS:-30}"
 EXECUTE="${IZAKHONO_NODE01_EXECUTE:-false}"
 CURRENT_URL="https://raw.githubusercontent.com/$REPO/$BRANCH/release-contracts/$APP/CURRENT.json"
@@ -74,6 +75,22 @@ while :; do
   printf '%s\n' "$revision" > "$STATE_DIR/pending-revision"
   if [ "$EXECUTE" != "true" ]; then
     log 'execution disabled; contract validated and acknowledged, not deployed'
+    retry
+    continue
+  fi
+
+  if [ ! -f "$BINDING_FILE" ] || ! jq -e --arg authority "$RELEASE_AUTHORITY" '
+    .schema == "izakhono.runtime-binding/v1" and
+    .logical_node_id == "NODE01" and
+    .identity_type == "software-runtime" and
+    .runtime_host_is_separate == true and
+    (.runtime_host | type == "string" and length > 0 and . != "APPROVED_RUNTIME_HOST" and . != "REPLACE_WITH_VERIFIED_HOST") and
+    .runtime_class == "oci-docker" and
+    .ownership == "izakhono-owned" and
+    .release_authority == $authority and
+    .live == false
+  ' "$BINDING_FILE" >/dev/null; then
+    log "separate execution-environment binding is missing, placeholder, or invalid: $BINDING_FILE"
     retry
     continue
   fi
