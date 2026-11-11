@@ -85,7 +85,7 @@ while :; do
     .logical_node_id == "NODE01" and
     .identity_type == "software-runtime" and
     .runtime_host_is_separate == true and
-    (.runtime_host | type == "string" and length > 0 and . != "APPROVED_RUNTIME_HOST" and . != "REPLACE_WITH_VERIFIED_HOST") and
+    (.runtime_host | type == "string" and length > 0 and . != "NODE01" and . != "node01" and . != "APPROVED_RUNTIME_HOST" and . != "REPLACE_WITH_VERIFIED_HOST") and
     .runtime_class == "oci-docker" and
     .ownership == "izakhono-owned" and
     .release_authority == $authority and
