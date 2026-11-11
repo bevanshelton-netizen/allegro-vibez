@@ -21,6 +21,7 @@ CURRENT_URL="https://raw.githubusercontent.com/$REPO/$BRANCH/release-contracts/$
 log() { printf '[NODE01][%s] %s\n' "$(date -u '+%Y-%m-%dT%H:%M:%SZ')" "$*"; }
 retry() { sleep "$POLL_SECONDS"; }
 
+[ "$NODE_ID" = "NODE01" ] || { echo "[NODE01] logical software identity must be NODE01" >&2; exit 2; }
 command -v curl >/dev/null 2>&1 || { echo '[NODE01] curl is required' >&2; exit 2; }
 command -v jq >/dev/null 2>&1 || { echo '[NODE01] jq is required' >&2; exit 2; }
 case "$POLL_SECONDS" in ''|*[!0-9]*) echo '[NODE01] poll interval must be a positive integer' >&2; exit 2;; esac
