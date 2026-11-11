@@ -106,3 +106,8 @@ Do not create another standalone ALLEGRO website or Vercel project for an existi
 - Generated demos, unapproved submissions and tracks without real audio assets are excluded from broadcast.
 - Studio bookings, payments, event sales, royalties and settlements are not reported as confirmed until the relevant system records prove them.
 - Do not mark a feature live merely because its UI or API exists; verify the complete customer flow.
+
+
+## Mandatory IZAKHONO architecture rule — NODE01
+
+**NODE01 IS SOFTWARE.** It is the logical software/runtime identity, never a server, machine, VM, hostname or infrastructure resource. The environment in which NODE01 software executes is separately managed, explicitly bound and replaceable. All ALLEGRO deployment contracts, scripts, services, telemetry and documentation must preserve this separation. See the [system-wide NODE01 Identity Standard](architecture/NODE01-IDENTITY-STANDARD.md).
