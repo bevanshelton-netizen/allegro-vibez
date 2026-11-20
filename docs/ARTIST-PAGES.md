@@ -5,7 +5,7 @@ Provide every participating artist with a premium, website-style public destinat
 
 ## Routes
 - `/artists/` — public artist directory.
-- `/artists/:slug` — individual artist page.
+- `/artists/:slug` — individual artist page (Vercel rewrite and Netlify deploy-preview rewrite).
 - `/artists/profile.html?preview=1` — design-only template preview. Never represents a real artist.
 - `/artist-os/` — existing private artist command centre.
 
