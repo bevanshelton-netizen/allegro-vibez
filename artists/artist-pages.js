@@ -1,5 +1,5 @@
 (function(){
-  const path=window.location.pathname.replace(/\\/+$/,'');
+  const path=window.location.pathname.replace(/\/+$/,'');
   const slug=path.split('/').filter(Boolean).pop()||'';
   const params=new URLSearchParams(window.location.search);
   const preview=params.get('preview')==='1';
