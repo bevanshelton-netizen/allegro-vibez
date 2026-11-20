@@ -30,7 +30,12 @@ create table if not exists public.allegro_artist_page_requests (
       or (consent_granted = true and consented_at is not null and consent_version is not null)
     ),
   constraint allegro_artist_page_requests_payload_object
-    check (jsonb_typeof(requested_public_data) = 'object')
+    check (jsonb_typeof(requested_public_data) = 'object'),
+  constraint allegro_artist_page_requests_submitted_consent
+    check (
+      status <> 'submitted'
+      or (consent_granted = true and consented_at is not null and consent_version is not null)
+    )
 );
 
 create index if not exists idx_allegro_artist_page_requests_owner
