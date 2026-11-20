@@ -48,7 +48,13 @@ alter table public.allegro_artist_page_requests enable row level security;
 drop policy if exists allegro_artist_page_requests_owner_select on public.allegro_artist_page_requests;
 create policy allegro_artist_page_requests_owner_select
   on public.allegro_artist_page_requests for select to authenticated
-  using (owner_id = (select auth.uid()));
+  using (
+    owner_id = (select auth.uid())
+    and exists (
+      select 1 from public.allegro_artists a
+      where a.id = artist_id and a.owner_id = (select auth.uid())
+    )
+  );
 
 drop policy if exists allegro_artist_page_requests_owner_insert on public.allegro_artist_page_requests;
 create policy allegro_artist_page_requests_owner_insert
