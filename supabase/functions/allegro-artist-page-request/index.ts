@@ -189,7 +189,7 @@ Deno.serve(async (req: Request) => {
   if (origin && !ALLOWED_ORIGINS.has(origin)) {
     return response({ error: "Origin not allowed." }, 403);
   }
-  if (req.method === "OPTIONS") return response({ ok: true }, 204, origin);
+  if (req.method === "OPTIONS") return response({ ok: true }, 200, origin);
   if (req.method !== "POST") return response({ error: "Method not allowed." }, 405, origin);
   if (!PROJECT_URL || !PUBLISHABLE_KEY || !SERVICE_KEY) {
     return response({ error: "Publication service is not configured." }, 503, origin);
@@ -219,7 +219,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const artists = await rest(
-      `allegro_artists?select=id,stage_name& id=eq.${encodeURIComponent(artistId)}&owner_id=eq.${encodeURIComponent(user.id)}&limit=1`.replace("?select=id,stage_name& ", "?select=id,stage_name&"),
+      `allegro_artists?select=id,stage_name&id=eq.${encodeURIComponent(artistId)}&owner_id=eq.${encodeURIComponent(user.id)}&limit=1`,
     ) as Array<{ id: string; stage_name: string }>;
     if (!Array.isArray(artists) || !artists[0]) {
       return response({ error: "Artist ownership could not be verified." }, 403, origin);
