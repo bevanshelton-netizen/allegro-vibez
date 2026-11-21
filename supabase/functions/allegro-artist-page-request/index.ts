@@ -168,20 +168,6 @@ async function authenticatedUser(req: Request) {
   return user && typeof user.id === "string" ? user : null;
 }
 
-async function writeAudit(
-  artistId: string,
-  actorId: string,
-  eventType: "submitted" | "withdrawal_requested" | "suspended",
-  requestId: string | null,
-) {
-  await rest("allegro_artist_page_audit_events", "POST", {
-    artist_id: artistId,
-    request_id: requestId,
-    actor_id: actorId,
-    event_type: eventType,
-    event_data: { channel: "artist-page-request-edge-function" },
-  });
-}
 
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("Origin") || undefined;
@@ -272,55 +258,27 @@ Deno.serve(async (req: Request) => {
         return response({ error: "Public profile content is too large." }, 413, origin);
       }
 
-      const created = await rest("allegro_artist_page_requests", "POST", {
-        artist_id: artistId,
-        owner_id: user.id,
-        requested_slug: slug,
-        requested_public_data: publicData,
-        consent_granted: true,
-        consent_version: "artist-page-consent-v1",
-        consented_at: new Date().toISOString(),
-        status: "submitted",
-        submitted_at: new Date().toISOString(),
-      }) as Array<{ id: string }>;
-      const requestId = created?.[0]?.id;
-      if (!requestId) throw new Error("Publication request could not be processed.");
-      await writeAudit(artistId, user.id, "submitted", requestId);
+      const requestId = await rest("rpc/allegro_submit_artist_page_request", "POST", {
+        p_artist_id: artistId,
+        p_owner_id: user.id,
+        p_requested_slug: slug,
+        p_public_data: publicData,
+        p_consent_version: "artist-page-consent-v1",
+        p_consented_at: new Date().toISOString(),
+      }) as string;
+      if (typeof requestId !== "string") throw new Error("Publication request could not be processed.");
       return response({ ok: true, request_id: requestId, status: "submitted" }, 201, origin);
     }
 
     if (action === "withdraw") {
-      const changed = await rest(
-        `allegro_artist_page_requests?artist_id=eq.${encodeURIComponent(artistId)}&status=in.(draft,submitted,withdrawal_requested)`,
-        "PATCH",
-        {
-          status: "withdrawn",
-          consent_granted: false,
-          consent_version: null,
-          consented_at: null,
-          updated_at: new Date().toISOString(),
-        },
-      ) as Array<{ id: string }>;
-      const requestId = Array.isArray(changed) && changed[0]?.id ? changed[0].id : null;
-
-      const suspended = await rest(
-        `allegro_artist_public_pages?artist_id=eq.${encodeURIComponent(artistId)}&publication_status=eq.published`,
-        "PATCH",
-        {
-          publication_status: "suspended",
-          artist_consent: false,
-          updated_at: new Date().toISOString(),
-        },
-      ) as Array<{ artist_id: string }>;
-
-      await writeAudit(artistId, user.id, "withdrawal_requested", requestId);
-      if (Array.isArray(suspended) && suspended.length) {
-        await writeAudit(artistId, user.id, "suspended", requestId);
-      }
+      const result = await rest("rpc/allegro_withdraw_artist_page", "POST", {
+        p_artist_id: artistId,
+        p_owner_id: user.id,
+      }) as { status?: string; public_page_suspended?: boolean };
       return response({
         ok: true,
-        status: "withdrawn",
-        public_page_suspended: Array.isArray(suspended) && suspended.length > 0,
+        status: result?.status === "withdrawn" ? "withdrawn" : "unknown",
+        public_page_suspended: result?.public_page_suspended === true,
       }, 200, origin);
     }
 
