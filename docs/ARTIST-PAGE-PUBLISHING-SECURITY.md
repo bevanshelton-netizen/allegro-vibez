@@ -91,3 +91,15 @@ The wording and version must receive legal review before production use. If the 
 
 ## Explicit non-actions
 This proposal does not change existing tables, policies, grants, storage buckets, artist records, DNS, payments, production deployments or the main branch. The migration is not executed by this PR.
+
+
+## Reviewer-authorisation discovery (read-only check, 2026-11-21)
+
+A read-only inspection of the connected IZAKHONO WebStart Supabase project identified two existing role-related tables: `public.allegro_roles` and `public.allegro_operator_roles`. Their presence is not sufficient evidence that either table is the approved authority for ALLEGRO VIBEZ artist-page publication:
+
+- `allegro_roles` contains no role assignments in the inspected project.
+- `allegro_operator_roles` contains no records in the inspected project.
+- The only inspected RLS policy on `allegro_roles` permits an authenticated user to read their own row; it does not establish a trusted reviewer-verification path for the Edge Function.
+- Repository code search did not identify an existing ALLEGRO VIBEZ reviewer-role contract or a documented mapping from these tables to publication permissions.
+
+**Decision: fail closed.** Do not infer reviewer status from a role-table name, user-editable metadata, email address, or an unverified role string. Do not add reviewer grants, seed role assignments, or implement an approval endpoint until the authorised role source and its administrator-controlled assignment process are confirmed. The approval/publish action remains intentionally unimplemented. These checks were read-only; no database objects, rows, grants, migrations, functions, or production settings were changed.
