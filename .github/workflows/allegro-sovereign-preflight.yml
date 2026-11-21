@@ -2,6 +2,15 @@ name: ALLEGRO Sovereign Preflight
 
 on:
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'Dockerfile'
+      - 'artists/**'
+      - 'deploy/izakhono/**'
+      - 'scripts/izakhono/**'
+      - '.github/workflows/allegro-sovereign-preflight.yml'
+      - 'artists/**'
+      - 'deploy/izakhono/**'
   push:
     branches: [main]
     paths:
@@ -24,7 +33,7 @@ jobs:
       - name: Verify required production files
         run: |
           set -eu
-          for file in Dockerfile scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh scripts/izakhono/allegro-owned-runtime-probe.sh scripts/izakhono/install-node01-release-poller.sh deploy/izakhono/node01-allegro-release-poller.service infra/izakhono/runtime-binding.NODE01.json deploy/izakhono/docker-compose.allegro.yml deploy/izakhono/Caddyfile; do
+          for file in Dockerfile scripts/izakhono/production-cutover.sh scripts/izakhono/node01-release-poller.sh scripts/izakhono/allegro-owned-runtime-probe.sh scripts/izakhono/install-node01-release-poller.sh deploy/izakhono/node01-allegro-release-poller.service infra/izakhono/runtime-binding.NODE01.json deploy/izakhono/docker-compose.allegro.yml deploy/izakhono/Caddyfile deploy/izakhono/nginx.conf artists/index.html artists/profile.html artists/artist-pages.css artists/artist-pages.js; do
             test -f "$file" || { echo "Missing required production file: $file"; exit 1; }
           done
           grep -q '"identity_type": "software-runtime"' infra/izakhono/runtime-binding.NODE01.json
@@ -63,10 +72,13 @@ jobs:
             sleep 2
           done
           curl -fsS http://127.0.0.1:18080/ | grep -q 'id="platform"'
-          for route in /app/artist-os/ /creator-studio/ /app/catalogue/ /app/rights/ /app/money.html /app/bookings/ /app/opportunities/ /app/profile/ /live/ /studios/ /radio/ /management/ /collaborate/; do
+          for route in /artists/ /artists/test-artist /artists/profile.html?preview=1 /app/artist-os/ /creator-studio/ /app/catalogue/ /app/rights/ /app/money.html /app/bookings/ /app/opportunities/ /app/profile/ /live/ /studios/ /radio/ /management/ /collaborate/; do
             echo "Checking $route"
             curl -fsS "http://127.0.0.1:18080$route" >/dev/null
           done
+          curl -fsS http://127.0.0.1:18080/artists/ | grep -q 'Meet the artists'
+          curl -fsS http://127.0.0.1:18080/artists/test-artist | grep -q 'This artist page'
+          curl -fsS 'http://127.0.0.1:18080/artists/profile.html?preview=1' | grep -q 'Artist Page'
 
       - name: Report deployment boundary
         run: |
