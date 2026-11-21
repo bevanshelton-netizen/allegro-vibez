@@ -10,6 +10,7 @@
     { "source": "/creator-os/:path*", "destination": "/public/creator-os/:path*" },
     { "source": "/creator-studio", "destination": "/public/creator-os/index.html" },
     { "source": "/creator-studio/", "destination": "/public/creator-os/index.html" },
-    { "source": "/creator-studio/:path*", "destination": "/public/creator-os/:path*" }
+    { "source": "/creator-studio/:path*", "destination": "/public/creator-os/:path*" },
+    { "source": "/artists/:slug", "destination": "/artists/profile.html" }
   ]
 }
