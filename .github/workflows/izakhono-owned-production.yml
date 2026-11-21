@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'index.html'
+      - 'artists/**'
       - 'src/**'
       - 'public/**'
       - 'package.json'
@@ -17,6 +18,7 @@ on:
       - '404.html'
       - 'site.webmanifest'
       - 'deploy/izakhono/**'
+      - 'infra/izakhono/**'
       - 'scripts/izakhono/**'
       - '.github/workflows/izakhono-owned-production.yml'
       - '.izakhono.json'
