@@ -73,6 +73,7 @@ The repository now includes `supabase/functions/allegro-artist-page-request/inde
 - The handler uses a server-only secret key for its database operations. No secret is returned to the browser or placed in frontend code.
 - Submit and withdrawal call restricted `SECURITY INVOKER` database RPCs. Each RPC verifies artist ownership again and commits the request/projection changes together with the corresponding audit event.
 - Active requests are unique per artist and per requested slug. Database constraints provide the final race-condition guard in addition to API prechecks.
+- The database limits each artist to five submission events per rolling 24-hour period; the endpoint maps rate-limit and conflict outcomes to safe HTTP responses.
 - CORS is restricted to the production Allegro domains. Requests without an Origin header can still be made by authenticated server clients.
 
 **Not yet production-ready:** the function is source code in a draft PR only. It has not been deployed or tested against a staging schema. The migration must be applied in isolated staging first, the Edge Function must be deployed with JWT verification enabled and its secret environment variables verified, and integration tests must cover owner/non-owner access, consent, withdrawal, duplicate slug races, audit writes, malformed payloads and CORS. The public directory frontend is not yet connected to this API.
