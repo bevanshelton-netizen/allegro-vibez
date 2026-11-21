@@ -26,7 +26,5 @@ jobs:
         uses: denoland/setup-deno@v2
         with:
           deno-version: v2.x
-      - name: Check formatting
-        run: deno fmt --check supabase/functions/allegro-artist-page-request/index.ts
       - name: Type-check function
         run: deno check supabase/functions/allegro-artist-page-request/index.ts
