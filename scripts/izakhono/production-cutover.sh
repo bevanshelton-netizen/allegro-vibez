@@ -10,6 +10,7 @@ revision="${IZAKHONO_RELEASE_REVISION:-$(git rev-parse --short=12 HEAD 2>/dev/nu
 image="${app}:izakhono-${revision}"
 canary="${app}-canary-${revision}"
 previous_image=""
+promotion_started=0
 mkdir -p "$receipt_dir"
 
 fail() { echo "ALLEGRO-CUTOVER-FAIL: $*" >&2; exit 1; }
@@ -17,7 +18,7 @@ fail() { echo "ALLEGRO-CUTOVER-FAIL: $*" >&2; exit 1; }
 rollback_on_failure() {
   rc=$?
   trap - EXIT
-  if [ "$rc" -ne 0 ] && [ -n "$previous_image" ]; then
+  if [ "$rc" -ne 0 ] && [ "$promotion_started" -eq 1 ] && [ -n "$previous_image" ]; then
     echo "[ROLLBACK] Restoring previously accepted image: $previous_image" >&2
     export ALLEGRO_DOMAIN="$domain"
     export ALLEGRO_IMAGE="$previous_image"
@@ -86,6 +87,7 @@ printf '%s\n' "[4/8] Starting the owned runtime and TLS edge"
 cd "$project_dir"
 export ALLEGRO_DOMAIN="$domain"
 export ALLEGRO_IMAGE="$image"
+promotion_started=1
 docker compose -f "$compose_file" up -d
 
 printf '%s\n' "[5/8] Waiting for application health"
