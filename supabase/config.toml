@@ -1,0 +1,4 @@
+project_id = "yfawrenhudjomhnglfhq"
+
+[functions.allegro-artist-page-request]
+verify_jwt = true
