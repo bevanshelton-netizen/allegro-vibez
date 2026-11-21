@@ -71,11 +71,22 @@ The repository now includes `supabase/functions/allegro-artist-page-request/inde
 - The submitted public payload is allowlisted. Music and social URLs are restricted to HTTPS provider hostnames; press links require HTTPS; event and press records are size-limited and structured as plain data.
 - `withdraw` revokes consent, marks outstanding requests withdrawn, and immediately changes a published projection to `suspended`. It writes private audit events.
 - The handler uses a server-only secret key for its database operations. No secret is returned to the browser or placed in frontend code.
+- Submit and withdrawal call restricted `SECURITY INVOKER` database RPCs. Each RPC verifies artist ownership again and commits the request/projection changes together with the corresponding audit event.
+- Active requests are unique per artist and per requested slug. Database constraints provide the final race-condition guard in addition to API prechecks.
 - CORS is restricted to the production Allegro domains. Requests without an Origin header can still be made by authenticated server clients.
 
 **Not yet production-ready:** the function is source code in a draft PR only. It has not been deployed or tested against a staging schema. The migration must be applied in isolated staging first, the Edge Function must be deployed with JWT verification enabled and its secret environment variables verified, and integration tests must cover owner/non-owner access, consent, withdrawal, duplicate slug races, audit writes, malformed payloads and CORS. The public directory frontend is not yet connected to this API.
 
-The endpoint deliberately does not publish a page. A trusted reviewer/approval role and an auditable publish action still need to be defined and implemented. Until then, submitted requests remain private and public pages remain unpublished.
+The endpoint deliberately does not publish a page. A trusted reviewer/approval role and an auditable publish action still need to be defined and implemented. Until then, submitted requests remain private and public pages remain unpublished. Avatar/banner uploads and asset-rights clearance are also not accepted by this first endpoint; those require a separate approved-asset workflow.
+
+
+## Consent wording baseline
+
+The owner-facing UI must present the full wording below next to an unchecked consent control. The endpoint accepts only the affirmative boolean and assigns the version `artist-page-consent-v1` and server timestamp; the UI must not pre-check consent.
+
+> I confirm that I control this ALLEGRO VIBEZ artist account and am authorised to request publication of this artist page. I have reviewed the display name, biography, location, music links, social links, event details and press information submitted for publication, and I give ALLEGRO VIBEZ permission to display those selected fields publicly. I confirm that I have the rights or necessary permissions to submit each link and item for this promotional display. This permission does not transfer copyright, master ownership or other intellectual-property rights to ALLEGRO VIBEZ. I understand that private account details, contact information, contracts, team records and financial information are not part of this public page. I can withdraw publication consent, after which the public page will be suspended. I understand that submitting a request does not guarantee approval or publication.
+
+The wording and version must receive legal review before production use. If the wording changes materially, increment the consent version and retain the prior wording for audit interpretation.
 
 ## Explicit non-actions
 This proposal does not change existing tables, policies, grants, storage buckets, artist records, DNS, payments, production deployments or the main branch. The migration is not executed by this PR.
