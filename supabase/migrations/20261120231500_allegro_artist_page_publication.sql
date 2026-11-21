@@ -85,8 +85,9 @@ create policy allegro_artist_page_requests_owner_update
 
 revoke all on table public.allegro_artist_page_requests from anon, public, authenticated;
 -- Fail closed: browser roles receive no direct request-table privileges in this proposal.
--- Owner submission, editing, state transitions and withdrawal must be implemented by a
--- trusted server-side workflow that authenticates the artist and enforces allowed fields.
+-- Owner submission, editing, state transitions and withdrawal are handled by the
+-- trusted Edge Function after it validates the user's Supabase Auth identity and ownership.
+grant select, insert, update on table public.allegro_artist_page_requests to service_role;
 
 
 -- Private append-only audit trail for the trusted publication workflow.
@@ -108,6 +109,7 @@ create index if not exists idx_allegro_artist_page_audit_artist
 alter table public.allegro_artist_page_audit_events enable row level security;
 revoke all on table public.allegro_artist_page_audit_events from public, anon, authenticated;
 -- Trusted server-side workflow only; no browser-role access.
+grant select, insert on table public.allegro_artist_page_audit_events to service_role;
 
 -- Public projection contains only fields deliberately approved for publication.
 -- Do not put owner IDs, emails, team, payment, contract, private notes, or storage
@@ -163,6 +165,7 @@ create policy allegro_artist_public_pages_public_read
   using (publication_status = 'published' and artist_consent = true);
 
 revoke all on table public.allegro_artist_public_pages from anon, public, authenticated;
+grant select, insert, update on table public.allegro_artist_public_pages to service_role;
 
 -- Expose a fixed public column allowlist, never the underlying table. This prevents
 -- approval metadata or future internal columns from becoming public by accident.
