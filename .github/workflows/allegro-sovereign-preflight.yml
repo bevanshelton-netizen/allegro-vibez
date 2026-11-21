@@ -55,7 +55,11 @@ jobs:
           sh -n scripts/izakhono/allegro-owned-runtime-probe.sh
           sh -n scripts/izakhono/node01-release-poller.sh
           sh -n scripts/izakhono/install-node01-release-poller.sh
-          systemd-analyze verify deploy/izakhono/node01-allegro-release-poller.service
+          tmpdir="$(mktemp -d)"
+          trap 'rm -rf "$tmpdir"' EXIT
+          install -m 0755 /bin/true "$tmpdir/node01-release-poller"
+          sed "s#^ExecStart=/opt/izakhono/bin/node01-release-poller#ExecStart=$tmpdir/node01-release-poller#" deploy/izakhono/node01-allegro-release-poller.service > "$tmpdir/node01-allegro-release-poller.service"
+          systemd-analyze verify "$tmpdir/node01-allegro-release-poller.service"
 
       - name: Build production image as package validation
         run: docker build --tag allegro-vibez:preflight-${GITHUB_SHA::12} .
