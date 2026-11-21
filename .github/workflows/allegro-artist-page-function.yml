@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - "supabase/functions/allegro-artist-page-request/**"
+      - "supabase/migrations/**"
       - "supabase/config.toml"
       - ".github/workflows/allegro-artist-page-function.yml"
   push:
@@ -11,6 +12,7 @@ on:
       - "fix/allegro-artist-public-view-2026-11-21"
     paths:
       - "supabase/functions/allegro-artist-page-request/**"
+      - "supabase/migrations/**"
       - "supabase/config.toml"
 
 permissions:
@@ -19,6 +21,19 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: artist_page_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d artist_page_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -28,3 +43,66 @@ jobs:
           deno-version: v2.x
       - name: Type-check function
         run: deno check supabase/functions/allegro-artist-page-request/index.ts
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+      - name: Create minimal Supabase schema fixture
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d artist_page_test -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          create schema auth;
+          create table auth.users (id uuid primary key);
+          create table public.allegro_artists (
+            id uuid primary key default gen_random_uuid(),
+            owner_id uuid not null references auth.users(id),
+            stage_name text not null
+          );
+          SQL
+      - name: Apply proposed migration to disposable PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: psql -h localhost -U postgres -d artist_page_test -v ON_ERROR_STOP=1 -f supabase/migrations/20261120231500_allegro_artist_page_publication.sql
+      - name: Verify database privilege boundary and transactional request
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -h localhost -U postgres -d artist_page_test -v ON_ERROR_STOP=1 <<'SQL'
+          insert into auth.users (id) values ('11111111-1111-4111-8111-111111111111');
+          insert into public.allegro_artists (id, owner_id, stage_name)
+          values ('22222222-2222-4222-8222-222222222222',
+                  '11111111-1111-4111-8111-111111111111', 'Test Artist');
+          set role service_role;
+          select public.allegro_submit_artist_page_request(
+            '22222222-2222-4222-8222-222222222222',
+            '11111111-1111-4111-8111-111111111111',
+            'test-artist',
+            '{"display_name":"Test Artist"}'::jsonb,
+            'artist-page-consent-v1',
+            now()
+          );
+          reset role;
+          do $$
+          begin
+            if has_table_privilege('anon', 'public.allegro_artist_page_requests', 'select')
+              or has_table_privilege('authenticated', 'public.allegro_artist_page_requests', 'select') then
+              raise exception 'Browser role can read private artist requests';
+            end if;
+            if has_table_privilege('anon', 'public.allegro_artist_public_pages', 'select')
+              or has_table_privilege('authenticated', 'public.allegro_artist_public_pages', 'select') then
+              raise exception 'Browser role can read internal public-page table';
+            end if;
+            if not has_table_privilege('anon', 'public.allegro_artist_public_directory', 'select') then
+              raise exception 'Anonymous public-directory read grant is missing';
+            end if;
+            if (select count(*) from public.allegro_artist_page_requests) <> 1
+              or (select count(*) from public.allegro_artist_page_audit_events where event_type = 'submitted') <> 1 then
+              raise exception 'Submission and audit event were not committed together';
+            end if;
+          end $$;
+          set role anon;
+          select count(*) from public.allegro_artist_public_directory;
+          reset role;
+          SQL
