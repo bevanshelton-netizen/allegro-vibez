@@ -60,5 +60,22 @@ The draft migration intentionally keeps request statuses separate from public pr
 - Run mobile, accessibility and route tests.
 - Only then connect the artist directory/profile pages to the public projection.
 
+
+## Owner request API (implementation draft)
+
+The repository now includes `supabase/functions/allegro-artist-page-request/index.ts`.
+
+- Deploy only with Edge Function JWT verification enabled (`verify_jwt = true`). The handler independently validates the bearer token through Supabase Auth and does not trust user-editable `user_metadata`.
+- The handler verifies `allegro_artists.id` and `owner_id` against the authenticated user before processing either action.
+- `submit` requires an explicit `consent: true`, a valid slug and display name. The consent version and timestamp are assigned server-side.
+- The submitted public payload is allowlisted. Music and social URLs are restricted to HTTPS provider hostnames; press links require HTTPS; event and press records are size-limited and structured as plain data.
+- `withdraw` revokes consent, marks outstanding requests withdrawn, and immediately changes a published projection to `suspended`. It writes private audit events.
+- The handler uses a server-only secret key for its database operations. No secret is returned to the browser or placed in frontend code.
+- CORS is restricted to the production Allegro domains. Requests without an Origin header can still be made by authenticated server clients.
+
+**Not yet production-ready:** the function is source code in a draft PR only. It has not been deployed or tested against a staging schema. The migration must be applied in isolated staging first, the Edge Function must be deployed with JWT verification enabled and its secret environment variables verified, and integration tests must cover owner/non-owner access, consent, withdrawal, duplicate slug races, audit writes, malformed payloads and CORS. The public directory frontend is not yet connected to this API.
+
+The endpoint deliberately does not publish a page. A trusted reviewer/approval role and an auditable publish action still need to be defined and implemented. Until then, submitted requests remain private and public pages remain unpublished.
+
 ## Explicit non-actions
 This proposal does not change existing tables, policies, grants, storage buckets, artist records, DNS, payments, production deployments or the main branch. The migration is not executed by this PR.
