@@ -80,8 +80,10 @@ create policy allegro_artist_page_requests_owner_update
     and status in ('draft','submitted','withdrawal_requested','withdrawn')
   );
 
-revoke all on table public.allegro_artist_page_requests from anon, public;
-grant select, insert, update on table public.allegro_artist_page_requests to authenticated;
+revoke all on table public.allegro_artist_page_requests from anon, public, authenticated;
+-- Fail closed: browser roles receive no direct request-table privileges in this proposal.
+-- Owner submission, editing, state transitions and withdrawal must be implemented by a
+-- trusted server-side workflow that authenticates the artist and enforces allowed fields.
 
 -- Public projection contains only fields deliberately approved for publication.
 -- Do not put owner IDs, emails, team, payment, contract, private notes, or storage
@@ -137,13 +139,41 @@ create policy allegro_artist_public_pages_public_read
   using (publication_status = 'published' and artist_consent = true);
 
 revoke all on table public.allegro_artist_public_pages from anon, public, authenticated;
-grant select on table public.allegro_artist_public_pages to anon, authenticated;
--- No browser-role write grants or policies on the public projection.
--- Trusted publication service writes only after owner consent and human review.
+
+-- Expose a fixed public column allowlist, never the underlying table. This prevents
+-- approval metadata or future internal columns from becoming public by accident.
+create or replace view public.allegro_artist_public_directory
+with (security_barrier = true)
+as
+select
+  slug,
+  display_name,
+  tagline,
+  biography,
+  city,
+  country_code,
+  avatar_url,
+  banner_url,
+  music_links,
+  social_links,
+  events,
+  press_items,
+  published_at,
+  updated_at
+from public.allegro_artist_public_pages
+where publication_status = 'published'
+  and artist_consent = true;
+
+revoke all on table public.allegro_artist_public_directory from public, anon, authenticated;
+grant select on table public.allegro_artist_public_directory to anon, authenticated;
+-- No browser-role grants on either underlying table. The trusted publication service
+-- writes only after owner consent and human review; clients read the allowlist view only.
 
 comment on table public.allegro_artist_page_requests is
   'Private artist-owned requests to publish or withdraw an artist page; never publicly exposed.';
 comment on table public.allegro_artist_public_pages is
-  'Approved public projection only. Public SELECT is limited to published pages with recorded artist consent.';
+  'Internal approved projection. Browser roles have no direct table privileges.';
+comment on view public.allegro_artist_public_directory is
+  'Public allowlist view: only published, consented artist fields; excludes internal IDs and approval metadata.';
 
 commit;
