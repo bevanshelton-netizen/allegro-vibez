@@ -148,7 +148,15 @@ async function rest(path: string, method = "GET", body?: unknown) {
   let parsed: unknown = null;
   try { parsed = raw ? JSON.parse(raw) : null; } catch { parsed = null; }
   if (!result.ok) {
-    // Do not return database messages or submitted data to the caller.
+    const errorCode = (parsed as { code?: string; message?: string } | null)?.code;
+    const errorMessage = (parsed as { message?: string } | null)?.message || "";
+    // Map only known database outcomes; never expose raw database errors.
+    if (errorCode === "23505") throw new Error("REQUEST_CONFLICT");
+    if (errorCode === "42501") throw new Error("OWNERSHIP_DENIED");
+    if (errorCode === "22023" && errorMessage.includes("submission limit")) {
+      throw new Error("SUBMISSION_RATE_LIMIT");
+    }
+    if (errorCode === "22023") throw new Error("INVALID_REQUEST");
     throw new Error("Publication request could not be processed.");
   }
   return parsed;
@@ -283,7 +291,12 @@ Deno.serve(async (req: Request) => {
     }
 
     return response({ error: "Unsupported action." }, 400, origin);
-  } catch {
+  } catch (error) {
+    const code = error instanceof Error ? error.message : "";
+    if (code === "REQUEST_CONFLICT") return response({ error: "A request is already open or the slug is reserved." }, 409, origin);
+    if (code === "OWNERSHIP_DENIED") return response({ error: "Artist ownership could not be verified." }, 403, origin);
+    if (code === "SUBMISSION_RATE_LIMIT") return response({ error: "The artist-page submission limit has been reached. Try again later." }, 429, origin);
+    if (code === "INVALID_REQUEST") return response({ error: "The artist-page request contains invalid information." }, 400, origin);
     return response({ error: "The artist-page request could not be completed." }, 500, origin);
   }
 });
