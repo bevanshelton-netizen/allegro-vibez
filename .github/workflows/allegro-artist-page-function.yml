@@ -1,0 +1,32 @@
+name: Artist Page Request Function Checks
+
+on:
+  pull_request:
+    paths:
+      - "supabase/functions/allegro-artist-page-request/**"
+      - "supabase/config.toml"
+      - ".github/workflows/allegro-artist-page-function.yml"
+  push:
+    branches:
+      - "fix/allegro-artist-public-view-2026-11-21"
+    paths:
+      - "supabase/functions/allegro-artist-page-request/**"
+      - "supabase/config.toml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Check formatting
+        run: deno fmt --check supabase/functions/allegro-artist-page-request/index.ts
+      - name: Type-check function
+        run: deno check supabase/functions/allegro-artist-page-request/index.ts
