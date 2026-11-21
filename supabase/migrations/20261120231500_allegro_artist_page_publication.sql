@@ -45,6 +45,9 @@ create index if not exists idx_allegro_artist_page_requests_artist
 create unique index if not exists idx_allegro_artist_page_requests_open_slug
   on public.allegro_artist_page_requests(requested_slug)
   where status in ('draft','submitted','withdrawal_requested');
+create unique index if not exists idx_allegro_artist_page_requests_one_open_per_artist
+  on public.allegro_artist_page_requests(artist_id)
+  where status in ('draft','submitted','withdrawal_requested');
 
 alter table public.allegro_artist_page_requests enable row level security;
 
