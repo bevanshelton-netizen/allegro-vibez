@@ -6,23 +6,30 @@ const ALLOWED_ORIGINS = new Set([
   "https://www.allegrovibez.com",
 ]);
 
-function keyFromJson(envName: string): string {
+function configuredPublishableKey(): string {
   try {
-    const parsed = JSON.parse(Deno.env.get(envName) || "{}");
-    return typeof parsed?.default === "string" ? parsed.default : "";
+    const names = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
+    if (typeof names?.default === "string") {
+      return Deno.env.get(names.default) || "";
+    }
   } catch {
-    return "";
+    // Fall back to the legacy anon key when the named-key map is unavailable.
   }
+  return Deno.env.get("SUPABASE_ANON_KEY") || "";
 }
 
-const PUBLISHABLE_KEY =
-  keyFromJson("SUPABASE_PUBLISHABLE_KEYS") ||
-  Deno.env.get("SUPABASE_ANON_KEY") ||
-  "";
-const SERVICE_KEY =
-  keyFromJson("SUPABASE_SECRET_KEYS") ||
-  Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ||
-  "";
+function configuredSecretKey(): string {
+  try {
+    const keys = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") || "{}");
+    if (typeof keys?.default === "string") return keys.default;
+  } catch {
+    // Fall back to the legacy service-role key when the secret map is unavailable.
+  }
+  return Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+}
+
+const PUBLISHABLE_KEY = configuredPublishableKey();
+const SERVICE_KEY = configuredSecretKey();
 
 const BASE_HEADERS = {
   "Content-Type": "application/json; charset=utf-8",
