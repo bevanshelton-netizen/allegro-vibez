@@ -249,6 +249,13 @@ Deno.serve(async (req: Request) => {
         return response({ error: "That public artist slug is already in use." }, 409, origin);
       }
 
+      const requestedSlug = await rest(
+        `allegro_artist_page_requests?select=artist_id&requested_slug=eq.${encodeURIComponent(slug)}&status=in.(draft,submitted,withdrawal_requested)&limit=1`,
+      ) as Array<{ artist_id: string }>;
+      if (Array.isArray(requestedSlug) && requestedSlug.some((row) => row.artist_id !== artistId)) {
+        return response({ error: "That artist slug is already reserved by another request." }, 409, origin);
+      }
+
       const publicData = {
         display_name: displayName,
         tagline: cleanText(input.tagline, 160) || null,
