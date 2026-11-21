@@ -1,0 +1,6 @@
+project_id = "yfawrenhudjomhnglfhq"
+
+[functions.allegro-artist-page-request]
+verify_jwt = true
+
+# JWT verification remains enabled; the publishing workflow is not deployed by this PR.

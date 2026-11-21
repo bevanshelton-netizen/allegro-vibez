@@ -13,8 +13,8 @@ This document describes the proposed Phase 1 publishing workflow. The migration 
 
 ## Proposed separation
 1. **Private source of truth:** existing Artist OS artist, profile, EPK, catalogue and booking records remain private under their current ownership policies.
-2. **Owner request:** `allegro_artist_page_requests` stores the requested slug, proposed public-data payload, explicit consent/version/time and workflow state. It is authenticated-owner only.
-3. **Approved public projection:** `allegro_artist_public_pages` contains only curated, approved public fields. Browser roles receive SELECT only, and RLS returns only rows with `publication_status = 'published'` and `artist_consent = true`.
+2. **Owner request:** `allegro_artist_page_requests` stores the requested slug, proposed public-data payload, explicit consent/version/time and workflow state. The proposal grants browser roles no direct table privileges; a trusted server-side workflow must authenticate the owner and handle submission, edits and withdrawal.
+3. **Approved public projection:** `allegro_artist_public_pages` is an internal table containing curated fields plus approval metadata. Browser roles receive no direct privileges on it. They receive SELECT only on `allegro_artist_public_directory`, a fixed-column `security_barrier` view filtered to `publication_status = 'published'` and `artist_consent = true`.
 4. **Publication service:** a trusted server-side service reviews the request and writes the projection. No service-role secret may be placed in browser code. No SECURITY DEFINER shortcut is proposed.
 5. **Withdrawal:** the artist submits a withdrawal request or revokes consent through the authenticated workflow. The trusted publication service suspends/removes the public projection promptly and records the audit event.
 
@@ -26,7 +26,7 @@ This document describes the proposed Phase 1 publishing workflow. The migration 
 - `suspended`: temporarily hidden while a rights, safety, accuracy or consent issue is investigated.
 - `withdrawal_requested` / `withdrawn`: artist asks to unpublish or withdraws consent.
 
-The draft migration intentionally keeps request statuses separate from public projection status. A request cannot publish itself. A trusted publication workflow must perform the approval and projection write.
+The draft migration intentionally keeps request statuses separate from public projection status. A request cannot publish itself. A trusted publication workflow must perform the approval and projection write. Browser roles have no direct request-table privileges until a separately reviewed, field-restricted request API or RPC is implemented; this is an explicit functionality blocker, not an implied working workflow.
 
 ## Public field allowlist
 - Artist display name and approved slug.
@@ -51,6 +51,8 @@ The draft migration intentionally keeps request statuses separate from public pr
 
 ## Release gates
 - Review migration against the live schema, foreign keys, role grants, RLS and project-wide dependencies.
+- Verify anonymous/authenticated users cannot SELECT either underlying table and can read only the fixed-column public view.
+- Implement and test the trusted owner-request API; do not restore broad table grants to make the UI work.
 - Apply first to an isolated staging project and test anonymous, authenticated owner, other authenticated user and trusted publication-service paths.
 - Verify no public read path reaches private source tables or private storage.
 - Test consent versioning, withdrawal, slug collisions, XSS-safe rendering, URL allowlists, oversized payloads and malformed JSON.
@@ -58,5 +60,46 @@ The draft migration intentionally keeps request statuses separate from public pr
 - Run mobile, accessibility and route tests.
 - Only then connect the artist directory/profile pages to the public projection.
 
+
+## Owner request API (implementation draft)
+
+The repository now includes `supabase/functions/allegro-artist-page-request/index.ts`.
+
+- Deploy only with Edge Function JWT verification enabled (`verify_jwt = true`). The handler independently validates the bearer token through Supabase Auth and does not trust user-editable `user_metadata`.
+- The handler verifies `allegro_artists.id` and `owner_id` against the authenticated user before processing either action.
+- `submit` requires an explicit `consent: true`, a valid slug and display name. The consent version and timestamp are assigned server-side.
+- The submitted public payload is allowlisted. Music and social URLs are restricted to HTTPS provider hostnames; press links require HTTPS; event and press records are size-limited and structured as plain data.
+- `withdraw` revokes consent, marks outstanding requests withdrawn, and immediately changes a published projection to `suspended`. It writes private audit events.
+- The handler uses a server-only secret key for its database operations. No secret is returned to the browser or placed in frontend code.
+- Submit and withdrawal call restricted `SECURITY INVOKER` database RPCs. Each RPC verifies artist ownership again and commits the request/projection changes together with the corresponding audit event.
+- Active requests are unique per artist and per requested slug. Database constraints provide the final race-condition guard in addition to API prechecks.
+- The database limits each artist to five submission events per rolling 24-hour period; the endpoint maps rate-limit and conflict outcomes to safe HTTP responses.
+- CORS is restricted to the production Allegro domains. Requests without an Origin header can still be made by authenticated server clients.
+
+**Not yet production-ready:** the function is source code in a draft PR only. It has not been deployed or tested against a staging schema. The migration must be applied in isolated staging first, the Edge Function must be deployed with JWT verification enabled and its secret environment variables verified, and integration tests must cover owner/non-owner access, consent, withdrawal, duplicate slug races, audit writes, malformed payloads and CORS. The public directory frontend is not yet connected to this API.
+
+The endpoint deliberately does not publish a page. A trusted reviewer/approval role and an auditable publish action still need to be defined and implemented. Until then, submitted requests remain private and public pages remain unpublished. Avatar/banner uploads and asset-rights clearance are also not accepted by this first endpoint; those require a separate approved-asset workflow.
+
+
+## Consent wording baseline
+
+The owner-facing UI must present the full wording below next to an unchecked consent control. The endpoint accepts only the affirmative boolean and assigns the version `artist-page-consent-v1` and server timestamp; the UI must not pre-check consent.
+
+> I confirm that I control this ALLEGRO VIBEZ artist account and am authorised to request publication of this artist page. I have reviewed the display name, biography, location, music links, social links, event details and press information submitted for publication, and I give ALLEGRO VIBEZ permission to display those selected fields publicly. I confirm that I have the rights or necessary permissions to submit each link and item for this promotional display. This permission does not transfer copyright, master ownership or other intellectual-property rights to ALLEGRO VIBEZ. I understand that private account details, contact information, contracts, team records and financial information are not part of this public page. I can withdraw publication consent, after which the public page will be suspended. I understand that submitting a request does not guarantee approval or publication.
+
+The wording and version must receive legal review before production use. If the wording changes materially, increment the consent version and retain the prior wording for audit interpretation.
+
 ## Explicit non-actions
 This proposal does not change existing tables, policies, grants, storage buckets, artist records, DNS, payments, production deployments or the main branch. The migration is not executed by this PR.
+
+
+## Reviewer-authorisation discovery (read-only check, 2026-11-21)
+
+A read-only inspection of the connected IZAKHONO WebStart Supabase project identified two existing role-related tables: `public.allegro_roles` and `public.allegro_operator_roles`. Their presence is not sufficient evidence that either table is the approved authority for ALLEGRO VIBEZ artist-page publication:
+
+- `allegro_roles` contains no role assignments in the inspected project.
+- `allegro_operator_roles` contains no records in the inspected project.
+- The only inspected RLS policy on `allegro_roles` permits an authenticated user to read their own row; it does not establish a trusted reviewer-verification path for the Edge Function.
+- Repository code search did not identify an existing ALLEGRO VIBEZ reviewer-role contract or a documented mapping from these tables to publication permissions.
+
+**Decision: fail closed.** Do not infer reviewer status from a role-table name, user-editable metadata, email address, or an unverified role string. Do not add reviewer grants, seed role assignments, or implement an approval endpoint until the authorised role source and its administrator-controlled assignment process are confirmed. The approval/publish action remains intentionally unimplemented. These checks were read-only; no database objects, rows, grants, migrations, functions, or production settings were changed.
