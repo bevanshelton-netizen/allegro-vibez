@@ -85,6 +85,27 @@ revoke all on table public.allegro_artist_page_requests from anon, public, authe
 -- Owner submission, editing, state transitions and withdrawal must be implemented by a
 -- trusted server-side workflow that authenticates the artist and enforces allowed fields.
 
+
+-- Private append-only audit trail for the trusted publication workflow.
+create table if not exists public.allegro_artist_page_audit_events (
+  id uuid primary key default gen_random_uuid(),
+  artist_id uuid not null references public.allegro_artists(id) on delete cascade,
+  request_id uuid references public.allegro_artist_page_requests(id) on delete set null,
+  actor_id uuid references auth.users(id) on delete set null,
+  event_type text not null
+    check (event_type in ('submitted','withdrawal_requested','suspended','approved','published','rejected')),
+  event_data jsonb not null default '{}'::jsonb
+    check (jsonb_typeof(event_data) = 'object'),
+  created_at timestamptz not null default now()
+);
+
+create index if not exists idx_allegro_artist_page_audit_artist
+  on public.allegro_artist_page_audit_events(artist_id, created_at desc);
+
+alter table public.allegro_artist_page_audit_events enable row level security;
+revoke all on table public.allegro_artist_page_audit_events from public, anon, authenticated;
+-- Trusted server-side workflow only; no browser-role access.
+
 -- Public projection contains only fields deliberately approved for publication.
 -- Do not put owner IDs, emails, team, payment, contract, private notes, or storage
 -- object paths here. Asset URLs must be independently approved public URLs.
@@ -169,6 +190,8 @@ grant select on table public.allegro_artist_public_directory to anon, authentica
 -- No browser-role grants on either underlying table. The trusted publication service
 -- writes only after owner consent and human review; clients read the allowlist view only.
 
+comment on table public.allegro_artist_page_audit_events is
+  'Private audit trail for trusted artist-page submission, review, publication and withdrawal events.';
 comment on table public.allegro_artist_page_requests is
   'Private artist-owned requests to publish or withdraw an artist page; never publicly exposed.';
 comment on table public.allegro_artist_public_pages is
