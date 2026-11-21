@@ -199,6 +199,156 @@ grant select on table public.allegro_artist_public_directory to anon, authentica
 -- No browser-role grants on either underlying table. The trusted publication service
 -- writes only after owner consent and human review; clients read the allowlist view only.
 
+
+-- Transactional owner submission: request + audit event commit or roll back together.
+create or replace function public.allegro_submit_artist_page_request(
+  p_artist_id uuid,
+  p_owner_id uuid,
+  p_requested_slug text,
+  p_public_data jsonb,
+  p_consent_version text,
+  p_consented_at timestamptz
+)
+returns uuid
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $
+declare
+  v_request_id uuid;
+begin
+  if p_owner_id is null or not exists (
+    select 1 from public.allegro_artists a
+    where a.id = p_artist_id and a.owner_id = p_owner_id
+  ) then
+    raise exception 'Artist ownership could not be verified.' using errcode = '42501';
+  end if;
+
+  if p_requested_slug is null
+     or p_requested_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*
+  'Private audit trail for trusted artist-page submission, review, publication and withdrawal events.';
+comment on table public.allegro_artist_page_requests is
+  'Private artist-owned requests to publish or withdraw an artist page; never publicly exposed.';
+comment on table public.allegro_artist_public_pages is
+  'Internal approved projection. Browser roles have no direct table privileges.';
+comment on view public.allegro_artist_public_directory is
+  'Public allowlist view: only published, consented artist fields; excludes internal IDs and approval metadata.';
+
+commit;
+
+     or p_public_data is null
+     or jsonb_typeof(p_public_data) <> 'object'
+     or p_consent_version is null
+     or p_consent_version = ''
+     or p_consented_at is null then
+    raise exception 'Invalid artist publication request.' using errcode = '22023';
+  end if;
+
+  if exists (
+    select 1 from public.allegro_artist_page_requests r
+    where r.artist_id = p_artist_id
+      and r.status in ('draft','submitted','withdrawal_requested')
+  ) then
+    raise exception 'An artist-page request is already open.' using errcode = '23505';
+  end if;
+
+  if exists (
+    select 1 from public.allegro_artist_public_pages p
+    where p.slug = p_requested_slug and p.artist_id <> p_artist_id
+  ) then
+    raise exception 'That public artist slug is already in use.' using errcode = '23505';
+  end if;
+
+  insert into public.allegro_artist_page_requests (
+    artist_id, owner_id, requested_slug, requested_public_data,
+    consent_granted, consent_version, consented_at, status, submitted_at
+  ) values (
+    p_artist_id, p_owner_id, p_requested_slug, p_public_data,
+    true, p_consent_version, p_consented_at, 'submitted', now()
+  )
+  returning id into v_request_id;
+
+  insert into public.allegro_artist_page_audit_events (
+    artist_id, request_id, actor_id, event_type, event_data
+  ) values (
+    p_artist_id, v_request_id, p_owner_id, 'submitted',
+    jsonb_build_object('channel', 'artist-page-request-edge-function')
+  );
+
+  return v_request_id;
+end;
+$;
+
+-- Transactional withdrawal immediately suspends a live public projection.
+create or replace function public.allegro_withdraw_artist_page(
+  p_artist_id uuid,
+  p_owner_id uuid
+)
+returns jsonb
+language plpgsql
+security invoker
+set search_path = public, pg_temp
+as $
+declare
+  v_request_id uuid;
+  v_suspended_count integer := 0;
+begin
+  if p_owner_id is null or not exists (
+    select 1 from public.allegro_artists a
+    where a.id = p_artist_id and a.owner_id = p_owner_id
+  ) then
+    raise exception 'Artist ownership could not be verified.' using errcode = '42501';
+  end if;
+
+  update public.allegro_artist_page_requests
+  set status = 'withdrawn',
+      consent_granted = false,
+      consent_version = null,
+      consented_at = null,
+      updated_at = now()
+  where artist_id = p_artist_id
+    and owner_id = p_owner_id
+    and status in ('draft','submitted','withdrawal_requested')
+  returning id into v_request_id;
+
+  update public.allegro_artist_public_pages
+  set publication_status = 'suspended',
+      artist_consent = false,
+      updated_at = now()
+  where artist_id = p_artist_id
+    and publication_status = 'published';
+
+  get diagnostics v_suspended_count = row_count;
+
+  insert into public.allegro_artist_page_audit_events (
+    artist_id, request_id, actor_id, event_type, event_data
+  ) values (
+    p_artist_id, v_request_id, p_owner_id, 'withdrawal_requested',
+    jsonb_build_object('channel', 'artist-page-request-edge-function')
+  );
+
+  if v_suspended_count > 0 then
+    insert into public.allegro_artist_page_audit_events (
+      artist_id, request_id, actor_id, event_type, event_data
+    ) values (
+      p_artist_id, v_request_id, p_owner_id, 'suspended',
+      jsonb_build_object('reason', 'artist_consent_withdrawn')
+    );
+  end if;
+
+  return jsonb_build_object(
+    'status', 'withdrawn',
+    'public_page_suspended', v_suspended_count > 0
+  );
+end;
+$;
+
+revoke all on function public.allegro_submit_artist_page_request(uuid, uuid, text, jsonb, text, timestamptz) from public, anon, authenticated;
+revoke all on function public.allegro_withdraw_artist_page(uuid, uuid) from public, anon, authenticated;
+grant execute on function public.allegro_submit_artist_page_request(uuid, uuid, text, jsonb, text, timestamptz) to service_role;
+grant execute on function public.allegro_withdraw_artist_page(uuid, uuid) to service_role;
+grant select on table public.allegro_artists to service_role;
+
 comment on table public.allegro_artist_page_audit_events is
   'Private audit trail for trusted artist-page submission, review, publication and withdrawal events.';
 comment on table public.allegro_artist_page_requests is
