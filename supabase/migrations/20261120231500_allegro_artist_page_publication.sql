@@ -1,8 +1,5 @@
 -- ALLEGRO ARTIST PAGES — publication boundary (proposal; NOT applied)
--- The private Artist OS records remain private. This migration introduces:
---   1) owner-controlled publication requests (never publicly readable);
---   2) a separate, explicitly approved public projection.
--- Apply only after reviewed in staging and approval of shared-project impact.
+-- Apply only after review and isolated staging validation.
 
 begin;
 
@@ -34,7 +31,7 @@ create table if not exists public.allegro_artist_page_requests (
   constraint allegro_artist_page_requests_submitted_consent
     check (
       status <> 'submitted'
-      or (consent_granted = true and consented_at is not null and consent_version is not null)
+      or (consent_granted and consented_at is not null and consent_version is not null)
     )
 );
 
@@ -50,50 +47,9 @@ create unique index if not exists idx_allegro_artist_page_requests_one_open_per_
   where status in ('draft','submitted','withdrawal_requested');
 
 alter table public.allegro_artist_page_requests enable row level security;
-
-drop policy if exists allegro_artist_page_requests_owner_select on public.allegro_artist_page_requests;
-create policy allegro_artist_page_requests_owner_select
-  on public.allegro_artist_page_requests for select to authenticated
-  using (
-    owner_id = (select auth.uid())
-    and exists (
-      select 1 from public.allegro_artists a
-      where a.id = artist_id and a.owner_id = (select auth.uid())
-    )
-  );
-
-drop policy if exists allegro_artist_page_requests_owner_insert on public.allegro_artist_page_requests;
-create policy allegro_artist_page_requests_owner_insert
-  on public.allegro_artist_page_requests for insert to authenticated
-  with check (
-    owner_id = (select auth.uid())
-    and exists (
-      select 1 from public.allegro_artists a
-      where a.id = artist_id and a.owner_id = (select auth.uid())
-    )
-  );
-
-drop policy if exists allegro_artist_page_requests_owner_update on public.allegro_artist_page_requests;
-create policy allegro_artist_page_requests_owner_update
-  on public.allegro_artist_page_requests for update to authenticated
-  using (owner_id = (select auth.uid()))
-  with check (
-    owner_id = (select auth.uid())
-    and exists (
-      select 1 from public.allegro_artists a
-      where a.id = artist_id and a.owner_id = (select auth.uid())
-    )
-    and status in ('draft','submitted','withdrawal_requested','withdrawn')
-  );
-
-revoke all on table public.allegro_artist_page_requests from anon, public, authenticated;
--- Fail closed: browser roles receive no direct request-table privileges in this proposal.
--- Owner submission, editing, state transitions and withdrawal are handled by the
--- trusted Edge Function after it validates the user's Supabase Auth identity and ownership.
+revoke all on table public.allegro_artist_page_requests from public, anon, authenticated;
 grant select, insert, update on table public.allegro_artist_page_requests to service_role;
 
-
--- Private append-only audit trail for the trusted publication workflow.
 create table if not exists public.allegro_artist_page_audit_events (
   id uuid primary key default gen_random_uuid(),
   artist_id uuid not null references public.allegro_artists(id) on delete cascade,
@@ -105,18 +61,12 @@ create table if not exists public.allegro_artist_page_audit_events (
     check (jsonb_typeof(event_data) = 'object'),
   created_at timestamptz not null default now()
 );
-
 create index if not exists idx_allegro_artist_page_audit_artist
   on public.allegro_artist_page_audit_events(artist_id, created_at desc);
-
 alter table public.allegro_artist_page_audit_events enable row level security;
 revoke all on table public.allegro_artist_page_audit_events from public, anon, authenticated;
--- Trusted server-side workflow only; no browser-role access.
 grant select, insert on table public.allegro_artist_page_audit_events to service_role;
 
--- Public projection contains only fields deliberately approved for publication.
--- Do not put owner IDs, emails, team, payment, contract, private notes, or storage
--- object paths here. Asset URLs must be independently approved public URLs.
 create table if not exists public.allegro_artist_public_pages (
   artist_id uuid primary key references public.allegro_artists(id) on delete cascade,
   slug text not null unique,
@@ -152,55 +102,32 @@ create table if not exists public.allegro_artist_public_pages (
   constraint allegro_artist_public_pages_consent
     check (
       publication_status <> 'published'
-      or (artist_consent = true and consented_at is not null and consent_version is not null
+      or (artist_consent and consented_at is not null and consent_version is not null
           and approved_at is not null and published_at is not null)
     )
 );
-
 create index if not exists idx_allegro_artist_public_pages_published
   on public.allegro_artist_public_pages(publication_status, slug);
-
 alter table public.allegro_artist_public_pages enable row level security;
-
-drop policy if exists allegro_artist_public_pages_public_read on public.allegro_artist_public_pages;
-create policy allegro_artist_public_pages_public_read
-  on public.allegro_artist_public_pages for select to anon, authenticated
-  using (publication_status = 'published' and artist_consent = true);
-
-revoke all on table public.allegro_artist_public_pages from anon, public, authenticated;
+revoke all on table public.allegro_artist_public_pages from public, anon, authenticated;
 grant select, insert, update on table public.allegro_artist_public_pages to service_role;
 
--- Expose a fixed public column allowlist, never the underlying table. This prevents
--- approval metadata or future internal columns from becoming public by accident.
+-- Public consumers receive only this explicit field allowlist.
 create or replace view public.allegro_artist_public_directory
 with (security_barrier = true)
 as
 select
-  slug,
-  display_name,
-  tagline,
-  biography,
-  city,
-  country_code,
-  avatar_url,
-  banner_url,
-  music_links,
-  social_links,
-  events,
-  press_items,
-  published_at,
-  updated_at
+  slug, display_name, tagline, biography, city, country_code,
+  avatar_url, banner_url, music_links, social_links, events, press_items,
+  published_at, updated_at
 from public.allegro_artist_public_pages
-where publication_status = 'published'
-  and artist_consent = true;
-
+where publication_status = 'published' and artist_consent = true;
 revoke all on table public.allegro_artist_public_directory from public, anon, authenticated;
 grant select on table public.allegro_artist_public_directory to anon, authenticated;
--- No browser-role grants on either underlying table. The trusted publication service
--- writes only after owner consent and human review; clients read the allowlist view only.
 
-
--- Transactional owner submission: request + audit event commit or roll back together.
+-- Trusted server-side submission. The Edge Function independently validates the
+-- bearer token; this function re-checks the artist/owner relationship and writes
+-- the request and audit event atomically.
 create or replace function public.allegro_submit_artist_page_request(
   p_artist_id uuid,
   p_owner_id uuid,
@@ -213,34 +140,24 @@ returns uuid
 language plpgsql
 security invoker
 set search_path = public, pg_temp
-as $
+as $$
 declare
   v_request_id uuid;
   v_recent_submissions integer;
 begin
-  if p_owner_id is null or not exists (
-    select 1 from public.allegro_artists a
-    where a.id = p_artist_id and a.owner_id = p_owner_id
-  ) then
+  perform 1
+  from public.allegro_artists a
+  where a.id = p_artist_id and a.owner_id = p_owner_id
+  for update;
+  if not found then
     raise exception 'Artist ownership could not be verified.' using errcode = '42501';
   end if;
 
   if p_requested_slug is null
-     or p_requested_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*
-  'Private audit trail for trusted artist-page submission, review, publication and withdrawal events.';
-comment on table public.allegro_artist_page_requests is
-  'Private artist-owned requests to publish or withdraw an artist page; never publicly exposed.';
-comment on table public.allegro_artist_public_pages is
-  'Internal approved projection. Browser roles have no direct table privileges.';
-comment on view public.allegro_artist_public_directory is
-  'Public allowlist view: only published, consented artist fields; excludes internal IDs and approval metadata.';
-
-commit;
-
+     or p_requested_slug !~ '^[a-z0-9]+(-[a-z0-9]+)*$'
      or p_public_data is null
      or jsonb_typeof(p_public_data) <> 'object'
-     or p_consent_version is null
-     or p_consent_version = ''
+     or p_consent_version is distinct from 'artist-page-consent-v1'
      or p_consented_at is null then
     raise exception 'Invalid artist publication request.' using errcode = '22023';
   end if;
@@ -258,7 +175,6 @@ commit;
   where e.artist_id = p_artist_id
     and e.event_type = 'submitted'
     and e.created_at >= now() - interval '24 hours';
-
   if v_recent_submissions >= 5 then
     raise exception 'Artist-page submission limit reached.' using errcode = '22023';
   end if;
@@ -285,12 +201,11 @@ commit;
     p_artist_id, v_request_id, p_owner_id, 'submitted',
     jsonb_build_object('channel', 'artist-page-request-edge-function')
   );
-
   return v_request_id;
 end;
-$;
+$$;
 
--- Transactional withdrawal immediately suspends a live public projection.
+-- Withdrawal revokes consent and hides any existing public projection atomically.
 create or replace function public.allegro_withdraw_artist_page(
   p_artist_id uuid,
   p_owner_id uuid
@@ -299,36 +214,29 @@ returns jsonb
 language plpgsql
 security invoker
 set search_path = public, pg_temp
-as $
+as $$
 declare
   v_request_id uuid;
   v_suspended_count integer := 0;
 begin
-  if p_owner_id is null or not exists (
-    select 1 from public.allegro_artists a
-    where a.id = p_artist_id and a.owner_id = p_owner_id
-  ) then
+  perform 1
+  from public.allegro_artists a
+  where a.id = p_artist_id and a.owner_id = p_owner_id
+  for update;
+  if not found then
     raise exception 'Artist ownership could not be verified.' using errcode = '42501';
   end if;
 
   update public.allegro_artist_page_requests
-  set status = 'withdrawn',
-      consent_granted = false,
-      consent_version = null,
-      consented_at = null,
-      updated_at = now()
-  where artist_id = p_artist_id
-    and owner_id = p_owner_id
+  set status = 'withdrawn', consent_granted = false,
+      consent_version = null, consented_at = null, updated_at = now()
+  where artist_id = p_artist_id and owner_id = p_owner_id
     and status in ('draft','submitted','withdrawal_requested')
   returning id into v_request_id;
 
   update public.allegro_artist_public_pages
-  set publication_status = 'suspended',
-      artist_consent = false,
-      updated_at = now()
-  where artist_id = p_artist_id
-    and publication_status = 'published';
-
+  set publication_status = 'suspended', artist_consent = false, updated_at = now()
+  where artist_id = p_artist_id and publication_status = 'published';
   get diagnostics v_suspended_count = row_count;
 
   insert into public.allegro_artist_page_audit_events (
@@ -352,7 +260,7 @@ begin
     'public_page_suspended', v_suspended_count > 0
   );
 end;
-$;
+$$;
 
 revoke all on function public.allegro_submit_artist_page_request(uuid, uuid, text, jsonb, text, timestamptz) from public, anon, authenticated;
 revoke all on function public.allegro_withdraw_artist_page(uuid, uuid) from public, anon, authenticated;
