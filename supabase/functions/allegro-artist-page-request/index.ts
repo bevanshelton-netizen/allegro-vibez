@@ -141,14 +141,19 @@ function safePressItems(value: unknown) {
 
 async function rest(path: string, method = "GET", body?: unknown) {
   if (!PROJECT_URL || !SERVICE_KEY) throw new Error("Publication service is not configured.");
+  const databaseHeaders: Record<string, string> = {
+    apikey: SERVICE_KEY,
+    "Content-Type": "application/json",
+    Prefer: "return=representation",
+  };
+  // Modern sb_secret_ keys are API keys, not JWTs: send them on apikey only.
+  // Legacy service_role keys are JWT-based and retain the Bearer header.
+  if (!SERVICE_KEY.startsWith("sb_secret_")) {
+    databaseHeaders.Authorization = `Bearer ${SERVICE_KEY}`;
+  }
   const result = await fetch(`${PROJECT_URL}/rest/v1/${path}`, {
     method,
-    headers: {
-      apikey: SERVICE_KEY,
-      Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json",
-      Prefer: "return=representation",
-    },
+    headers: databaseHeaders,
     body: body === undefined ? undefined : JSON.stringify(body),
   });
   const raw = await result.text();
