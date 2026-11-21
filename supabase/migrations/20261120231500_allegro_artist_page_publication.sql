@@ -216,6 +216,7 @@ set search_path = public, pg_temp
 as $
 declare
   v_request_id uuid;
+  v_recent_submissions integer;
 begin
   if p_owner_id is null or not exists (
     select 1 from public.allegro_artists a
@@ -250,6 +251,16 @@ commit;
       and r.status in ('draft','submitted','withdrawal_requested')
   ) then
     raise exception 'An artist-page request is already open.' using errcode = '23505';
+  end if;
+
+  select count(*)::integer into v_recent_submissions
+  from public.allegro_artist_page_audit_events e
+  where e.artist_id = p_artist_id
+    and e.event_type = 'submitted'
+    and e.created_at >= now() - interval '24 hours';
+
+  if v_recent_submissions >= 5 then
+    raise exception 'Artist-page submission limit reached.' using errcode = '22023';
   end if;
 
   if exists (
