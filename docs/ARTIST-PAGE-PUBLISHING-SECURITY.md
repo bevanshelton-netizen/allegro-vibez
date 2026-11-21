@@ -13,8 +13,8 @@ This document describes the proposed Phase 1 publishing workflow. The migration 
 
 ## Proposed separation
 1. **Private source of truth:** existing Artist OS artist, profile, EPK, catalogue and booking records remain private under their current ownership policies.
-2. **Owner request:** `allegro_artist_page_requests` stores the requested slug, proposed public-data payload, explicit consent/version/time and workflow state. It is authenticated-owner only.
-3. **Approved public projection:** `allegro_artist_public_pages` contains only curated, approved public fields. Browser roles receive SELECT only, and RLS returns only rows with `publication_status = 'published'` and `artist_consent = true`.
+2. **Owner request:** `allegro_artist_page_requests` stores the requested slug, proposed public-data payload, explicit consent/version/time and workflow state. The proposal grants browser roles no direct table privileges; a trusted server-side workflow must authenticate the owner and handle submission, edits and withdrawal.
+3. **Approved public projection:** `allegro_artist_public_pages` is an internal table containing curated fields plus approval metadata. Browser roles receive no direct privileges on it. They receive SELECT only on `allegro_artist_public_directory`, a fixed-column `security_barrier` view filtered to `publication_status = 'published'` and `artist_consent = true`.
 4. **Publication service:** a trusted server-side service reviews the request and writes the projection. No service-role secret may be placed in browser code. No SECURITY DEFINER shortcut is proposed.
 5. **Withdrawal:** the artist submits a withdrawal request or revokes consent through the authenticated workflow. The trusted publication service suspends/removes the public projection promptly and records the audit event.
 
@@ -26,7 +26,7 @@ This document describes the proposed Phase 1 publishing workflow. The migration 
 - `suspended`: temporarily hidden while a rights, safety, accuracy or consent issue is investigated.
 - `withdrawal_requested` / `withdrawn`: artist asks to unpublish or withdraws consent.
 
-The draft migration intentionally keeps request statuses separate from public projection status. A request cannot publish itself. A trusted publication workflow must perform the approval and projection write.
+The draft migration intentionally keeps request statuses separate from public projection status. A request cannot publish itself. A trusted publication workflow must perform the approval and projection write. Browser roles have no direct request-table privileges until a separately reviewed, field-restricted request API or RPC is implemented; this is an explicit functionality blocker, not an implied working workflow.
 
 ## Public field allowlist
 - Artist display name and approved slug.
@@ -51,6 +51,8 @@ The draft migration intentionally keeps request statuses separate from public pr
 
 ## Release gates
 - Review migration against the live schema, foreign keys, role grants, RLS and project-wide dependencies.
+- Verify anonymous/authenticated users cannot SELECT either underlying table and can read only the fixed-column public view.
+- Implement and test the trusted owner-request API; do not restore broad table grants to make the UI work.
 - Apply first to an isolated staging project and test anonymous, authenticated owner, other authenticated user and trusted publication-service paths.
 - Verify no public read path reaches private source tables or private storage.
 - Test consent versioning, withdrawal, slug collisions, XSS-safe rendering, URL allowlists, oversized payloads and malformed JSON.
