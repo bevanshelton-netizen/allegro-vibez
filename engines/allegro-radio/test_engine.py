@@ -1,4 +1,3 @@
-import json
 import os
 import tempfile
 import unittest
@@ -30,6 +29,12 @@ def eligible_item(item_id="radio-item-001"):
 
 
 class RadioEngineTests(unittest.TestCase):
+    def setUp(self):
+        for suffix in ("", "-wal", "-shm"):
+            path = str(engine.DB_PATH) + suffix
+            if os.path.exists(path):
+                os.remove(path)
+
     def test_valid_item_is_eligible(self):
         self.assertEqual(engine.validate_item(eligible_item()), [])
 
