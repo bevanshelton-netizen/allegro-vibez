@@ -1,0 +1,29 @@
+name: ALLEGRO Radio Engine
+
+on:
+  pull_request:
+    paths:
+      - "engines/allegro-radio/**"
+      - ".github/workflows/allegro-radio-engine.yml"
+  push:
+    branches: [main]
+    paths:
+      - "engines/allegro-radio/**"
+      - ".github/workflows/allegro-radio-engine.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run Radio engine tests
+        working-directory: engines/allegro-radio
+        run: python -m unittest -v
+      - name: Build isolated container
+        run: docker build -t allegro-radio-engine:test engines/allegro-radio
